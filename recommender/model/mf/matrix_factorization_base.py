@@ -1,9 +1,6 @@
-import numpy as np
-from scipy.sparse import csr_matrix
+from tools.topk import topk
 
-from topk import topk
-
-from recommender_base import RecommenderBase
+from model.recommender_base import RecommenderBase
 
 class MatrixFactorizationBase(RecommenderBase):
     def __init__(self):

@@ -1,6 +1,6 @@
 import unittest
 from scipy.sparse import csr_matrix
-from topk import topk, heapq_select_k
+from tools.topk import topk, heapq_select_k
 import numpy as np
 from numpy.testing import assert_array_equal, assert_almost_equal
 
