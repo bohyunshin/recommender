@@ -4,7 +4,7 @@ import implicit
 from scipy.sparse import csr_matrix
 from numpy.testing import assert_array_equal, assert_almost_equal
 
-from mf.als import AlternatingLeastSquares
+from model.mf.als import AlternatingLeastSquares
 
 class TestALS(unittest.TestCase):
     def test_binarize(self):

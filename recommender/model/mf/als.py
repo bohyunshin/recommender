@@ -1,10 +1,10 @@
 import numpy as np
 import tqdm
-from scipy.sparse import csr_matrix, diags, identity
+from scipy.sparse import csr_matrix
 
-from utils import check_csr, check_random_state, nonzeros
+from tools.utils import check_csr, check_random_state, nonzeros
 
-from mf.matrix_factorization_base import MatrixFactorizationBase
+from model.mf.matrix_factorization_base import MatrixFactorizationBase
 
 class AlternatingLeastSquares(MatrixFactorizationBase):
     def __init__(

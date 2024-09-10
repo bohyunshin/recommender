@@ -12,4 +12,4 @@ __pycache__/
 .idea/
 
 # data related files
-recommender/data/.movielens
+recommender/data/movielens/.movielens
