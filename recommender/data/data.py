@@ -1,15 +1,13 @@
-import pandas as pd
-import torch
 from torch.utils.data import Dataset
 
 
-class MovieLensDataset(Dataset):
+class Data(Dataset):
     def __init__(self, X, y):
         self.X = X
         self.y = y
 
     def __len__(self):
-        pass
+        return self.X.shape[0]
 
     def __getitem__(self, idx):
-        pass
+        return self.X[idx], self.y[idx]

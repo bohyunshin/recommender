@@ -14,12 +14,7 @@ class MatrixFactorization(nn.Module):
         # self._init_weight_()
 
     def forward(self, user_idx, item_idx):
-        embed_user = self.embed_user(user_idx)
-        embed_item = self.embed_item(item_idx)
-        output = torch.matmul(embed_user, embed_item)
+        embed_user = self.embed_user(user_idx) # batch_size * num_factors
+        embed_item = self.embed_item(item_idx) # batch_size * num_factors
+        output = (embed_user * embed_item).sum(axis=1) # batch_size * 1
         return output
-
-
-if __name__ == "__main__":
-    mf = MatrixFactorization(1000, 3000, 200)
-    print("hi")
