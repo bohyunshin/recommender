@@ -15,20 +15,18 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--lr", type=float, default=1e-2)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--num_factors", type=int, default=128)
     parser.add_argument("--train_ratio", type=float, default=0.8)
-    # parser.add_argument("--loss", type=int, required=True)
+    parser.add_argument("--movielens_data_type", type=str, default="ml-latest-small")
     return parser.parse_args()
 
 
 def main(args):
     preprocessor_module = importlib.import_module(f"recommender.data.{args.dataset}.preprocess").Preprocessor
-    preprocessor = preprocessor_module("ml-latest-small")
+    preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type)
     X,y = preprocessor.preprocess()
-    n = X.shape[0]
-    n_batch = n // args.batch_size + (n % args.batch_size >= 1)
     seed = torch.Generator().manual_seed(42)
 
     dataset = Data(X, y)
@@ -56,7 +54,7 @@ def main(args):
 
             optimizer.zero_grad()
             y_pred = model(users, items)
-            loss = criterion(y_pred, y_train)
+            loss = criterion(y_pred.unsqueeze(1), y_train)
             loss.backward()
             optimizer.step()
 
@@ -72,7 +70,7 @@ def main(args):
                 users, items = X_val[:, 0], X_val[:, 1]
 
                 y_pred = model(users, items)
-                loss = criterion(y_pred, y_val)
+                loss = criterion(y_pred.unsqueeze(1), y_val)
 
                 val_loss += loss.item()
             val_loss /= len(validation_dataloader)
