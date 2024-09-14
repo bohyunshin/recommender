@@ -136,7 +136,7 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
         ----------
         i : integer
             Index for item i
-        P : np.array
+        P : np.ndarray
             M x K user factors matrix
         Ciu : csr_matrix
             N x M confidence sparse matrix
