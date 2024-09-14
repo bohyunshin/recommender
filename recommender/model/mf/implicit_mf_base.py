@@ -2,7 +2,7 @@ from tools.topk import topk
 
 from model.recommender_base import RecommenderBase
 
-class MatrixFactorizationBase(RecommenderBase):
+class ImplicitMatrixFactorizationBase(RecommenderBase):
     def __init__(self):
         self.user_factors = None
         self.item_factors = None

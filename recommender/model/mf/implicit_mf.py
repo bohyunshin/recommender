@@ -4,9 +4,9 @@ from scipy.sparse import csr_matrix
 
 from tools.utils import check_csr, check_random_state, nonzeros
 
-from model.mf.matrix_factorization_base import MatrixFactorizationBase
+from model.mf.implicit_mf_base import ImplicitMatrixFactorizationBase
 
-class AlternatingLeastSquares(MatrixFactorizationBase):
+class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
     def __init__(
             self,
             factors=10,
@@ -59,9 +59,9 @@ class AlternatingLeastSquares(MatrixFactorizationBase):
 
         # initialize parameters randomly
         if self.user_factors is None:
-            self.user_factors = random_state.rand(M, self.factors).astype(self.dtype) * 0.01
+            self.user_factors = random_state.rand(M, self.factors).astype(self.dtype) * 0.01 # M x K
         if self.item_factors is None:
-            self.item_factors = random_state.rand(N, self.factors).astype(self.dtype) * 0.01
+            self.item_factors = random_state.rand(N, self.factors).astype(self.dtype) * 0.01 # N x K
 
         self._PtP = None
         self._QtQ = None

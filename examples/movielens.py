@@ -1,4 +1,4 @@
-from model.mf.als import AlternatingLeastSquares
+from model.mf.implicit_mf import AlternatingLeastSquares
 from datasets.movielens import get_movielens
 
 if __name__ == '__main__':
