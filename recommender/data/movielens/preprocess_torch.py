@@ -2,8 +2,11 @@ import pandas as pd
 import os
 import torch
 
-class Preprocessor:
+from data.preprocess_base import PreoprocessorBase
+
+class Preprocessor(PreoprocessorBase):
     def __init__(self, **kwargs):
+        super().__init__()
         self.ratings = pd.read_csv(os.path.join( os.path.dirname(os.path.abspath(__file__)), f".movielens/{kwargs['movielens_data_type']}/ratings.csv" ))
         self.num_users = len(self.ratings["userId"].unique())
         self.num_items = len(self.ratings["movieId"].unique())
