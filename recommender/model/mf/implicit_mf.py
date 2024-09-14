@@ -165,7 +165,20 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
         self.item_factors[i] = q_i
 
     def predict(self, user_factors, item_factors):
-        pass
+        """
+        Calculate user-item scores based on learned user / item embeddings
+
+        Parameters
+        ----------
+        user_factors : np.ndarray (M1 x K)
+
+        item_factors : np.ndarray (N1 x K)
+
+        Returns
+        -------
+        user_item_scores : np.ndarray (M1 x N1)
+        """
+        return np.dot(user_factors, item_factors.T)
 
     def calculate_loss(self, user_items):
         """
