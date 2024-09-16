@@ -43,28 +43,7 @@ class TestALS(unittest.TestCase):
         imp_als.user_factors = user_factors.copy()
         imp_als.item_factors = item_factors.copy()
 
-        # titles, ratings = get_movielens("1m")
-        # min_rating = 4
-        #
-        # # remove things < min_rating, and convert to implicit dataset
-        # # by considering ratings as a binary preference only
-        # ratings.data[ratings.data < min_rating] = 0
-        # ratings.eliminate_zeros()
-        # ratings.data = np.ones(len(ratings.data))
-        # ratings = (bm25_weight(ratings, B=0.9) * 5).tocsr()
-        # user_ratings = ratings.T.tocsr()
-        #
-        # M,N = user_ratings.shape
-        # user_factors = np.random.rand(M, params["factors"]).astype(np.float32) * 0.01
-        # item_factors = np.random.rand(N, params["factors"]).astype(np.float32) * 0.01
-        #
-        # als.user_factors = user_factors.copy()
-        # als.item_factors = item_factors.copy()
-        # imp_als.user_factors = user_factors.copy()
-        # imp_als.item_factors = item_factors.copy()
-        #
-        # als.fit(user_ratings)
-        # imp_als.fit(user_ratings)
+        # todo: compare results using movielens data
 
         assert_almost_equal(als.user_factors, imp_als.user_factors, decimal=2)
         assert_almost_equal(als.item_factors, imp_als.item_factors, decimal=2)
