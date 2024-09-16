@@ -3,18 +3,21 @@ from scipy.sparse import csr_matrix
 from collections import defaultdict
 
 
-def dataframe_to_csr(df, implicit):
+def dataframe_to_csr(df, shape, implicit):
     """
     Converts a pandas dataframe to a csr matrix.
 
     Parameters
     ----------
-    df : pd.DataFrame
-        Columns should be user_id | item_id | interactions.
+    df : pd.DataFrame (user_id | item_id | interactions.)
+        Dataframe should be sort by user_id and timestamp (if timestamp column is given)
         When implicit is true, interactions column denotes total number of interaction
         between user and item.
         When implicit is false, interactions column denotes explicit rating
         between user and item.
+
+    shape : tuple
+        (total number of user_ids, total number of item_ids)
 
     implicit : bool
         True when feedback data is implicit, False if explicit.
@@ -23,13 +26,9 @@ def dataframe_to_csr(df, implicit):
     -------
     user_item : csr matrix
     """
-    assert set(df.columns) == set(["user_id", "item_id", "interactions"])
-
-    user_mapping = mapping_index(df["user_id"])
-    item_mapping = mapping_index(df["item_id"])
-
-    df["user_id"] = df["user_id"].map(user_mapping)
-    df["item_id"] = df["item_id"].map(item_mapping)
+    assert "user_id" in df.columns
+    assert "item_id" in df.columns
+    assert "interactions" in df.columns
 
     user2item2value = defaultdict(dict)
 
@@ -61,8 +60,8 @@ def dataframe_to_csr(df, implicit):
         row_index += count
         indptr.append(row_index)
 
-    csr = csr_matrix((data, indices, indptr))
-    return csr, user_mapping, item_mapping
+    csr = csr_matrix((data, indices, indptr), shape=shape)
+    return csr
 
 
 def mapping_index(ids):

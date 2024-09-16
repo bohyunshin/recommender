@@ -29,6 +29,9 @@ class TrainTestSplit:
         sort_columns = ["user_id", "timestamp"] if self.ts else ["user_id"]
         df = df.sort_values(by=sort_columns)
 
+        if self.ts:
+            df = df.drop("timestamp", axis=1)
+
         count = 0
         before_user_id = df["user_id"].tolist()[0]
         test = []

@@ -55,6 +55,7 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
         random_state = check_random_state(self.random_state)
 
         Cui = check_csr(user_items)
+        # Cui = self.transform_Cui(Cui)
         M,N = Cui.shape # number of users and items
 
         # initialize parameters randomly
@@ -71,6 +72,8 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
         with tqdm.tqdm(total=self.iterations) as progress:
             for iteration in range(self.iterations):
 
+                print(f"############ iteration: {iteration} ############")
+
                 # alternate updating user and item factors
                 # update user factors
                 self._QtQ = self.QtQ()
@@ -83,10 +86,14 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
                     self.update_item_factors(i, self.user_factors, Cui.T.tocsr())
 
                 # calculate training / validation loss
-                self.tr_loss.append(self.calculate_loss(user_items))
+                tr_loss = self.calculate_loss(user_items)
+                self.tr_loss.append(tr_loss)
+                print(f"training loss: {tr_loss}")
 
                 if val_user_items is not None:
-                    self.val_loss.append(self.calculate_loss(val_user_items))
+                    val_loss = self.calculate_loss(val_user_items)
+                    self.val_loss.append(val_loss)
+                    print(f"validation loss: {val_loss}\n")
 
                 progress.update(1)
 
@@ -156,6 +163,8 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
 
             if confidence > 0:
                 b += confidence * user_factor_j
+            else:
+                confidence *= -1
 
             A += np.outer(user_factor_j,user_factor_j) * (confidence - 1)
 
@@ -234,3 +243,9 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
 
     def linear_equation(self, A, b):
         return np.linalg.solve(A, b)
+
+    def transform_Cui(self, Cui):
+        indptr = Cui.indptr
+        indices = Cui.indices
+        data = [1 + self.alpha * c for c in Cui.data]
+        return csr_matrix((data, indices, indptr))
