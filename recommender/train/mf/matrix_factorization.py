@@ -9,7 +9,7 @@ from torch import nn, optim
 import importlib
 
 from data.data import Data
-from model.mf.matrix_factorization import MatrixFactorization
+from model.mf.explicit_mf import MatrixFactorization
 
 def parse_args():
     parser = argparse.ArgumentParser()

@@ -4,9 +4,9 @@ from scipy.sparse import csr_matrix
 
 from tools.utils import check_csr, check_random_state, nonzeros
 
-from model.mf.matrix_factorization_base import MatrixFactorizationBase
+from model.mf.implicit_mf_base import ImplicitMatrixFactorizationBase
 
-class AlternatingLeastSquares(MatrixFactorizationBase):
+class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
     def __init__(
             self,
             factors=10,
@@ -55,13 +55,14 @@ class AlternatingLeastSquares(MatrixFactorizationBase):
         random_state = check_random_state(self.random_state)
 
         Cui = check_csr(user_items)
+        # Cui = self.transform_Cui(Cui)
         M,N = Cui.shape # number of users and items
 
         # initialize parameters randomly
         if self.user_factors is None:
-            self.user_factors = random_state.rand(M, self.factors).astype(self.dtype) * 0.01
+            self.user_factors = random_state.rand(M, self.factors).astype(self.dtype) * 0.01 # M x K
         if self.item_factors is None:
-            self.item_factors = random_state.rand(N, self.factors).astype(self.dtype) * 0.01
+            self.item_factors = random_state.rand(N, self.factors).astype(self.dtype) * 0.01 # N x K
 
         self._PtP = None
         self._QtQ = None
@@ -70,6 +71,8 @@ class AlternatingLeastSquares(MatrixFactorizationBase):
 
         with tqdm.tqdm(total=self.iterations) as progress:
             for iteration in range(self.iterations):
+
+                print(f"############ iteration: {iteration} ############")
 
                 # alternate updating user and item factors
                 # update user factors
@@ -83,10 +86,14 @@ class AlternatingLeastSquares(MatrixFactorizationBase):
                     self.update_item_factors(i, self.user_factors, Cui.T.tocsr())
 
                 # calculate training / validation loss
-                self.tr_loss.append(self.calculate_loss(user_items))
+                tr_loss = self.calculate_loss(user_items)
+                self.tr_loss.append(tr_loss)
+                print(f"training loss: {tr_loss}")
 
                 if val_user_items is not None:
-                    self.val_loss.append(self.calculate_loss(val_user_items))
+                    val_loss = self.calculate_loss(val_user_items)
+                    self.val_loss.append(val_loss)
+                    print(f"validation loss: {val_loss}\n")
 
                 progress.update(1)
 
@@ -136,7 +143,7 @@ class AlternatingLeastSquares(MatrixFactorizationBase):
         ----------
         i : integer
             Index for item i
-        P : np.array
+        P : np.ndarray
             M x K user factors matrix
         Ciu : csr_matrix
             N x M confidence sparse matrix
@@ -156,6 +163,8 @@ class AlternatingLeastSquares(MatrixFactorizationBase):
 
             if confidence > 0:
                 b += confidence * user_factor_j
+            else:
+                confidence *= -1
 
             A += np.outer(user_factor_j,user_factor_j) * (confidence - 1)
 
@@ -165,7 +174,20 @@ class AlternatingLeastSquares(MatrixFactorizationBase):
         self.item_factors[i] = q_i
 
     def predict(self, user_factors, item_factors):
-        pass
+        """
+        Calculate user-item scores based on learned user / item embeddings
+
+        Parameters
+        ----------
+        user_factors : np.ndarray (M1 x K)
+
+        item_factors : np.ndarray (N1 x K)
+
+        Returns
+        -------
+        user_item_scores : np.ndarray (M1 x N1)
+        """
+        return np.dot(user_factors, item_factors.T)
 
     def calculate_loss(self, user_items):
         """
@@ -221,3 +243,9 @@ class AlternatingLeastSquares(MatrixFactorizationBase):
 
     def linear_equation(self, A, b):
         return np.linalg.solve(A, b)
+
+    def transform_Cui(self, Cui):
+        indptr = Cui.indptr
+        indices = Cui.indices
+        data = [1 + self.alpha * c for c in Cui.data]
+        return csr_matrix((data, indices, indptr))

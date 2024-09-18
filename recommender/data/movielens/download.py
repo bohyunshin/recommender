@@ -53,7 +53,7 @@ def download_movielens(
 
 def setup_args():
     parser = argparse.ArgumentParser(description='Download movielens')
-    parser.add_argument('path', default='.movielens', type=pathlib.Path, nargs='?', help='Write the download path')
+    parser.add_argument('--path', default='.movielens', type=pathlib.Path, nargs='?', help='Write the download path')
     parser.add_argument('--verbose', default=True, action='store_true')
     parser.add_argument('--package', default='latest-small', type=str)
     return parser.parse_args()

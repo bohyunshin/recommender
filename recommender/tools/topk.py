@@ -1,13 +1,13 @@
 import numpy as np
 from heapq import heappush, heappop
 
-def topk(user_items_score, k):
+def topk(user_item_score, k):
     """
     Calculates top k items for selected users
 
     Parameters
     ----------
-    user_items_scores : M1 x N csr_matrix
+    user_item_score : M1 x N (np.ndarray)
         2D array of item score for selected M1 users
 
     Returns
@@ -17,21 +17,20 @@ def topk(user_items_score, k):
     distances : M1 x k numpy array
         2D array of selected k item similarities for each user
     """
-    M1, N = user_items_score.shape
-    indptr = user_items_score.indptr
+    M1, N = user_item_score.shape
     indices = np.zeros((M1, k))
     distances = np.zeros((M1, k))
     for u in range(M1):
-        pred_item_pair = []
-        for i in range(indptr[u], indptr[u+1]):
-            pred, item = user_items_score.data[i], user_items_score.indices[i]
-            pred_item_pair.append((pred, item))
-        reco, dist = heapq_select_k(pred_item_pair, k)
+        scores = user_item_score[u]
+        score_item_pair = []
+        for item, score in enumerate(scores):
+            score_item_pair.append((score, item))
+        reco, dist = heapq_select_k(score_item_pair, k)
         indices[u,:] = reco
         distances[u,:] = dist
     return indices, distances
 
-def heapq_select_k(pred_item_pair, k):
+def heapq_select_k(score_item_pair, k):
     """
     Select top k items from scores.
     To efficiently select top k items according to scores, we use heapq
@@ -40,7 +39,7 @@ def heapq_select_k(pred_item_pair, k):
 
     Parameters
     ----------
-    pred_item_pair: (score, item_idx) array
+    score_item_pair: (score, item_idx) array
         Stores pairs of score and corresponding item index
     k: int
         Integer value
@@ -48,12 +47,12 @@ def heapq_select_k(pred_item_pair, k):
     heap = []
     distances = []
     reco_items = []
-    for pred, item in pred_item_pair:
-        heappush(heap, (-pred, item))
+    for score, item in score_item_pair:
+        heappush(heap, (-score, item))
     count = 0
     while count != k:
-        pred, item = heappop(heap)
+        score, item = heappop(heap)
         reco_items.append(item)
-        distances.append(-pred)
+        distances.append(-score)
         count += 1
     return reco_items, distances

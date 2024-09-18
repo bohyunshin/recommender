@@ -14,7 +14,7 @@ class TestTopK(unittest.TestCase):
         self.assertEqual(expected, heapq_select_k(pred_item_pair, k))
 
     def test_topk(self):
-        user_items_score = csr_matrix(
+        user_items_score = np.array(
             [[0.43, 1.35, 0.72, 0.8],
              [0.6, 0.48, 0.41, 0.62]]
         )
