@@ -4,9 +4,9 @@ This repository aims for implementing various machine learning algorithms in rec
 
 ## Why made this repository?
 - There are lots of algorithms in recommender system starting from item-based recommendation, matrix factorization to deep-learning based recommendation.
-- This repository will help you understand various recommender algorithms by implementing them by yourselves.
-- Also, we not only offer implementation code but also pipelines for learning recommender models with various implicit / explicit data (movielens, yelp, netflix etc..)
-- By comparing metric (ndcg, precision etc..) between different dataset, different algorithm, figure out which algorithm is suitable for specific situation.
+- To understand better, this repository provides implementation of various recommender algorithms using pytorch or custom learning methods.
+- Also, we not only offer implementation code but also pipelines for training recommender models with various implicit / explicit data (movielens, yelp, netflix etc..)
+- By comparing metric (ndcg, hit ratio etc..) between different dataset and algorithm, figure out which algorithm is suitable for specific situation.
 
 ## Current algorithm implementation list
 
