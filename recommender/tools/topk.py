@@ -1,7 +1,7 @@
 import numpy as np
 from heapq import heappush, heappop
 
-def topk(user_item_score, k):
+def topk(user_item_score, filter_query_items, k):
     """
     Calculates top k items for selected users
 
@@ -17,6 +17,16 @@ def topk(user_item_score, k):
     distances : M1 x k numpy array
         2D array of selected k item similarities for each user
     """
+    assert user_item_score.shape == filter_query_items.shape
+
+    neginf = -1e100
+    indptr = filter_query_items.indptr
+    indices = filter_query_items.indices
+    for u in range(len(indptr)-1):
+        for i in range(indptr[u], indptr[u+1]):
+            user_item_score[u,indices[i]] = neginf
+
+
     M1, N = user_item_score.shape
     indices = np.zeros((M1, k))
     distances = np.zeros((M1, k))
