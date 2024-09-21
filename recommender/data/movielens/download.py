@@ -8,8 +8,11 @@ import requests
 
 
 MOVIELENS_URLS = {
-    'latest': "http://files.grouplens.org/datasets/movielens/ml-latest.zip",
-    'latest-small': "http://files.grouplens.org/datasets/movielens/ml-latest-small.zip"
+    "latest": "http://files.grouplens.org/datasets/movielens/ml-latest.zip",
+    "latest-small": "http://files.grouplens.org/datasets/movielens/ml-latest-small.zip",
+    "ml-1m": "http://files.grouplens.org/datasets/movielens/ml-1m.zip",
+    "ml-10m": "http://files.grouplens.org/datasets/movielens/ml-10m.zip",
+    "ml-20m": "http://files.grouplens.org/datasets/movielens/ml-20m.zip"
 }
 
 def download_movielens(

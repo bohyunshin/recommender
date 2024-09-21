@@ -20,7 +20,7 @@ def parse_args():
 
 def main(args):
     preprocessor_module = importlib.import_module(f"recommender.data.{args.dataset}.preprocess_csr").Preprocessor
-    preprocessor = preprocessor_module(movielens_data_type="ml-latest-small", test_size=0.2)
+    preprocessor = preprocessor_module(movielens_data_type="ml-1m", test_size=0.2)
     csr_train, csr_val = preprocessor.preprocess()
 
     params = {
