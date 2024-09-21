@@ -5,6 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../..")
 import argparse
 import importlib
 import pickle
+import time
 
 from model.mf.implicit_mf import AlternatingLeastSquares
 from tools.evaluation import ranking_metrics_at_k
@@ -36,8 +37,11 @@ def main(args):
         'regularization': 0.01,
         'random_state': 42
     }
+
+    start = time.time()
     als = AlternatingLeastSquares(**params)
     als.fit(user_items=csr_train, val_user_items=csr_val)
+    print(f"executed time: {(time.time() - start)/60}")
 
     K = [10, 20, 50]
     for k in K:
