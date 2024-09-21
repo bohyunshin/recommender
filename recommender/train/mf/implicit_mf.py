@@ -15,7 +15,8 @@ def parse_args():
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--num_factors", type=int, default=128)
     parser.add_argument("--test_ratio", type=float, default=0.2)
-    parser.add_argument("--random_state", type=float, default=42)
+    parser.add_argument("--random_state", type=int, default=42)
+    parser.add_argument("--save_path", type=str, required=True)
     parser.add_argument("--movielens_data_type", type=str, default="ml-latest-small")
     return parser.parse_args()
 
@@ -25,7 +26,7 @@ def main(args):
     print(f"selected movielens data type: {args.movielens_data_type}")
     preprocessor_module = importlib.import_module(f"recommender.data.{args.dataset}.preprocess_csr").Preprocessor
     preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type,
-                                       test_size=args.test_ratio,
+                                       test_ratio=args.test_ratio,
                                        random_state=args.random_state)
     csr_train, csr_val = preprocessor.preprocess()
 
@@ -44,7 +45,7 @@ def main(args):
         print(f"NDCG@{k}: {metric['ndcg']}")
         print(f"mAP@{k}: {metric['map']}\n\n")
 
-    pickle.dump(als, open(f"als_{args.movielens_data_type}.pkl", "wb"))
+    pickle.dump(als, open(args.save_path, "wb"))
 
 
 if __name__ == "__main__":
