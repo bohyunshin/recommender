@@ -82,7 +82,7 @@ def ranking_metrics_at_k(model, train_user_items, test_user_items, K=10,
             hit = 0
             miss = 0
             auc = 0
-            idcg = cg_sum[-1]
+            idcg = cg_sum[min(K, m) - 1]
             num_pos_items = m
             num_neg_items = items - num_pos_items
 

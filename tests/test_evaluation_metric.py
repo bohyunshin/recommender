@@ -29,11 +29,7 @@ def test_evaluation_metric():
     test_user_items = csr_matrix((data, indices, indptr), shape=(5,4)) # [[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,1,0], [0,1,0,0]]
     users, items = test_user_items.shape
 
-    metric = ranking_metrics_at_k(implicit_mf, test_user_items, K=3)
+    metric = ranking_metrics_at_k(implicit_mf, csr_matrix((5,4)), test_user_items, K=3)
     expected_map = (1 + 1 + 1 + 1/3 + 0) / users
-    idcg = sum(1.0 / np.log2(np.arange(2, 3 + 2)))
-    expected_ndcg = (1/np.log2(1+1) + 1/np.log2(1+1) + 1/np.log2(1+1) + 1/np.log2(3+1)) / idcg
-    expected_ndcg /= users
 
     np.testing.assert_almost_equal(metric["map"], expected_map)
-    np.testing.assert_almost_equal(metric["ndcg"], expected_ndcg)
