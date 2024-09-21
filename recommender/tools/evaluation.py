@@ -5,7 +5,7 @@ from collections import defaultdict
 
 from .utils import check_random_state
 
-def ranking_metrics_at_k(model, train_user_items, test_user_items, K=10,
+def ranking_metrics_at_k(model, test_user_items, K=10,
                          show_progress=True, num_threads=1):
     """ Calculates ranking metrics for a given trained model
 
@@ -13,9 +13,6 @@ def ranking_metrics_at_k(model, train_user_items, test_user_items, K=10,
     ----------
     model : RecommenderBase
         The fitted recommendation model to test
-    train_user_items : csr_matrix
-        Sparse matrix of user by item that contains elements that were used
-            in training the model
     test_user_items : csr_matrix
         Sparse matrix of user by item that contains withheld elements to
         test on
@@ -34,13 +31,15 @@ def ranking_metrics_at_k(model, train_user_items, test_user_items, K=10,
     float
         the calculated p@k
     """
-    if not isinstance(train_user_items, csr_matrix):
-        train_user_items = train_user_items.tocsr()
 
     if not isinstance(test_user_items, csr_matrix):
         test_user_items = test_user_items.tocsr()
 
-    users = test_user_items.shape[0], items = test_user_items.shape[1]
+    users, items = test_user_items.shape
+
+    if items < K:
+        raise ValueError(f"K cannot be larger than number of items, got K as {K} but number of items is {items}")
+
     # precision
     relevant = 0
     pr_div = 0
@@ -69,22 +68,24 @@ def ranking_metrics_at_k(model, train_user_items, test_user_items, K=10,
 
     while start_idx < len(to_generate):
         batch = to_generate[start_idx: start_idx + batch_size]
-        ids, _ = model.recommend(batch, train_user_items[batch], N=K)
+        ids, _ = model.recommend(batch, N=K)
         start_idx += batch_size
 
         for batch_idx in range(len(batch)):
             u = batch[batch_idx]
             likes = defaultdict(int)
+            m = 0
             for i in range(test_indptr[u], test_indptr[u+1]):
                 likes[test_indices[i]] = 1
+                m += 1
 
-            pr_div += min(K, len(likes))
+            pr_div += min(K, m)
             ap = 0
             hit = 0
             miss = 0
             auc = 0
-            idcg = cg_sum[min(K, len(likes)) - 1]
-            num_pos_items = len(likes)
+            idcg = cg_sum[-1]
+            num_pos_items = m
             num_neg_items = items - num_pos_items
 
             for i in range(K):
@@ -97,7 +98,7 @@ def ranking_metrics_at_k(model, train_user_items, test_user_items, K=10,
                     miss += 1
                     auc += hit
             auc += ((hit + num_pos_items) / 2.0) * (num_neg_items - miss)
-            mean_ap += ap / min(K, len(likes))
+            mean_ap += ap / min(K, m)
             mean_auc += auc / (num_pos_items * num_neg_items)
             total += 1
 
