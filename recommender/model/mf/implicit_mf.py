@@ -72,7 +72,7 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
         with tqdm.tqdm(total=self.iterations) as progress:
             for iteration in range(self.iterations):
 
-                print(f"############ iteration: {iteration} ############")
+                print(f"\n############ iteration: {iteration} ############")
 
                 # alternate updating user and item factors
                 # update user factors
@@ -212,8 +212,10 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
         loss = 0
         M,N = user_items.shape
         Q = self.item_factors
+        total_confidence = 0
         for u in range(M):
             c_u = user_items[u].todense()
+            total_confidence += c_u.sum()
             r_u = self.binarize(c_u)
             p_u = self.user_factors[u]
             r_u_hat = Q.dot(p_u)
@@ -227,7 +229,8 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
             q_i = self.item_factors[i]
             loss += self.regularization * np.power(q_i, 2).sum()
 
-        return loss
+        # todo: why divide loss? (from implicit github repo)
+        return loss / (total_confidence + user_items.shape[0] * user_items.shape[1] - user_items.nnz)
 
     def QtQ(self):
         Q = self.item_factors

@@ -24,7 +24,7 @@ def parse_args():
 
 
 def main(args):
-    preprocessor_module = importlib.import_module(f"recommender.data.{args.dataset}.preprocess").Preprocessor
+    preprocessor_module = importlib.import_module(f"recommender.data.{args.dataset}.preprocess_torch").Preprocessor
     preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type)
     X,y = preprocessor.preprocess()
     seed = torch.Generator().manual_seed(42)

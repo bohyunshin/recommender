@@ -64,8 +64,6 @@ def ranking_metrics_at_k(model, test_user_items, K=10,
     to_generate = np.arange(users, dtype="int32")
     to_generate = to_generate[np.ediff1d(test_user_items.indptr) > 0]
 
-    progress = tqdm(total=len(to_generate), disable=not show_progress)
-
     while start_idx < len(to_generate):
         batch = to_generate[start_idx: start_idx + batch_size]
         ids, _ = model.recommend(batch, N=K)
@@ -102,9 +100,6 @@ def ranking_metrics_at_k(model, test_user_items, K=10,
             mean_auc += auc / (num_pos_items * num_neg_items)
             total += 1
 
-        progress.update(len(batch))
-
-    progress.close()
     return {
         "precision": relevant / pr_div,
         "map": mean_ap / total,

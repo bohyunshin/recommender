@@ -6,6 +6,7 @@ import argparse
 import importlib
 
 from model.mf.implicit_mf import AlternatingLeastSquares
+from tools.evaluation import ranking_metrics_at_k
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -30,6 +31,10 @@ def main(args):
     }
     als = AlternatingLeastSquares(**params)
     als.fit(user_items=csr_train, val_user_items=csr_val)
+
+    metric = ranking_metrics_at_k(als, csr_val, K=10)
+    print(f"NDCG@10: {metric['ndcg']}")
+    print(f"mAP@10: {metric['map']}")
 
 
 if __name__ == "__main__":
