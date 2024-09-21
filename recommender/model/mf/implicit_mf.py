@@ -69,33 +69,30 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
         self.tr_loss = []
         self.val_loss = []
 
-        with tqdm.tqdm(total=self.iterations) as progress:
-            for iteration in range(self.iterations):
+        for iteration in range(self.iterations):
 
-                print(f"\n############ iteration: {iteration} ############")
+            print(f"\n############ iteration: {iteration} out of {self.iterations} ############")
 
-                # alternate updating user and item factors
-                # update user factors
-                self._QtQ = self.QtQ()
-                for u in range(M):
-                    self.update_user_factors(u, self.item_factors, Cui)
+            # alternate updating user and item factors
+            # update user factors
+            self._QtQ = self.QtQ()
+            for u in range(M):
+                self.update_user_factors(u, self.item_factors, Cui)
 
-                # update item factors
-                self._PtP = self.PtP()
-                for i in range(N):
-                    self.update_item_factors(i, self.user_factors, Cui.T.tocsr())
+            # update item factors
+            self._PtP = self.PtP()
+            for i in range(N):
+                self.update_item_factors(i, self.user_factors, Cui.T.tocsr())
 
-                # calculate training / validation loss
-                tr_loss = self.calculate_loss(user_items)
-                self.tr_loss.append(tr_loss)
-                print(f"training loss: {tr_loss}")
+            # calculate training / validation loss
+            tr_loss = self.calculate_loss(user_items)
+            self.tr_loss.append(tr_loss)
+            print(f"training loss: {tr_loss}")
 
-                if val_user_items is not None:
-                    val_loss = self.calculate_loss(val_user_items)
-                    self.val_loss.append(val_loss)
-                    print(f"validation loss: {val_loss}\n")
-
-                progress.update(1)
+            if val_user_items is not None:
+                val_loss = self.calculate_loss(val_user_items)
+                self.val_loss.append(val_loss)
+                print(f"validation loss: {val_loss}\n")
 
     def update_user_factors(self, u, Q, Cui):
         """
