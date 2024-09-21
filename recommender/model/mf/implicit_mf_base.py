@@ -19,7 +19,7 @@ class ImplicitMatrixFactorizationBase:
         raise NotImplementedError
 
     @abstractmethod
-    def recommend(self, userid, N=10):
+    def recommend(self, userid, user_items, filter_already_liked_items=True, N=10):
         """
         Recommends items for users
 
@@ -36,7 +36,7 @@ class ImplicitMatrixFactorizationBase:
             2D array of selected k item similarities for each user
         """
 
-        indices, distances = topk(self.predict(self.user_factors[userid], self.item_factors), N)
+        indices, distances = topk(self.predict(self.user_factors[userid], self.item_factors), user_items[userid], N)
 
         return indices, distances
 

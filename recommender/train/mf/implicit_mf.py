@@ -32,7 +32,7 @@ def main(args):
     als = AlternatingLeastSquares(**params)
     als.fit(user_items=csr_train, val_user_items=csr_val)
 
-    metric = ranking_metrics_at_k(als, csr_val, K=10)
+    metric = ranking_metrics_at_k(als, csr_train, csr_val, K=10)
     print(f"NDCG@10: {metric['ndcg']}")
     print(f"mAP@10: {metric['map']}")
 

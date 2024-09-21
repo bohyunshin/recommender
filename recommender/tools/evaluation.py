@@ -5,7 +5,7 @@ from collections import defaultdict
 
 from .utils import check_random_state
 
-def ranking_metrics_at_k(model, test_user_items, K=10,
+def ranking_metrics_at_k(model, train_user_items, test_user_items, K=10,
                          show_progress=True, num_threads=1):
     """ Calculates ranking metrics for a given trained model
 
@@ -66,7 +66,7 @@ def ranking_metrics_at_k(model, test_user_items, K=10,
 
     while start_idx < len(to_generate):
         batch = to_generate[start_idx: start_idx + batch_size]
-        ids, _ = model.recommend(batch, N=K)
+        ids, _ = model.recommend(batch, train_user_items, N=K)
         start_idx += batch_size
 
         for batch_idx in range(len(batch)):
