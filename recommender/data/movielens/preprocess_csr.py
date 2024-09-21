@@ -9,6 +9,8 @@ from data.train_test_split import TrainTestSplit, train_test_split
 class Preprocessor(PreoprocessorBase):
     def __init__(self, **kwargs):
         super().__init__()
+        self.test_ratio = kwargs["test_ratio"]
+        self.random_state = kwargs["random_state"]
         # ratings = pd.read_csv()
         # train_test_split = TrainTestSplit(test_size=kwargs["test_size"], ts=True)
         #
@@ -34,7 +36,7 @@ class Preprocessor(PreoprocessorBase):
     def preprocess(self):
         # csr_train = dataframe_to_csr(self.train, self.shape, True)
         # csr_val = dataframe_to_csr(self.val, self.shape, True)
-        csr_train, csr_val = train_test_split(self.ratings, 0.8, 42)
+        csr_train, csr_val = train_test_split(self.ratings, self.test_ratio, self.random_state)
         return csr_train, csr_val
 
 if __name__ == "__main__":
