@@ -45,7 +45,7 @@ def main(args):
     start = time.time()
     als = AlternatingLeastSquares(**params)
     als.fit(user_items=csr_train, val_user_items=csr_val)
-    logger.info(f"executed time: {(time.time() - start)/60}")
+    logger.info(f"total executed time: {(time.time() - start)/60}")
 
     K = [10, 20, 50]
     for k in K:

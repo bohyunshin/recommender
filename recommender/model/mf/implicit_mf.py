@@ -1,4 +1,5 @@
 import numpy as np
+import time
 from scipy.sparse import csr_matrix
 import logging
 logger = logging.getLogger("recommender")
@@ -73,6 +74,8 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
 
             logger.info(f"iteration: {iteration} out of {self.iterations}")
 
+            start = time.time()
+
             # alternate updating user and item factors
             # update user factors
             self._QtQ = self.QtQ()
@@ -93,6 +96,8 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
                 val_loss = self.calculate_loss(val_user_items)
                 self.val_loss.append(val_loss)
                 logger.info(f"validation loss: {val_loss}")
+
+            logger.info(f"executed time for {iteration} iteration: {time.time() - start}")
 
     def update_user_factors(self, u, Q, Cui):
         """
