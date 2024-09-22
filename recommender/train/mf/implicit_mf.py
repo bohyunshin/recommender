@@ -15,6 +15,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--regularization", type=float, default=0.01)
     parser.add_argument("--num_factors", type=int, default=128)
     parser.add_argument("--test_ratio", type=float, default=0.2)
     parser.add_argument("--random_state", type=int, default=42)
@@ -24,7 +25,7 @@ def parse_args():
 
 
 def main(args):
-    logger = setup_logger("log.log")
+    logger = setup_logger(args.save_path.split(".")[0] + ".log")
     logger.info(f"selected dataset: {args.dataset}")
     logger.info(f"selected movielens data type: {args.movielens_data_type}")
     preprocessor_module = importlib.import_module(f"recommender.data.{args.dataset}.preprocess_csr").Preprocessor
@@ -36,8 +37,8 @@ def main(args):
     params = {
         'factors': args.num_factors,
         'iterations': args.epochs,
-        'regularization': 0.01,
-        'random_state': 42
+        'regularization': args.regularization,
+        'random_state': args.random_state,
     }
 
     start = time.time()
