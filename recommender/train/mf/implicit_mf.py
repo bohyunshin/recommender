@@ -19,13 +19,14 @@ def parse_args():
     parser.add_argument("--num_factors", type=int, default=128)
     parser.add_argument("--test_ratio", type=float, default=0.2)
     parser.add_argument("--random_state", type=int, default=42)
-    parser.add_argument("--save_path", type=str, required=True)
+    parser.add_argument("--model_path", type=str, required=True)
+    parser.add_argument("--log_path", type=str, required=True)
     parser.add_argument("--movielens_data_type", type=str, default="ml-latest-small")
     return parser.parse_args()
 
 
 def main(args):
-    logger = setup_logger(args.save_path.split(".")[0] + ".log")
+    logger = setup_logger(args.log_path)
     logger.info(f"selected dataset: {args.dataset}")
     logger.info(f"selected movielens data type: {args.movielens_data_type}")
     preprocessor_module = importlib.import_module(f"recommender.data.{args.dataset}.preprocess_csr").Preprocessor
