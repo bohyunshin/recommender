@@ -9,6 +9,7 @@ import time
 
 from model.mf.implicit_mf import AlternatingLeastSquares
 from tools.evaluation import ranking_metrics_at_k
+from tools.logger import setup_logger
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -23,8 +24,9 @@ def parse_args():
 
 
 def main(args):
-    print(f"selected dataset: {args.dataset}")
-    print(f"selected movielens data type: {args.movielens_data_type}")
+    logger = setup_logger("log.log")
+    logger.info(f"selected dataset: {args.dataset}")
+    logger.info(f"selected movielens data type: {args.movielens_data_type}")
     preprocessor_module = importlib.import_module(f"recommender.data.{args.dataset}.preprocess_csr").Preprocessor
     preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type,
                                        test_ratio=args.test_ratio,
@@ -41,13 +43,14 @@ def main(args):
     start = time.time()
     als = AlternatingLeastSquares(**params)
     als.fit(user_items=csr_train, val_user_items=csr_val)
-    print(f"executed time: {(time.time() - start)/60}")
+    logger.info(f"executed time: {(time.time() - start)/60}")
 
     K = [10, 20, 50]
     for k in K:
         metric = ranking_metrics_at_k(als, csr_train, csr_val, K=k)
-        print(f"NDCG@{k}: {metric['ndcg']}")
-        print(f"mAP@{k}: {metric['map']}\n\n")
+        logger.info(f"Metric for K={k}")
+        logger.info(f"NDCG@{k}: {metric['ndcg']}")
+        logger.info(f"mAP@{k}: {metric['map']}")
 
     pickle.dump(als, open(args.save_path, "wb"))
 

@@ -1,9 +1,9 @@
 import numpy as np
-import tqdm
 from scipy.sparse import csr_matrix
+import logging
+logger = logging.getLogger("recommender")
 
 from tools.utils import check_csr, check_random_state, nonzeros
-
 from model.mf.implicit_mf_base import ImplicitMatrixFactorizationBase
 
 class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
@@ -71,7 +71,7 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
 
         for iteration in range(self.iterations):
 
-            print(f"\n############ iteration: {iteration} out of {self.iterations} ############")
+            logger.info(f"iteration: {iteration} out of {self.iterations}")
 
             # alternate updating user and item factors
             # update user factors
@@ -87,12 +87,12 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
             # calculate training / validation loss
             tr_loss = self.calculate_loss(user_items)
             self.tr_loss.append(tr_loss)
-            print(f"training loss: {tr_loss}")
+            logger.info(f"training loss: {tr_loss}")
 
             if val_user_items is not None:
                 val_loss = self.calculate_loss(val_user_items)
                 self.val_loss.append(val_loss)
-                print(f"validation loss: {val_loss}\n")
+                logger.info(f"validation loss: {val_loss}")
 
     def update_user_factors(self, u, Q, Cui):
         """
