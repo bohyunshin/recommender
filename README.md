@@ -15,65 +15,27 @@ This repository aims for implementing various machine learning algorithms in rec
 |explicit|matrix factorization|SVD|`recommender/model/mf/explicit_mf`|
 |implicit|weighted matrix factorization|ALS|`recommender/model/mf/implicit_mf`|
 
+## How to contribute
+Although any kinds of PRs are warmly welcomed, please refer to following rules.
+
+* Basic tests in `tests/` directory should be added.
+* When adding new models, please attach following in `PR` and `README.md`
+  * Experiment results using current data pipeline.
+  * Example command to learn model should be added.
+  * Logging file when executing model training python script.
+  * Training / validation loss curve.
+
 ## Current dataset pipeline list
 
 |Category|Name|
 |----------------|---|
-|explicit|movielens|
+|explicit/implicit|movielens|
 
 ## Experiment results
 
-To reproduce following experiment results, please refer to README.md of each dataset.
+To reproduce following experiment results, please refer to `Code to reproduce` column in following summary table.
 
 |Dataset category|Dataset|Algorithm|mAP@10|mAP@20|mAP@50|NDCG@10|NDCG@20|NDCG@50|Code to reproduce|
 |----------------|-------|---------|------|------|------|-------|-------|-------|-----------------|
 |implicit|movielens 1m|ALS|TBD|TBD|TBD|TBD|TBD|TBD|<details><summary>cmd</summary><pre lang="bash">python3 recommender/train/mf/implicit_mf.py \ &#13;  --dataset movielens \ &#13;  --epochs 100 \ &#13;  --num_factors 10 \ &#13;  --test_ratio 0.2 \ &#13;  --random_state 42 \ &#13;  --movielens_data_type ml-1m \ &#13;  --model_path "../als_ml_1m.pkl" \ &#13;  --log_path "../als_ml_1m.log" </pre></details>|
 |implicit|movielens 10m|ALS|TBD|TBD|TBD|TBD|TBD|TBD|<details><summary>cmd</summary><pre lang="bash">python3 recommender/train/mf/implicit_mf.py \ &#13;  --dataset movielens \ &#13;  --epochs 100 \ &#13;  --num_factors 10 \ &#13;  --test_ratio 0.2 \ &#13;  --random_state 42 \ &#13;  --movielens_data_type ml-10m \ &#13;  --model_path "../als_ml_10m.pkl" \ &#13;  --log_path "../als_ml_10m.log" </pre></details>|
-
-
-
-<pre lang="json">{&#10;  "id": 10,&#13;  "username": "chucknorris"&#10;}</pre>
-
-<table>
-<tr>
-<td>
-   Dataset category
-</td>
-<td>
-   <pre lang="csharp">
-   const int x = 3;
-   const string y = "foo";
-   readonly Object obj = getObject();
-   </pre>
-</td>
-<td>
-  <pre lang="nemerle">
-  def x : int = 3;
-  def y : string = "foo";
-  def obj : Object = getObject();
-  </pre>
-</td>
-<td>
-  Variables defined with <code>def</code> cannot be changed once defined. This is similar to <code>readonly</code> or <code>const</code> in C# or <code>final</code> in Java. Most variables in Nemerle aren't explicitly typed like this.
-</td>
-
-<tr>
-<td>
-   <pre lang="csharp">
-   const int x = 3;
-   const string y = "foo";
-   readonly Object obj = getObject();
-   </pre>
-</td>
-<td>
-  <pre lang="nemerle">
-  def x : int = 3;
-  def y : string = "foo";
-  def obj : Object = getObject();
-  </pre>
-</td>
-<td>
-  Variables defined with <code>def</code> cannot be changed once defined. This is similar to <code>readonly</code> or <code>const</code> in C# or <code>final</code> in Java. Most variables in Nemerle aren't explicitly typed like this.
-</td>
-
-</tr>
