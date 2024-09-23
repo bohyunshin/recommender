@@ -25,10 +25,10 @@ This repository aims for implementing various machine learning algorithms in rec
 
 To reproduce following experiment results, please refer to README.md of each dataset.
 
-|Dataset category|Dataset|Algorithm|mAP@10|mAP@20|mAP@50|NDCG@10|NDCG@20|NDCG@50|
-|----------------|-------|---------|------|------|------|-------|-------|-------|
-|implicit|movielens 1m|ALS|TBD|TBD|TBD|TBD|TBD|TBD|
-|implicit|movielens 10m|ALS|TBD|TBD|TBD|TBD|TBD|<details><summary>Parameter explanations</summary><pre lang="bash">python3 recommender/train/mf/implicit_mf.py \ &#13;  --dataset movielens \ &#13;  --epochs 100 \ &#13;  --num_factors 10 \ &#13;  --test_ratio 0.2 \ &#13;  --random_state 42 \ &#13;  --movielens_data_type ml-1m \ &#13;  --model_path "../als_ml_1m.pkl" \ &#13;  --log_path "../als_ml_1m.log" </pre></details>|
+|Dataset category|Dataset|Algorithm|mAP@10|mAP@20|mAP@50|NDCG@10|NDCG@20|NDCG@50|Code to reproduce|
+|----------------|-------|---------|------|------|------|-------|-------|-------|-----------------|
+|implicit|movielens 1m|ALS|TBD|TBD|TBD|TBD|TBD|TBD|<details><summary>Command</summary><pre lang="bash">python3 recommender/train/mf/implicit_mf.py \ &#13;  --dataset movielens \ &#13;  --epochs 100 \ &#13;  --num_factors 10 \ &#13;  --test_ratio 0.2 \ &#13;  --random_state 42 \ &#13;  --movielens_data_type ml-1m \ &#13;  --model_path "../als_ml_1m.pkl" \ &#13;  --log_path "../als_ml_1m.log" </pre></details>|
+|implicit|movielens 10m|ALS|TBD|TBD|TBD|TBD|TBD|TBD|<details><summary>Command</summary><pre lang="bash">python3 recommender/train/mf/implicit_mf.py \ &#13;  --dataset movielens \ &#13;  --epochs 100 \ &#13;  --num_factors 10 \ &#13;  --test_ratio 0.2 \ &#13;  --random_state 42 \ &#13;  --movielens_data_type ml-10m \ &#13;  --model_path "../als_ml_10m.pkl" \ &#13;  --log_path "../als_ml_10m.log" </pre></details>|
 
 
 
