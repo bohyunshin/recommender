@@ -28,10 +28,17 @@ To reproduce following experiment results, please refer to README.md of each dat
 |Dataset category|Dataset|Algorithm|mAP@10|mAP@20|mAP@50|NDCG@10|NDCG@20|NDCG@50|
 |----------------|-------|---------|------|------|------|-------|-------|-------|
 |implicit|movielens 1m|ALS|TBD|TBD|TBD|TBD|TBD|TBD|
-|implicit|movielens 10m|ALS|TBD|TBD|TBD|TBD|TBD|<pre lang="json">{&#10;  "id": 10,&#13;  "username": "chucknorris"&#10;}</pre>|
+|implicit|movielens 10m|ALS|TBD|TBD|TBD|TBD|TBD|<pre lang="python">python3 recommender/train/mf/implicit_mf.py --dataset movielens \;  --epochs 100 \</pre>|
+
+
+
+<pre lang="json">{&#10;  "id": 10,&#13;  "username": "chucknorris"&#10;}</pre>
 
 <table>
 <tr>
+<td>
+   Dataset category
+</td>
 <td>
    <pre lang="csharp">
    const int x = 3;
