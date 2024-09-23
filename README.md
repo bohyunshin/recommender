@@ -6,7 +6,7 @@ This repository aims for implementing various machine learning algorithms in rec
 - There are lots of algorithms in recommender system starting from item-based recommendation, matrix factorization to deep-learning based recommendation.
 - To understand better, this repository provides implementation of various recommender algorithms using pytorch or custom learning methods.
 - Also, we not only offer implementation code but also pipelines for training recommender models with various implicit / explicit data (movielens, yelp, netflix etc..)
-- By comparing metric (ndcg, hit ratio etc..) between different dataset and algorithm, figure out which algorithm is suitable for specific situation.
+- By comparing metric (ndcg, mAP etc..) between different dataset and algorithm, figure out which algorithm is suitable for specific situation.
 
 ## Current algorithm implementation list
 
@@ -23,4 +23,30 @@ This repository aims for implementing various machine learning algorithms in rec
 
 ## Experiment results
 
-TBD
+To reproduce following experiment results, please refer to README.md of each dataset.
+
+|Dataset category|Dataset|Algorithm|mAP@10|mAP@20|mAP@50|NDCG@10|NDCG@20|NDCG@50|
+|----------------|-------|---------|------|------|------|-------|-------|-------|
+|implicit|movielens 1m|ALS|TBD|TBD|TBD|TBD|TBD|TBD|
+|implicit|movielens 10m|ALS|TBD|TBD|TBD|TBD|TBD|TBD|
+
+<table>
+<tr>
+<td>
+   ```csharp
+   const int x = 3;
+   const string y = "foo";
+   readonly Object obj = getObject();
+   ```
+</td>
+<td>
+  ```nemerle
+  def x : int = 3;
+  def y : string = "foo";
+  def obj : Object = getObject();
+  ```
+</td>
+<td>
+  Variables defined with <code>def</code> cannot be changed once defined. This is similar to <code>readonly</code> or <code>const</code> in C# or <code>final</code> in Java. Most variables in Nemerle aren't explicitly typed like this.
+</td>
+</tr>
