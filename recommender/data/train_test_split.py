@@ -1,3 +1,6 @@
+from scipy.sparse import csr_matrix
+from tools.utils import check_random_state
+
 
 class TrainTestSplit:
     def __init__(self, test_size, ts=False):
@@ -55,3 +58,40 @@ class TrainTestSplit:
         train_idx = [i == 0 for i in test]
         val_idx = [i == 1 for i in test]
         return df.iloc[train_idx], df.iloc[val_idx]
+
+
+def train_test_split(ratings, train_percentage=0.8, random_state=None):
+    """ Randomly splits the ratings matrix into two matrices for training/testing.
+
+    Parameters
+    ----------
+    ratings : coo_matrix
+        A sparse matrix to split
+    train_percentage : float
+        What percentage of ratings should be used for training
+    random_state : int, None or RandomState
+        The existing RandomState. If None, or an int, will be used
+        to seed a new numpy RandomState.
+    Returns
+    -------
+    (train, test) : csr_matrix, csr_matrix
+        A tuple of csr_matrices for training/testing """
+
+    ratings = ratings.tocoo()
+    random_state = check_random_state(random_state)
+    random_index = random_state.random(len(ratings.data))
+    train_index = random_index < train_percentage
+    test_index = random_index >= train_percentage
+
+    train = csr_matrix((ratings.data[train_index],
+                        (ratings.row[train_index], ratings.col[train_index])),
+                       shape=ratings.shape, dtype=ratings.dtype)
+
+    test = csr_matrix((ratings.data[test_index],
+                       (ratings.row[test_index], ratings.col[test_index])),
+                      shape=ratings.shape, dtype=ratings.dtype)
+
+    test.data[test.data < 0] = 0
+    test.eliminate_zeros()
+
+    return train, test

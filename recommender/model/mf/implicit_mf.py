@@ -1,9 +1,10 @@
 import numpy as np
-import tqdm
+import time
 from scipy.sparse import csr_matrix
+import logging
+logger = logging.getLogger("recommender")
 
 from tools.utils import check_csr, check_random_state, nonzeros
-
 from model.mf.implicit_mf_base import ImplicitMatrixFactorizationBase
 
 class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
@@ -69,33 +70,34 @@ class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
         self.tr_loss = []
         self.val_loss = []
 
-        with tqdm.tqdm(total=self.iterations) as progress:
-            for iteration in range(self.iterations):
+        for iteration in range(self.iterations):
 
-                print(f"\n############ iteration: {iteration} ############")
+            logger.info(f"iteration: {iteration} out of {self.iterations}")
 
-                # alternate updating user and item factors
-                # update user factors
-                self._QtQ = self.QtQ()
-                for u in range(M):
-                    self.update_user_factors(u, self.item_factors, Cui)
+            start = time.time()
 
-                # update item factors
-                self._PtP = self.PtP()
-                for i in range(N):
-                    self.update_item_factors(i, self.user_factors, Cui.T.tocsr())
+            # alternate updating user and item factors
+            # update user factors
+            self._QtQ = self.QtQ()
+            for u in range(M):
+                self.update_user_factors(u, self.item_factors, Cui)
 
-                # calculate training / validation loss
-                tr_loss = self.calculate_loss(user_items)
-                self.tr_loss.append(tr_loss)
-                print(f"training loss: {tr_loss}")
+            # update item factors
+            self._PtP = self.PtP()
+            for i in range(N):
+                self.update_item_factors(i, self.user_factors, Cui.T.tocsr())
 
-                if val_user_items is not None:
-                    val_loss = self.calculate_loss(val_user_items)
-                    self.val_loss.append(val_loss)
-                    print(f"validation loss: {val_loss}\n")
+            # calculate training / validation loss
+            tr_loss = self.calculate_loss(user_items)
+            self.tr_loss.append(tr_loss)
+            logger.info(f"training loss: {tr_loss}")
 
-                progress.update(1)
+            if val_user_items is not None:
+                val_loss = self.calculate_loss(val_user_items)
+                self.val_loss.append(val_loss)
+                logger.info(f"validation loss: {val_loss}")
+
+            logger.info(f"executed time for {iteration} iteration: {time.time() - start}")
 
     def update_user_factors(self, u, Q, Cui):
         """

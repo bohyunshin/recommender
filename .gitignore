@@ -14,3 +14,7 @@ __pycache__/
 # data related files
 recommender/data/movielens/.movielens
 recommender/data/avazu_ctr/.avazu_ctr
+
+# venv
+.venv/
+venv/

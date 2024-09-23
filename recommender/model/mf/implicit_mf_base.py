@@ -18,7 +18,6 @@ class ImplicitMatrixFactorizationBase:
         """
         raise NotImplementedError
 
-    @abstractmethod
     def recommend(self, userid, user_items, filter_already_liked_items=True, N=10):
         """
         Recommends items for users
