@@ -1,8 +1,8 @@
-import torch
+from model.torch_model_base import TorchModelBase
 import torch.nn as nn
 
 
-class MatrixFactorization(nn.Module):
+class MatrixFactorization(TorchModelBase):
 
     def __init__(self, num_users, num_items, num_factors):
         super(MatrixFactorization, self).__init__()

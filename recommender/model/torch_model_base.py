@@ -11,7 +11,3 @@ class TorchModelBase(nn.Module, RecommenderBase):
     @abstractmethod
     def predict(self, user_factors, item_factors):
         raise NotImplementedError
-
-    @abstractmethod
-    def forward(self):
-        raise NotImplementedError
