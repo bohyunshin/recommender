@@ -10,6 +10,7 @@ import importlib
 
 from data_loader.data import Data
 from model.mf.explicit_mf import MatrixFactorization
+from tools.logger import setup_logger
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -24,6 +25,9 @@ def parse_args():
 
 
 def main(args):
+    logger = setup_logger(args.log_path)
+    logger.info(f"selected dataset: {args.dataset}")
+    logger.info(f"selected movielens data type: {args.movielens_data_type}")
     preprocessor_module = importlib.import_module(f"recommender.preprocess.{args.dataset}.preprocess_torch").Preprocessor
     preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type)
     X,y = preprocessor.preprocess()
@@ -44,7 +48,7 @@ def main(args):
     optimizer = optim.SGD(model.parameters(), lr=args.lr)
 
     for epoch in range(args.epochs):
-        print(f"####### Epoch {epoch} #######")
+        logger.info(f"####### Epoch {epoch} #######")
 
         # training
         tr_loss = 0.0
@@ -75,8 +79,8 @@ def main(args):
                 val_loss += loss.item()
             val_loss /= len(validation_dataloader)
 
-        print(f"Train Loss: {tr_loss}")
-        print(f"Validation Loss: {val_loss}")
+        logger.info(f"Train Loss: {tr_loss}")
+        logger.info(f"Validation Loss: {val_loss}")
 
 
 if __name__ == "__main__":

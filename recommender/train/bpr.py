@@ -12,6 +12,7 @@ from data_loader.uniform_negative_sampling_dataset import UniformNegativeSamplin
 from model.bpr import BayesianPersonalizedRanking
 from tools.csr import implicit_to_csr
 from loss.custom import bpr_loss
+from tools.logger import setup_logger
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -22,11 +23,16 @@ def parse_args():
     parser.add_argument("--epochs", type=int, default=100)
     parser.add_argument("--num_factors", type=int, default=128)
     parser.add_argument("--train_ratio", type=float, default=0.8)
+    parser.add_argument("--model_path", type=str, required=True)
+    parser.add_argument("--log_path", type=str, required=True)
     parser.add_argument("--movielens_data_type", type=str, default="ml-latest-small")
     return parser.parse_args()
 
 
 def main(args):
+    logger = setup_logger(args.log_path)
+    logger.info(f"selected dataset: {args.dataset}")
+    logger.info(f"selected movielens data type: {args.movielens_data_type}")
     preprocessor_module = importlib.import_module(f"recommender.preprocess.{args.dataset}.preprocess_torch").Preprocessor
     preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type)
     X,y = preprocessor.preprocess()
@@ -48,7 +54,7 @@ def main(args):
     optimizer = optim.SGD(model.parameters(), lr=args.lr)
 
     for epoch in range(args.epochs):
-        print(f"####### Epoch {epoch} #######")
+        logger.info(f"####### Epoch {epoch} #######")
 
         # training
         tr_loss = 0.0
@@ -78,8 +84,8 @@ def main(args):
                 val_loss += loss.item()
             val_loss /= len(validation_dataloader)
 
-        print(f"Train Loss: {tr_loss}")
-        print(f"Validation Loss: {val_loss}")
+        logger.info(f"Train Loss: {tr_loss}")
+        logger.info(f"Validation Loss: {val_loss}")
 
 
 if __name__ == "__main__":
