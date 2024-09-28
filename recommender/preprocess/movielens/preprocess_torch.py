@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import torch
 
-from data.preprocess_base import PreoprocessorBase
+from preprocess.preprocess_base import PreoprocessorBase
 
 class Preprocessor(PreoprocessorBase):
     def __init__(self, **kwargs):
