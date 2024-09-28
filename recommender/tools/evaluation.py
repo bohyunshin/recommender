@@ -1,12 +1,9 @@
 import numpy as np
-from scipy.sparse import coo_matrix, csr_matrix
-from tqdm.auto import tqdm
+from scipy.sparse import csr_matrix
 from collections import defaultdict
 
-from .utils import check_random_state
 
-def ranking_metrics_at_k(model, train_user_items, test_user_items, K=10,
-                         show_progress=True, num_threads=1):
+def ranking_metrics_at_k(model, train_user_items, test_user_items, K=10):
     """ Calculates ranking metrics for a given trained model
 
     Parameters
@@ -18,13 +15,6 @@ def ranking_metrics_at_k(model, train_user_items, test_user_items, K=10,
         test on
     K : int
         Number of items to test on
-    show_progress : bool, optional
-        Whether to show a progress bar
-    num_threads : int, optional
-        The number of threads to use for testing. Specifying 0 means to default
-        to the number of cores on the machine. Note: aside from the ALS and BPR
-        models, setting this to more than 1 will likely hurt performance rather than
-        help.
 
     Returns
     -------
