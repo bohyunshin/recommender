@@ -7,7 +7,12 @@ from preprocess.preprocess_base import PreoprocessorBase
 class Preprocessor(PreoprocessorBase):
     def __init__(self, **kwargs):
         super().__init__()
-        self.ratings = pd.read_csv(os.path.join( os.path.dirname(os.path.abspath(__file__)), f".movielens/{kwargs['movielens_data_type']}/ratings.csv" ))
+        # self.ratings = pd.read_csv(os.path.join( os.path.dirname(os.path.abspath(__file__)), f".movielens/{kwargs['movielens_data_type']}/ratings.csv" ))
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            f".movielens/{kwargs['movielens_data_type']}/ratings.dat")
+        ratings_cols = ["userId", "movieId", "rating", "timestamp"]
+        self.ratings = pd.read_csv(path, sep='::', names=ratings_cols, engine='python', encoding="ISO-8859-1")
+
         self.num_users = len(self.ratings["userId"].unique())
         self.num_items = len(self.ratings["movieId"].unique())
 
