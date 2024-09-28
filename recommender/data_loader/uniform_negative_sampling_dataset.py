@@ -12,7 +12,7 @@ class UniformNegativeSamplingDataset(Dataset):
 
     def __getitem__(self, idx):
         u,i = self.X[idx]
-        j = np.random.randint(self.user_items.shape[0]) # sample only ONE negative sample
+        j = np.random.randint(self.user_items.shape[1]) # sample only ONE negative sample
         while self.user_items[u].toarray().reshape(-1)[j] == 1:
-            j = np.random.randint(self.user_items.shape[0])
+            j = np.random.randint(self.user_items.shape[1])
         return u, i, j

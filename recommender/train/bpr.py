@@ -7,6 +7,7 @@ import torch
 from torch.utils.data import DataLoader, random_split
 from torch import nn, optim
 import importlib
+import copy
 
 from data_loader.uniform_negative_sampling_dataset import UniformNegativeSamplingDataset
 from model.bpr import BayesianPersonalizedRanking
@@ -20,11 +21,12 @@ def parse_args():
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--lr", type=float, default=1e-2)
     parser.add_argument("--regularization", type=float, default=1e-4)
-    parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--num_factors", type=int, default=128)
     parser.add_argument("--train_ratio", type=float, default=0.8)
     parser.add_argument("--model_path", type=str, required=True)
     parser.add_argument("--log_path", type=str, required=True)
+    parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--movielens_data_type", type=str, default="ml-latest-small")
     return parser.parse_args()
 
@@ -53,9 +55,11 @@ def main(args):
     )
     optimizer = optim.SGD(model.parameters(), lr=args.lr)
 
+    best_loss = float('inf')
     for epoch in range(args.epochs):
         logger.info(f"####### Epoch {epoch} #######")
 
+        model.train()
         # training
         tr_loss = 0.0
         for data in train_dataloader:
@@ -69,8 +73,9 @@ def main(args):
 
             tr_loss += loss.item()
 
-        tr_loss /= len(train_dataloader)
+        tr_loss = round(tr_loss / len(train_dataloader), 6)
 
+        model.eval()
         # validation
         with torch.no_grad():
             val_loss = 0.0
@@ -82,10 +87,31 @@ def main(args):
                 loss = bpr_loss(y_pred, model.parameters(), args.regularization)
 
                 val_loss += loss.item()
-            val_loss /= len(validation_dataloader)
+            val_loss = round(val_loss / len(validation_dataloader), 6)
 
         logger.info(f"Train Loss: {tr_loss}")
         logger.info(f"Validation Loss: {val_loss}")
+
+        if best_loss > val_loss:
+            prev_best_loss = best_loss
+            best_loss = val_loss
+            best_model_weights = copy.deepcopy(model.state_dict())
+            patience = args.patience
+            torch.save(model.state_dict(), args.model_path)
+            logger.info(f"Best validation: {best_loss}, Previous validation loss: {prev_best_loss}")
+        else:
+            patience -= 1
+            logger.info(f"Validation loss did not decrease. Patience {patience} left.")
+            if patience == 0:
+                logger.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
+                break
+
+    # Load the best model weights
+    model.load_state_dict(best_model_weights)
+    logger.info("Load weight with best validation loss")
+
+    torch.save(model.state_dict(), args.model_path)
+    logger.info("Save final model")
 
 
 if __name__ == "__main__":
