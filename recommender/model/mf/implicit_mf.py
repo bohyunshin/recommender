@@ -5,9 +5,9 @@ import logging
 logger = logging.getLogger("recommender")
 
 from tools.utils import check_csr, check_random_state, nonzeros
-from model.mf.implicit_mf_base import ImplicitMatrixFactorizationBase
+from model.fit_model_base import FitModelBase
 
-class AlternatingLeastSquares(ImplicitMatrixFactorizationBase):
+class AlternatingLeastSquares(FitModelBase):
     def __init__(
             self,
             factors=10,

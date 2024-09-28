@@ -2,8 +2,8 @@ import os
 import pandas as pd
 
 from tools.csr import dataframe_to_csr, mapping_index
-from data.preprocess_base import PreoprocessorBase
-from data.train_test_split import TrainTestSplit, train_test_split
+from preprocess.preprocess_base import PreoprocessorBase
+from preprocess.train_test_split import TrainTestSplit, train_test_split
 
 
 class Preprocessor(PreoprocessorBase):

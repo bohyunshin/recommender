@@ -54,7 +54,7 @@ def main(args):
         logger.info(f"NDCG@{k}: {metric['ndcg']}")
         logger.info(f"mAP@{k}: {metric['map']}")
 
-    pickle.dump(als, open(args.save_path, "wb"))
+    pickle.dump(als, open(args.model_path, "wb"))
 
 
 if __name__ == "__main__":

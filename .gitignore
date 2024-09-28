@@ -12,8 +12,8 @@ __pycache__/
 .idea/
 
 # data related files
-recommender/data/movielens/.movielens
-recommender/data/avazu_ctr/.avazu_ctr
+recommender/preprocess/movielens/.movielens
+recommender/preprocess/avazu_ctr/.avazu_ctr
 
 # venv
 .venv/
