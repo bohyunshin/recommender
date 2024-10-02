@@ -2,7 +2,7 @@ from torch.utils.data import Dataset
 
 
 class Data(Dataset):
-    def __init__(self, X, y):
+    def __init__(self, X, y, **kwargs):
         self.X = X
         self.y = y
 
