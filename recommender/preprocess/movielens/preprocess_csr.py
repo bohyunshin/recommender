@@ -24,6 +24,8 @@ class Preprocessor(PreoprocessorBase):
 
         self.user_mapping = mapping_index(ratings["user_id"])
         self.item_mapping = mapping_index(ratings["item_id"])
+        self.num_users = len(self.user_mapping)
+        self.num_items = len(self.item_mapping)
         self.shape = len(self.user_mapping), len(self.item_mapping)
 
         ratings["user_id"] = ratings["user_id"].map(self.user_mapping)
