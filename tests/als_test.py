@@ -7,7 +7,7 @@ from implicit.nearest_neighbours import bm25_weight
 from scipy.sparse import csr_matrix
 from numpy.testing import assert_array_equal, assert_almost_equal
 
-from model.mf.weighted_implicit_mf import AlternatingLeastSquares
+from model.mf.als import AlternatingLeastSquares
 
 from tools.utils import nonzeros
 
