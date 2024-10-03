@@ -22,11 +22,11 @@ Therefore, if you want to run model, take a look at the input data type and run 
 
 ## Current algorithm implementation list
 
-|Dataset category|Algorithm category|Algorithm|Input data type|Path|
-|----------------|---|---|---|---|
-|explicit|matrix factorization|SVD|pytorch dataset|`recommender/model/mf/explicit_mf.py`|
-|implicit|weighted matrix factorization|ALS|csr matrix|`recommender/model/mf/implicit_mf.py`|
-|implicit|bayesian personalized loss|BPR|pytorch dataset|`recommender/model/bpr.py`|
+|Dataset category|Algorithm category|Algorithm|Input data type|Path|Loss|
+|----------------|---|---|---|---|---|
+|explicit|matrix factorization|SVD|pytorch dataset|`recommender/model/mf/explicit_mf.py`|$L = \sum$|
+|implicit|weighted matrix factorization|ALS|csr matrix|`recommender/model/mf/implicit_mf.py`|$L = \sum$|
+|implicit|bayesian personalized loss|BPR|pytorch dataset|`recommender/model/bpr.py`|$L = \sum$|
 
 ## How to contribute
 Although any kinds of PRs are warmly welcomed, please refer to following rules.
