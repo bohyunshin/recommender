@@ -15,5 +15,5 @@ def parse_args():
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--model_path", type=str, required=True)
     parser.add_argument("--log_path", type=str, required=True)
-    parser.add_argument("--movielens_data_type", type=str, default="ml-latest-small")
+    parser.add_argument("--movielens_data_type", type=str, default=None)
     return parser.parse_args()

@@ -19,7 +19,15 @@ def main(args):
     logger = setup_logger(args.log_path)
     logger.info(f"selected dataset: {args.dataset}")
     logger.info(f"selected model: {args.model}")
-    logger.info(f"selected movielens data type: {args.movielens_data_type}")
+    logger.info(f"batch size: {args.batch_size}")
+    logger.info(f"learning rate: {args.lr}")
+    logger.info(f"regularization: {args.regularization}")
+    logger.info(f"epochs: {args.epochs}")
+    logger.info(f"number of factors for user / item embedding: {args.num_factors}")
+    logger.info(f"train ratio: {args.train_ratio}")
+    logger.info(f"patience for watching validation loss: {args.patience}")
+    if args.movielens_data_type != None:
+        logger.info(f"selected movielens data type: {args.movielens_data_type}")
 
     # define preprocess class according to input type
     if args.model == "implicit_mf":
