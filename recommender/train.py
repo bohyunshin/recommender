@@ -30,7 +30,7 @@ def main(args):
         logger.info(f"selected movielens data type: {args.movielens_data_type}")
 
     # define preprocess class according to input type
-    if args.model == "implicit_mf":
+    if args.model == "weighted_implicit_mf":
         data_type = "csr"
     else:
         data_type = "torch"
