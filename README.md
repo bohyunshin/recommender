@@ -26,7 +26,7 @@ Therefore, if you want to run model, take a look at the input data type and run 
 |----------------|---|---|---|---|---|
 |explicit|matrix factorization|SVD|pytorch dataset|`recommender/model/mf/explicit_mf.py`|$L = \sum_{(u,i) \in \mathcal{K}} (r_{ui} - p_u^T q_i)^2 $|
 |implicit|weighted matrix factorization|ALS|csr matrix|`recommender/model/mf/implicit_mf.py`|$L = \sum_{u,i} c_{ui}(r_{ui} - p_u^T q_i)^2 - \lambda (\| \| p_u \| \|^2 + \|\|q_i\|\|^2)$|
-|implicit|bayesian personalized loss|BPR|pytorch dataset|`recommender/model/bpr.py`|$L = \sum_{(u,i,j) \in D_S} \log \sigmoid(\hat{x}_{uij}) - \lambda (\left p_u\|\|^2 + \|\|q_i\|\|^2)$|
+|implicit|bayesian personalized loss|BPR|pytorch dataset|`recommender/model/bpr.py`|$L = \sum_{(u,i,j) \in D_S} \log \sigmoid(\hat{x}_{uij}) - \lambda (\left\Vert\left p_u\|\|^2 + \|\|q_i\|\|^2)$|
 
 ## How to contribute
 Although any kinds of PRs are warmly welcomed, please refer to following rules.
