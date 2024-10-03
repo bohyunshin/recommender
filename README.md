@@ -1,12 +1,24 @@
 # recommender
 
-This repository aims for implementing various machine learning algorithms in recommender system. Any PRs are warmly welcomed!
+This repository aims for implementing various machine learning algorithms in recommender system with unified pipeline. Any PRs are warmly welcomed!
 
 ## Why made this repository?
 - There are lots of algorithms in recommender system starting from item-based recommendation, matrix factorization to deep-learning based recommendation.
 - To understand better, this repository provides implementation of various recommender algorithms using pytorch or custom learning methods.
-- Also, we not only offer implementation code but also pipelines for training recommender models with various implicit / explicit data (movielens, yelp, netflix etc..)
+- Also, we not only offer implementation code but also pipelines for training recommender models with various implicit / explicit data (movielens, yelp, pinterest etc..)
 - By comparing metric (ndcg, mAP etc..) between different dataset and algorithm, figure out which algorithm is suitable for specific situation.
+
+## Architectures
+This repository offers code to preprocess raw data, learn models and evaluate trained models.
+
+* [preprocess code](https://github.com/bohyunshin/recommender/tree/master/recommender/preprocess)
+* [data loader preparation code](https://github.com/bohyunshin/recommender/tree/master/recommender/data_loader)
+* [model implementation code](https://github.com/bohyunshin/recommender/tree/master/recommender/model)
+* [evaluation code](https://github.com/bohyunshin/recommender/blob/master/recommender/tools/evaluation.py)
+
+Model training pipelines are unified as a python script, i.e. `recommender/train.py` or `recommender/train_csr.py`, depending on the type of input data.
+
+Therefore, if you want to run model, take a look at the input data type and run the corresponding python script with appropriate arguments.
 
 ## Current algorithm implementation list
 
