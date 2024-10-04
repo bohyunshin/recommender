@@ -64,7 +64,7 @@ def main(args):
     validation_dataloader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=True)
 
     # set up model
-    if args.model.endswith("mf"):
+    if args.model in ["svd"]:
         model_path = f"recommender.model.mf.{args.model}"
     else:
         model_path = f"recommender.model.{args.model}"
