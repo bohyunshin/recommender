@@ -18,3 +18,7 @@ recommender/preprocess/avazu_ctr/.avazu_ctr
 # venv
 .venv/
 venv/
+
+# log
+recommender/*.log
+recommender/*.pt

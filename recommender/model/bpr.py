@@ -1,10 +1,12 @@
+import torch
+import numpy as np
 from torch import nn
 
 from model.torch_model_base import TorchModelBase
 
 
-class BayesianPersonalizedRanking(TorchModelBase):
-    def __init__(self, num_users, num_items, num_factors):
+class Model(TorchModelBase):
+    def __init__(self, num_users, num_items, num_factors, **kwargs):
         super().__init__()
 
         self.embed_user = nn.Embedding(num_users, num_factors)
@@ -19,3 +21,19 @@ class BayesianPersonalizedRanking(TorchModelBase):
         embed_neg_item = self.embed_item(neg_item_idx)  # batch_size * num_factors
         output = (embed_user * (embed_pos_item - embed_neg_item)).sum(axis=1)  # batch_size * 1
         return output
+
+    def predict(self, user_factors, item_factors):
+        """
+        Calculate user-item scores based on learned user / item embeddings
+
+        Parameters
+        ----------
+        user_factors : Tensor (M1 x K)
+
+        item_factors : Tensor (N1 x K)
+
+        Returns
+        -------
+        user_item_scores : Tensor (M1 x N1)
+        """
+        return np.dot(user_factors, item_factors.T)

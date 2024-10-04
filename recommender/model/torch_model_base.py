@@ -11,3 +11,7 @@ class TorchModelBase(nn.Module, RecommenderBase):
     @abstractmethod
     def predict(self, user_factors, item_factors):
         raise NotImplementedError
+
+    def set_trained_embedding(self):
+        self.user_factors = self.embed_user.weight.data.clone().detach().numpy()
+        self.item_factors = self.embed_item.weight.data.clone().detach().numpy()

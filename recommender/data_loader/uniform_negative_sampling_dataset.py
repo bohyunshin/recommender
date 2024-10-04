@@ -2,8 +2,8 @@ import numpy as np
 from torch.utils.data import Dataset
 
 
-class UniformNegativeSamplingDataset(Dataset):
-    def __init__(self, X, user_items):
+class Data(Dataset):
+    def __init__(self, X, user_items, **kwargs):
         self.X = X
         self.user_items = user_items
 

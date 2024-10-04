@@ -7,7 +7,7 @@ logger = logging.getLogger("recommender")
 from tools.utils import check_csr, check_random_state, nonzeros
 from model.fit_model_base import FitModelBase
 
-class AlternatingLeastSquares(FitModelBase):
+class Model(FitModelBase):
     def __init__(
             self,
             factors=10,

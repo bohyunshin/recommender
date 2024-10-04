@@ -10,7 +10,7 @@ import importlib
 import copy
 
 from data_loader.data import Data
-from model.mf.explicit_mf import MatrixFactorization
+from model.mf.svd import MatrixFactorization
 from tools.logger import setup_logger
 
 def parse_args():

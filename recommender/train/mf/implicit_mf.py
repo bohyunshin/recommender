@@ -7,7 +7,7 @@ import importlib
 import pickle
 import time
 
-from model.mf.implicit_mf import AlternatingLeastSquares
+from model.mf.als import AlternatingLeastSquares
 from tools.evaluation import ranking_metrics_at_k
 from tools.logger import setup_logger
 
