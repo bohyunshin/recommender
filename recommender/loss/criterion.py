@@ -5,7 +5,7 @@ from loss.custom import bpr_loss, svd_loss
 class Criterion:
     def __init__(self, model):
         self.model = model
-        if model == "svd":
+        if model in ["svd", "svd_bias"]:
            self.criterion = svd_loss
         elif model == "bpr":
             self.criterion = bpr_loss
@@ -15,7 +15,7 @@ class Criterion:
         y = kwargs.get("y")
         params = kwargs.get("params")
         regularization = kwargs.get("regularization")
-        if self.model == "svd":
+        if self.model in ["svd", "svd_bias"]:
             return self.criterion(y_pred, y, params, regularization)
         elif self.model == "bpr":
             return self.criterion(y_pred, params, regularization)

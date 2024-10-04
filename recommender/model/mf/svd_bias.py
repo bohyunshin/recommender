@@ -23,5 +23,5 @@ class Model(TorchModelBase):
         embed_item = self.embed_item(item_idx) # batch_size * num_factors
         user_bias = self.user_bias(user_idx) # batch_size * 1
         item_bias = self.item_bias(item_idx) # batch_size * 1
-        output = (embed_user * embed_item).sum(axis=1) + user_bias + item_bias + self.mu # batch_size * 1
+        output = (embed_user * embed_item).sum(axis=1) + user_bias.squeeze() + item_bias.squeeze() + self.mu # batch_size * 1
         return output
