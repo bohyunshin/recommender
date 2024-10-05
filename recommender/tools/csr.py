@@ -117,3 +117,15 @@ def mapping_index(ids):
     for idx, val in enumerate(sorted(ids)):
         id2idx[val] = idx
     return id2idx
+
+
+def slice_csr_matrix(csr, row, col):
+    """
+    Returns csr[row, col] value not using slicing operation in csr matrix
+    """
+    indices = csr.indices[csr.indptr[row]:csr.indptr[row + 1]]
+    data = csr.data[csr.indptr[row]:csr.indptr[row + 1]]
+    for i,d in zip(indices, data):
+        if i == col:
+            return d
+    return 0

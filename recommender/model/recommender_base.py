@@ -29,7 +29,7 @@ class RecommenderBase:
         return indices, distances
 
     @abstractmethod
-    def predict(self, user_factors, item_factors):
+    def predict(self, user_factors, item_factors, **kwargs):
         """
         Predicts users' ratings (or preference) based on factorized user_factors and item_factors.
         For matrix factorization models, this could be dot product between user_factors and item_factors.
