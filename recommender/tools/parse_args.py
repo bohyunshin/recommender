@@ -3,8 +3,8 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, required=True, choices=["movielens"])
-    parser.add_argument("--model", type=str, required=True, choices=["svd", "als", "bpr"])
+    parser.add_argument("--dataset", type=str, required=True, choices=["movielens", "sample"])
+    parser.add_argument("--model", type=str, required=True, choices=["svd", "als", "bpr", "user_based"])
     parser.add_argument("--implicit", action="store_true")
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--lr", type=float, default=1e-2)
@@ -16,5 +16,6 @@ def parse_args():
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--model_path", type=str, required=True)
     parser.add_argument("--log_path", type=str, required=True)
+    parser.add_argument("--num_sim_user_top_N", type=int, default=45)
     parser.add_argument("--movielens_data_type", type=str, default=None)
     return parser.parse_args()
