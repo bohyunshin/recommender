@@ -24,6 +24,7 @@ Therefore, if you want to run model, take a look at the input data type and run 
 
 |Dataset category|Algorithm|Input data type|Path|Loss|
 |----------------|---|---|---|---|
+|explicit|User based CF|csr matrix|`recommender/model/neighborhood/user_based.py`|NA|
 |explicit|SVD|pytorch dataset|`recommender/model/mf/svd.py`|$L = \sum_{(u,i) \in \mathcal{K}} (r_{ui} - p_u^T q_i)^2 $|
 |implicit|ALS|csr matrix|`recommender/model/mf/als.py`|$L = \sum_{u,i} c_{ui}(r_{ui} - p_u^T q_i)^2 - \lambda (\| p_u \|^2 + \| q_i \|^2)$|
 |implicit|BPR|pytorch dataset|`recommender/model/bpr.py`|$L = \sum_{(u,i,j) \in D_S} \log \ \sigma(\hat{x}_{uij}) - \lambda (\| p_u \|^2 + \| q_i \|^2)$|
@@ -57,3 +58,7 @@ To reproduce following experiment results, please refer to `Code to reproduce` c
 |implicit|movielens 10m|ALS|TBD|TBD|TBD|TBD|TBD|TBD|<details><summary>cmd</summary><pre lang="bash">python3 recommender/train_csr.py \ &#13;  --dataset movielens \ &#13;  --model als \ &#13;  --implicit \ &#13;  --epochs 30 \ &#13;  --num_factors 16 \ &#13;  --train_ratio 0.8 \ &#13;  --random_state 42 \ &#13;  --movielens_data_type ml-10m \ &#13;  --model_path "../als_ml_10m.pkl" \ &#13;  --log_path "../als_ml_10m.log" </pre></details>|
 |implicit|movielens 1m|BPR|TBD|TBD|TBD|TBD|TBD|TBD|<details><summary>cmd</summary><pre lang="bash">python3 recommender/train.py \ &#13;  --dataset movielens \ &#13;  --model bpr \ &#13;  --implicit \ &#13;  --epochs 30 \ &#13;  --num_factors 16 \ &#13;  --train_ratio 0.8 \ &#13;  --random_state 42 \ &#13;  --movielens_data_type ml-1m \ &#13;  --model_path "../bpr_ml_1m.pkl" \ &#13;  --log_path "../bpr_ml_1m.log" </pre></details>|
 |implicit|movielens 10m|BPR|TBD|TBD|TBD|TBD|TBD|TBD|<details><summary>cmd</summary><pre lang="bash">python3 recommender/train.py \ &#13;  --dataset movielens \ &#13;  --model bpr \ &#13;  --implicit \ &#13;  --epochs 30 \ &#13;  --num_factors 16 \ &#13;  --train_ratio 0.8 \ &#13;  --random_state 42 \ &#13;  --movielens_data_type ml-10m \ &#13;  --model_path "../bpr_ml_10m.pkl" \ &#13;  --log_path "../bpr_ml_10m.log" </pre></details>|
+
+### Note
+* Experiment of user-based CF using movielens are not performed yet because of excessive time required.
+* Implementation of cython (or etc..) is required to improve training time.
