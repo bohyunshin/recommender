@@ -24,12 +24,12 @@ class RecommenderBase:
             2D array of selected k item similarities for each user
         """
 
-        indices, distances = topk(self.predict(self.user_factors[userid], self.item_factors), user_items[userid], N)
+        indices, distances = topk(self.predict(self.user_factors, self.item_factors, userid, user_items=user_items), user_items[userid], N)
 
         return indices, distances
 
     @abstractmethod
-    def predict(self, user_factors, item_factors, **kwargs):
+    def predict(self, user_factors, item_factors, userid, **kwargs):
         """
         Predicts users' ratings (or preference) based on factorized user_factors and item_factors.
         For matrix factorization models, this could be dot product between user_factors and item_factors.

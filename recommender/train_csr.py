@@ -38,7 +38,7 @@ def main(args):
         "random_state": args.random_state,
         "num_users": csr_train.shape[0],
         "num_items": csr_train.shape[1],
-        "num_sim_user_top_N": 50
+        "num_sim_user_top_N": preprocessor.num_sim_user_top_N,
     }
 
     start = time.time()

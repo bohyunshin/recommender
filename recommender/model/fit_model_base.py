@@ -18,7 +18,7 @@ class FitModelBase(RecommenderBase):
         raise NotImplementedError
 
     @abstractmethod
-    def predict(self, user_factors, item_factors, **kwargs):
+    def predict(self, user_factors, item_factors, userid, **kwargs):
         """
         Predicts users' ratings (or preference) based on factorized user_factors and item_factors.
         For matrix factorization models, this could be dot product between user_factors and item_factors.

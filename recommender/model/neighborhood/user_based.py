@@ -23,7 +23,7 @@ class Model(FitModelBase):
         self.top_N_sim_user = self.get_top_N_sim_user(user_sim_pair)
 
         logger.info("Predicting users' unseen item rating")
-        final_res = self.predict(self.user_factors, self.item_factors, user_items=user_items)
+        # return self.predict(self.user_factors, self.item_factors, user_items=user_items)
 
     def calculate_user_sim(self, user_ids, csr):
         res = {}
@@ -77,7 +77,7 @@ class Model(FitModelBase):
             final_res[u] = sorted(rank, key=lambda x: x[1], reverse=True)[:self.num_sim_user_top_N]
         return final_res
 
-    def predict(self, user_factors, item_factors, **kwargs):
+    def predict(self, user_factors, item_factors, userid, **kwargs):
         """
         In user-based CF model, there are not any embeddings w.r.t users / items.
         However, we pass user_factors, item_factors as None value to follow RecommenderBase abstract class.
@@ -91,9 +91,9 @@ class Model(FitModelBase):
             rating_by_u = csr.data[csr.indptr[u]:csr.indptr[u+1]]
             mean_r[u] = sum(rating_by_u) / len(rating_by_u)
 
-        for i,u in enumerate(self.user_ids):
-            if i % 5000 == 0:
-                logger.info(f"Predicting {i}th user unseen item rating out of total {len(self.user_ids)} users.")
+        for idx,u in enumerate(self.user_ids):
+            if idx % 5000 == 0:
+                logger.info(f"Predicting {idx}th user unseen item rating out of total {len(self.user_ids)} users.")
 
             if res.get(u) is None:
                 res[u] = []
@@ -120,54 +120,8 @@ class Model(FitModelBase):
                 if items_liked_by_neighbor == True:
                     user_item_rating[u][i] = r_u + summation / k
                     res[u].append((i, r_u + summation / k))
-
-        final_res = {}
-        for u, rank in res.items():
-            final_res[u] = sorted(rank, key=lambda x: x[1], reverse=True)
-        return final_res
-
-    def recommend(self, userid, user_items, filter_already_liked_items=True, N=10):
-        pass
-
-    def _recommend(self, top_N_sim_user, user_ids, item_ids, user2item_rating):
-        res = {}
-        mean_r = {}
-        for u in user_ids:
-            rating_by_u = list(user2item_rating[u].values())
-            mean_r[u] = sum(rating_by_u) / len(rating_by_u)
-
-        for u in user_ids:
-            if res.get(u) is None:
-                res[u] = []
-            r_u = mean_r[u]
-
-            # filter items not rated by u
-            reco_item_ids = []
-            for i in item_ids:
-                if user2item_rating[u].get(i) is None:
-                    reco_item_ids.append(i)
-
-            # k = 0
-            # for u_, sim in top_N_sim_user[u]:
-            #     k += abs(sim)
-            # k = 1/k
-
-            for i in reco_item_ids:
-                summation = 0
-                k = 0
-                items_liked_by_neighbor = False
-                for u_, sim in top_N_sim_user[u]:
-                    if user2item_rating[u_].get(i) is None:
-                        continue
-                    items_liked_by_neighbor = True
-                    k += abs(sim)
-                    mean_r_u_ = mean_r[u_]
-                    r_u__i = user2item_rating[u_][i]
-                    summation += (r_u__i - mean_r_u_) * sim
-                if items_liked_by_neighbor == True:
-                    res[u].append((i, r_u + summation / k))
-
-        final_res = {}
-        for u, rank in res.items():
-            final_res[u] = sorted(rank, key=lambda x: x[1], reverse=True)
-        return final_res
+        return user_item_rating[userid]
+        # final_res = {}
+        # for u, rank in res.items():
+        #     final_res[u] = sorted(rank, key=lambda x: x[1], reverse=True)
+        # return final_res
