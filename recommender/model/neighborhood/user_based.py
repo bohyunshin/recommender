@@ -121,7 +121,3 @@ class Model(FitModelBase):
                     user_item_rating[u][i] = r_u + summation / k
                     res[u].append((i, r_u + summation / k))
         return user_item_rating[userid]
-        # final_res = {}
-        # for u, rank in res.items():
-        #     final_res[u] = sorted(rank, key=lambda x: x[1], reverse=True)
-        # return final_res

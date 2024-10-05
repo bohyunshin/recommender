@@ -16,7 +16,8 @@ class Model(FitModelBase):
             dtype=np.float32,
             iterations=100,
             calculate_training_loss=False,
-            random_state=42
+            random_state=42,
+            **kwargs
     ):
         super().__init__()
         self.factors = factors
@@ -175,7 +176,7 @@ class Model(FitModelBase):
 
         self.item_factors[i] = q_i
 
-    def predict(self, user_factors, item_factors):
+    def predict(self, user_factors, item_factors, userid, **kwargs):
         """
         Calculate user-item scores based on learned user / item embeddings
 
@@ -189,7 +190,7 @@ class Model(FitModelBase):
         -------
         user_item_scores : np.ndarray (M1 x N1)
         """
-        return np.dot(user_factors, item_factors.T)
+        return np.dot(user_factors[userid], item_factors.T)
 
     def calculate_loss(self, user_items):
         """

@@ -23,3 +23,7 @@ venv/
 # log
 recommender/*.log
 recommender/*.pt
+recommender/*.pkl
+*.log
+*.pt
+*.pkl
