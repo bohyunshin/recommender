@@ -4,7 +4,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, required=True, choices=["movielens", "sample"])
-    parser.add_argument("--model", type=str, required=True, choices=["svd", "als", "bpr", "user_based"])
+    parser.add_argument("--model", type=str, required=True, choices=["svd", "als", "bpr", "user_based", "gmf"])
     parser.add_argument("--implicit", action="store_true")
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--lr", type=float, default=1e-2)

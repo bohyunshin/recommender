@@ -9,7 +9,7 @@ from torch import nn, optim
 import importlib
 import copy
 
-from data_loader.uniform_negative_sampling_dataset import UniformNegativeSamplingDataset
+from data_loader.triplet_uniform_negative_sampling_dataset import UniformNegativeSamplingDataset
 from model.bpr import BayesianPersonalizedRanking
 from tools.csr import implicit_to_csr
 from loss.custom import bpr_loss

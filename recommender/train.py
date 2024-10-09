@@ -7,12 +7,14 @@ from torch.utils.data import DataLoader, random_split
 from torch import optim
 import importlib
 import copy
+import time
 
 from tools.logger import setup_logger
 from tools.parse_args import parse_args
 from tools.evaluation import ranking_metrics_at_k
 from tools.csr import implicit_to_csr
 from loss.criterion import Criterion
+from tools.csr import csr_to_dict
 
 
 def main(args):
@@ -42,21 +44,27 @@ def main(args):
 
     # when implicit feedback, i.e., args.implicit equals True, csr matrix is required when negative sampling
     shape = (preprocessor.num_users, preprocessor.num_items)
-    user_items = implicit_to_csr(X, shape)
+    user_items_dct = implicit_to_csr(X, shape, True)
 
     seed = torch.Generator().manual_seed(args.random_state)
     dataset_args = {
         "X":X,
         "y":y,
-        "user_items":user_items,
+        "user_items_dct":user_items_dct,
+        "num_items":preprocessor.num_items,
+        "data_type":"triplet" if args.model == "bpr" else "bce"
     }
 
     if args.implicit == True:
-        dataset_path = f"recommender.data_loader.uniform_negative_sampling_dataset"
+        dataset_path = f"recommender.data_loader.bce_uniform_negative_sampling_dataset"
     else:
         dataset_path = f"recommender.data_loader.data"
     dataset_module = importlib.import_module(dataset_path).Data
     dataset = dataset_module(**dataset_args)
+
+    start = time.time()
+    dataset.negative_sampling()
+    logger.info(f"token time for negative sampling: {time.time() - start}")
 
     # split train / validation dataset
     train_dataset, validation_dataset = random_split(dataset, [args.train_ratio, 1-args.train_ratio], generator=seed)
@@ -66,7 +74,9 @@ def main(args):
     # set up model
     if args.model in ["svd"]:
         model_path = f"recommender.model.mf.{args.model}"
-    else:
+    elif args.model in ["gmf", "mlp"]:
+        model_path = f"recommender.model.deep_learning.{args.model}"
+    else: # bpr
         model_path = f"recommender.model.{args.model}"
     model_module = importlib.import_module(model_path).Model
     args.num_users = preprocessor.num_users
@@ -85,8 +95,8 @@ def main(args):
         tr_loss = 0.0
         for data in train_dataloader:
             if args.implicit == True:
-                inputs = data
-                y_train = None
+                inputs = data[:-1]
+                y_train = data[-1]
             else:
                 X_train, y_train = data
                 users, items = X_train[:, 0], X_train[:, 1]
@@ -110,8 +120,8 @@ def main(args):
             val_loss = 0.0
             for data in validation_dataloader:
                 if args.implicit == True:
-                    inputs = data
-                    y_val = None
+                    inputs = data[:-1]
+                    y_val = data[-1]
                 else:
                     X_val, y_val = data
                     users, items = X_val[:, 0], X_val[:, 1]
