@@ -38,7 +38,7 @@ class Data(Dataset):
     def __getitem__(self, idx):
         if self.data_type == "triplet":
             u, i, j = self.triplet[idx]
-            return u, i, j, None # last index is reserved for y, which is unnecessary for bpr
+            return u, i, j, -1 # last index is reserved for y, which is unnecessary for bpr
         elif self.data_type == "bce":
             u, i = self.X[idx]
             y = self.label[idx]

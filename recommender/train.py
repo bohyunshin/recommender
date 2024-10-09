@@ -14,7 +14,6 @@ from tools.parse_args import parse_args
 from tools.evaluation import ranking_metrics_at_k
 from tools.csr import implicit_to_csr
 from loss.criterion import Criterion
-from tools.csr import csr_to_dict
 
 
 def main(args):
@@ -56,7 +55,7 @@ def main(args):
     }
 
     if args.implicit == True:
-        dataset_path = f"recommender.data_loader.bce_uniform_negative_sampling_dataset"
+        dataset_path = f"recommender.data_loader.uniform_negative_sampling_dataset"
     else:
         dataset_path = f"recommender.data_loader.data"
     dataset_module = importlib.import_module(dataset_path).Data
