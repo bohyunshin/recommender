@@ -47,12 +47,14 @@ def main(args):
         "X":X,
         "y":y,
         "user_items_dct":user_items_dct,
-        "num_items":preprocessor.num_items,
-        "data_type":"triplet" if args.model == "bpr" else "bce"
+        "num_items":preprocessor.num_items
     }
 
     if args.implicit == True:
-        dataset_path = f"recommender.data_loader.uniform_negative_sampling_dataset"
+        if args.model == "bpr":
+            dataset_path = "recommender.data_loader.triplet_uniform_negative_sampling_dataset"
+        elif args.model == "gmf":
+            dataset_path = "recommender.data_loader.bce_uniform_negative_sampling_dataset"
     else:
         dataset_path = f"recommender.data_loader.data"
     dataset_module = importlib.import_module(dataset_path).Data
