@@ -25,6 +25,8 @@ def main(args):
     logger.info(f"train ratio: {args.train_ratio}")
     if args.movielens_data_type != None:
         logger.info(f"selected movielens data type: {args.movielens_data_type}")
+
+    # set preprocessor for csr input models
     preprocessor_module = importlib.import_module(f"recommender.preprocess.{args.dataset}.preprocess_csr").Preprocessor
     preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type,
                                        test_ratio=args.train_ratio,
@@ -41,6 +43,7 @@ def main(args):
         "num_sim_user_top_N": args.num_sim_user_top_N,
     }
 
+    # set models
     start = time.time()
     if args.model in ["als"]:
         model_module = importlib.import_module(f"recommender.model.mf.{args.model}").Model

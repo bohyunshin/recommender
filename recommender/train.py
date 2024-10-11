@@ -30,18 +30,15 @@ def main(args):
     if args.movielens_data_type != None:
         logger.info(f"selected movielens data type: {args.movielens_data_type}")
 
-    # define preprocess class according to input type
-    if args.model == "als":
-        data_type = "csr"
-    else:
-        data_type = "torch"
 
     # prepare train / validation dataset
-    preprocessor_module = importlib.import_module(f"recommender.preprocess.{args.dataset}.preprocess_{data_type}").Preprocessor
+    # we use preprocessor in preprocess_csr.py when running pytorch based models
+    preprocessor_module = importlib.import_module(f"recommender.preprocess.{args.dataset}.preprocess_torch").Preprocessor
     preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type)
     X,y = preprocessor.preprocess()
 
-    # when implicit feedback, i.e., args.implicit equals True, csr matrix is required when negative sampling
+    # when implicit feedback, i.e., args.implicit equals True,
+    # user-item interaction information is required when negative sampling
     shape = (preprocessor.num_users, preprocessor.num_items)
     user_items_dct = implicit_to_csr(X, shape, True)
 
@@ -61,9 +58,10 @@ def main(args):
     dataset_module = importlib.import_module(dataset_path).Data
     dataset = dataset_module(**dataset_args)
 
-    start = time.time()
-    dataset.negative_sampling()
-    logger.info(f"token time for negative sampling: {time.time() - start}")
+    if args.implicit == True:
+        start = time.time()
+        dataset.negative_sampling()
+        logger.info(f"token time for negative sampling: {time.time() - start}")
 
     # split train / validation dataset
     train_dataset, validation_dataset = random_split(dataset, [args.train_ratio, 1-args.train_ratio], generator=seed)
