@@ -20,11 +20,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Download movielens dataset
-        run: python recommender/preprocess/movielens/download.py --path "recommender/preprocess/movielens/.movielens" --package "ml-1m"
-
-      - name: Run tests
-        run: pytest --cov --cov-report=xml
+      - name: Download ml-1m dataset and run tests
+        run: |
+          python recommender/preprocess/movielens/download.py --path "recommender/preprocess/movielens/.movielens" --package "ml-1m"
+          pytest --cov --cov-report=xml
 
       - name: Upload results to Codecov
         uses: codecov/codecov-action@v4
