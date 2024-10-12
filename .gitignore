@@ -27,3 +27,6 @@ recommender/*.pkl
 *.log
 *.pt
 *.pkl
+
+# code cov
+.coverage
