@@ -23,11 +23,6 @@ jobs:
       - name: Download ml-1m dataset and run tests
         run: |
           python recommender/preprocess/movielens/download.py --path ".movielens" --package "ml-1m"
-          ls -la
-          ls recommender/preprocess/movielens
-          echo hi
-          ls recommender/preprocess/movielens/recommender
-          echo hi
           ls recommender/preprocess/movielens/.movielens
           pytest --cov --cov-report=xml
 
