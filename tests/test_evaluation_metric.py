@@ -1,5 +1,8 @@
 import numpy as np
 from scipy.sparse import csr_matrix
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../recommender"))
 
 from tools.evaluation import ranking_metrics_at_k
 from model.mf.als import Model as AlternatingLeastSquares

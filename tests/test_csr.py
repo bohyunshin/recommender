@@ -1,7 +1,10 @@
 import numpy as np
+import pandas as pd
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../recommender"))
 
 from tools.csr import dataframe_to_csr, mapping_index
-import pandas as pd
 
 
 def test_dataframe_to_csr():
