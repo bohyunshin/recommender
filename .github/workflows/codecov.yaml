@@ -24,6 +24,7 @@ jobs:
         run: |
           python recommender/preprocess/movielens/download.py --path "recommender/preprocess/movielens/.movielens" --package "ml-1m"
           ls -la
+          ls recommender/preprocess/movielens
           ls recommender/preprocess/movielens/.movielens
           pytest --cov --cov-report=xml
 
