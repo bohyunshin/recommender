@@ -29,7 +29,7 @@ def main(args):
             logger.info(f"selected movielens data type: {args.movielens_data_type}")
 
         # set preprocessor for csr input models
-        preprocessor_module = importlib.import_module(f"recommender.preprocess.{args.dataset}.preprocess_csr").Preprocessor
+        preprocessor_module = importlib.import_module(f"preprocess.{args.dataset}.preprocess_csr").Preprocessor
         preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type,
                                            test_ratio=args.train_ratio,
                                            random_state=args.random_state)
@@ -48,9 +48,9 @@ def main(args):
         # set models
         start = time.time()
         if args.model in ["als"]:
-            model_module = importlib.import_module(f"recommender.model.mf.{args.model}").Model
+            model_module = importlib.import_module(f"model.mf.{args.model}").Model
         elif args.model in ["user_based"]:
-            model_module = importlib.import_module(f"recommender.model.neighborhood.{args.model}").Model
+            model_module = importlib.import_module(f"model.neighborhood.{args.model}").Model
         model = model_module(**params)
         model.fit(user_items=csr_train, val_user_items=csr_val)
         logger.info(f"total executed time: {(time.time() - start)/60}")

@@ -36,7 +36,7 @@ def main(args):
 
         # prepare train / validation dataset
         # we use preprocessor in preprocess_csr.py when running pytorch based models
-        preprocessor_module = importlib.import_module(f"recommender.preprocess.{args.dataset}.preprocess_torch").Preprocessor
+        preprocessor_module = importlib.import_module(f"preprocess.{args.dataset}.preprocess_torch").Preprocessor
         preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type)
         X,y = preprocessor.preprocess()
 
@@ -55,11 +55,11 @@ def main(args):
 
         if args.implicit == True:
             if args.model == "bpr":
-                dataset_path = "recommender.data_loader.triplet_uniform_negative_sampling_dataset"
+                dataset_path = "data_loader.triplet_uniform_negative_sampling_dataset"
             elif args.model in ["gmf", "mlp"]:
-                dataset_path = "recommender.data_loader.bce_uniform_negative_sampling_dataset"
+                dataset_path = "data_loader.bce_uniform_negative_sampling_dataset"
         else:
-            dataset_path = f"recommender.data_loader.data"
+            dataset_path = f"data_loader.data"
         dataset_module = importlib.import_module(dataset_path).Data
         dataset = dataset_module(**dataset_args)
 
@@ -76,11 +76,11 @@ def main(args):
 
         # set up model
         if args.model in ["svd", "svd_bias"]:
-            model_path = f"recommender.model.mf.{args.model}"
+            model_path = f"model.mf.{args.model}"
         elif args.model in ["gmf", "mlp"]:
-            model_path = f"recommender.model.deep_learning.{args.model}"
+            model_path = f"model.deep_learning.{args.model}"
         else: # bpr
-            model_path = f"recommender.model.{args.model}"
+            model_path = f"model.{args.model}"
         model_module = importlib.import_module(model_path).Model
         args.num_users = preprocessor.num_users
         args.num_items = preprocessor.num_items
