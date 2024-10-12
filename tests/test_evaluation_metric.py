@@ -2,7 +2,7 @@ import numpy as np
 from scipy.sparse import csr_matrix
 
 from tools.evaluation import ranking_metrics_at_k
-from model.mf.als import AlternatingLeastSquares
+from model.mf.als import Model as AlternatingLeastSquares
 
 
 def test_evaluation_metric():
