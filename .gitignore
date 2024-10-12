@@ -14,6 +14,7 @@ __pycache__/
 # data related files
 recommender/preprocess/movielens/.movielens
 recommender/preprocess/avazu_ctr/.avazu_ctr
+recommender/preprocess/sample/.sample
 
 # venv
 .venv/
@@ -22,3 +23,7 @@ venv/
 # log
 recommender/*.log
 recommender/*.pt
+recommender/*.pkl
+*.log
+*.pt
+*.pkl
