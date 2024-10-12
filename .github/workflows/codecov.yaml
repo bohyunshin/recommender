@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-python@v4
 
       - name: Install dependencies
-        run: pip install pytest pytest-cov numpy scipy pandas scikit-learn implicit
+        run: pip install -r requirements.txt
 
       - name: Run tests
         run: pytest --cov --cov-report=xml
