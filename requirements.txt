@@ -6,4 +6,5 @@ scikit-learn
 implicit
 threadpoolctl
 pytest
+pytest-cov
 torch
