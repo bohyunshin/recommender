@@ -24,6 +24,9 @@ venv/
 recommender/*.log
 recommender/*.pt
 recommender/*.pkl
+tests/*.log
+tests/*.pt
+tests/*.pkl
 *.log
 *.pt
 *.pkl
