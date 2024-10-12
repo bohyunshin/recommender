@@ -9,7 +9,7 @@ class TorchModelBase(nn.Module, RecommenderBase):
         super().__init__()
 
     @abstractmethod
-    def predict(self, user_factors, item_factors):
+    def predict(self, user_factors, item_factors, userid, **kwargs):
         raise NotImplementedError
 
     def set_trained_embedding(self):

@@ -64,7 +64,7 @@ def dataframe_to_csr(df, shape, implicit):
     return csr
 
 
-def implicit_to_csr(arr, shape):
+def implicit_to_csr(arr, shape, dct=False):
     """
     Converts user-item interaction data to user-item interaction csr matrix.
 
@@ -90,6 +90,9 @@ def implicit_to_csr(arr, shape):
     for interaction in arr:
         user, item = interaction
         user2item2value[user.item()][item.item()] = 1
+
+    if dct == True:
+        return user2item2value
 
     indices = []
     indptr = []

@@ -22,7 +22,7 @@ class Model(TorchModelBase):
         output = (embed_user * (embed_pos_item - embed_neg_item)).sum(axis=1)  # batch_size * 1
         return output
 
-    def predict(self, user_factors, item_factors):
+    def predict(self, user_factors, item_factors, userid, **kwargs):
         """
         Calculate user-item scores based on learned user / item embeddings
 
@@ -36,4 +36,4 @@ class Model(TorchModelBase):
         -------
         user_item_scores : Tensor (M1 x N1)
         """
-        return np.dot(user_factors, item_factors.T)
+        return np.dot(user_factors[userid], item_factors.T)
