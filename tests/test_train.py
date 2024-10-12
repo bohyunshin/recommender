@@ -3,13 +3,13 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../recommender"))
 
-from train_csr import main
+from train import main
 
-def run_csr_model(model, dataset):
+def run_model(model, dataset, implicit):
     args = argparse.ArgumentParser()
     args.dataset = dataset
     args.model = model
-    args.implicit = True
+    args.implicit = implicit
     args.batch_size = 32
     args.regularization = 1e-4
     args.lr = 1e-2
@@ -26,5 +26,17 @@ def run_csr_model(model, dataset):
     main(args)
 
 
-def test_als():
-    run_csr_model("als", "movielens")
+def test_svd():
+    run_model("svd", "movielens", False)
+
+def test_svd_bias():
+    run_model("svd_bias", "movielens", False)
+
+def test_bpr():
+    run_model("bpr", "movielens", True)
+
+def test_gmf():
+    run_model("gmf", "movielens", True)
+
+def test_mlp():
+    run_model("mlp", "movielens", True)

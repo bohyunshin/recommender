@@ -72,9 +72,10 @@ def main(args):
         train_dataset, validation_dataset = random_split(dataset, [args.train_ratio, 1-args.train_ratio], generator=seed)
         train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
         validation_dataloader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=True)
+        mu = train_dataset.dataset.y[train_dataset.indices].mean() if args.model in ["svd", "svd_bias"] else None
 
         # set up model
-        if args.model in ["svd"]:
+        if args.model in ["svd", "svd_bias"]:
             model_path = f"recommender.model.mf.{args.model}"
         elif args.model in ["gmf", "mlp"]:
             model_path = f"recommender.model.deep_learning.{args.model}"
@@ -83,6 +84,7 @@ def main(args):
         model_module = importlib.import_module(model_path).Model
         args.num_users = preprocessor.num_users
         args.num_items = preprocessor.num_items
+        args.mu = mu
         model = model_module(**vars(args))
         criterion = Criterion(args.model)
         optimizer = optim.SGD(model.parameters(), lr=args.lr)
