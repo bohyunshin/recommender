@@ -1,7 +1,10 @@
 import pandas as pd
 import numpy as np
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../recommender"))
 
-from data.train_test_split import TrainTestSplit
+from preprocess.train_test_split import TrainTestSplit
 
 
 def test_train_test_split():
@@ -14,9 +17,10 @@ def test_train_test_split():
         "interaction": [1] * 10,
         "timestamp": range(10)
     })
-    train_expected = df.iloc[[0,1,2,5,6,7,9]]
-    val_expected = df.iloc[[3,4,8]]
     train, val = split.split(df)
+    df = df.drop("timestamp", axis=1)
+    train_expected = df.iloc[[0, 1, 2, 5, 6, 7, 9]]
+    val_expected = df.iloc[[3, 4, 8]]
 
     np.testing.assert_array_equal(train.values, train_expected.values)
     np.testing.assert_array_equal(val.values, val_expected.values)
@@ -28,9 +32,10 @@ def test_train_test_split():
         "interaction": [1] * 4,
         "timestamp": range(4)
     })
+    train, val = split.split(df)
+    df = df.drop("timestamp", axis=1)
     train_expected = df.iloc[[0, 1, 2, 3]]
     val_expected = df.iloc[[]]
-    train, val = split.split(df)
 
     np.testing.assert_array_equal(train.values, train_expected.values)
     np.testing.assert_array_equal(val.values, val_expected.values)
