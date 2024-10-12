@@ -17,6 +17,7 @@ class Data(Dataset):
             while self.user_items_dct[u.item()].get(j) != None:
                 j = np.random.randint(self.num_items)
             self.triplet.append((u,i,j))
+        self.label = [1]*len(self.triplet)
 
     def __len__(self):
         return self.X.shape[0]

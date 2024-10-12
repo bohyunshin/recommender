@@ -5,6 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../..")
 import torch
 from torch.utils.data import DataLoader, random_split
 from torch import optim
+import numpy as np
 import importlib
 import copy
 import time
@@ -53,7 +54,7 @@ def main(args):
     if args.implicit == True:
         if args.model == "bpr":
             dataset_path = "recommender.data_loader.triplet_uniform_negative_sampling_dataset"
-        elif args.model == "gmf":
+        elif args.model in ["gmf", "mlp"]:
             dataset_path = "recommender.data_loader.bce_uniform_negative_sampling_dataset"
     else:
         dataset_path = f"recommender.data_loader.data"
@@ -155,8 +156,16 @@ def main(args):
 
     if args.implicit:
         K = [10, 20, 50]
-        csr_train = implicit_to_csr(train_dataset.dataset.X[train_dataset.indices], shape)
-        csr_val = implicit_to_csr(validation_dataset.dataset.X[validation_dataset.indices], shape)
+        tr_pos_idx = np.intersect1d(
+            (train_dataset.dataset.label == 1).nonzero().squeeze().detach().numpy(),
+            train_dataset.indices
+        )
+        val_pos_idx = np.intersect1d(
+            (validation_dataset.dataset.label == 1).nonzero().squeeze().detach().numpy(),
+            validation_dataset.indices
+        )
+        csr_train = implicit_to_csr(train_dataset.dataset.X[tr_pos_idx], shape)
+        csr_val = implicit_to_csr(validation_dataset.dataset.X[val_pos_idx], shape)
         for k in K:
             metric = ranking_metrics_at_k(model, csr_train, csr_val, K=k)
             logger.info(f"Metric for K={k}")

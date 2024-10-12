@@ -9,7 +9,7 @@ class Criterion:
            self.criterion = nn.MSELoss()
         elif model == "bpr":
             self.criterion = bpr_loss
-        elif model == "gmf":
+        elif model in ["gmf", "mlp"]:
             self.criterion = nn.BCELoss()
 
     def calculate_loss(self, **kwargs):
@@ -17,7 +17,7 @@ class Criterion:
         y = kwargs.get("y")
         params = kwargs.get("params")
         regularization = kwargs.get("regularization")
-        if self.model in ["svd", "gmf"]:
-            return self.criterion(y_pred, y)
+        if self.model in ["svd", "gmf", "mlp"]:
+            return self.criterion(y_pred.squeeze(), y)
         elif self.model == "bpr":
             return self.criterion(y_pred, params, regularization)
