@@ -5,3 +5,5 @@ pandas
 scikit-learn
 implicit
 threadpoolctl
+pytest
+torch
