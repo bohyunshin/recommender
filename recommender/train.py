@@ -93,7 +93,6 @@ def main(args):
         args.num_items = preprocessor.num_items
         args.mu = mu
         model = model_module(**vars(args))
-        # model = model.to(device)
         criterion = Criterion(args.model)
         optimizer = optim.SGD(model.parameters(), lr=args.lr)
 
