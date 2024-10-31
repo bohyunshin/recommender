@@ -169,11 +169,11 @@ def main(args):
         K = [10, 20, 50]
         if args.implicit: # torch & implicit > bpr, ncf, gmf
             tr_pos_idx = np.intersect1d(
-                (train_dataset.dataset.label == 1).nonzero().squeeze().detach().numpy(),
+                (train_dataset.dataset.label == 1).nonzero().squeeze().detach().cpu().numpy(),
                 train_dataset.indices
             )
             val_pos_idx = np.intersect1d(
-                (validation_dataset.dataset.label == 1).nonzero().squeeze().detach().numpy(),
+                (validation_dataset.dataset.label == 1).nonzero().squeeze().detach().cpu().numpy(),
                 validation_dataset.indices
             )
         else: # torch & explicit > svd, svd_bias
