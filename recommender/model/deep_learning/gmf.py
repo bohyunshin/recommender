@@ -12,6 +12,7 @@ class Model(TorchModelBase):
 
         nn.init.xavier_normal_(self.embed_user.weight)
         nn.init.xavier_normal_(self.embed_item.weight)
+        nn.init.xavier_normal_(self.h.weight)
 
     def forward(self, user_idx, item_idx):
         x = self.embed_user(user_idx) * self.embed_item(item_idx)
