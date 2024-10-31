@@ -27,5 +27,5 @@ class TorchModelBase(nn.Module, RecommenderBase):
         return np.dot(user_factors[userid], item_factors.T)
 
     def set_trained_embedding(self):
-        self.user_factors = self.embed_user.weight.data.clone().detach().numpy()
-        self.item_factors = self.embed_item.weight.data.clone().detach().numpy()
+        self.user_factors = self.embed_user.weight.data.clone().detach().cpu().numpy()
+        self.item_factors = self.embed_item.weight.data.clone().detach().cpu().numpy()

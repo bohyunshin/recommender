@@ -44,8 +44,8 @@ def main(args):
         preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type)
         X,y = preprocessor.preprocess()
 
-        # X = X.to(device)
-        # y = y.to(device)
+        X = X.to(device)
+        y = y.to(device)
 
         # when implicit feedback, i.e., args.implicit equals True,
         # user-item interaction information is required when negative sampling
