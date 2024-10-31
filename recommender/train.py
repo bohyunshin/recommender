@@ -33,6 +33,10 @@ def main(args):
         if args.movielens_data_type != None:
             logger.info(f"selected movielens data type: {args.movielens_data_type}")
 
+        # set device type: cpu or gpu
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        torch.set_default_device(device.type)
+        logger.info(f"device info: {torch.get_default_device()}")
 
         # prepare train / validation dataset
         # we use preprocessor in preprocess_csr.py when running pytorch based models
@@ -40,12 +44,15 @@ def main(args):
         preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type)
         X,y = preprocessor.preprocess()
 
+        X = X.to(device)
+        y = y.to(device)
+
         # when implicit feedback, i.e., args.implicit equals True,
         # user-item interaction information is required when negative sampling
         shape = (preprocessor.num_users, preprocessor.num_items)
         user_items_dct = implicit_to_csr(X, shape, True)
 
-        seed = torch.Generator().manual_seed(args.random_state)
+        seed = torch.Generator(device=device.type).manual_seed(args.random_state)
         dataset_args = {
             "X":X,
             "y":y,
@@ -70,8 +77,8 @@ def main(args):
 
         # split train / validation dataset
         train_dataset, validation_dataset = random_split(dataset, [args.train_ratio, 1-args.train_ratio], generator=seed)
-        train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
-        validation_dataloader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=True)
+        train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, generator=seed)
+        validation_dataloader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=True, generator=seed)
         mu = train_dataset.dataset.y[train_dataset.indices].mean() if args.model in ["svd", "svd_bias"] else None
 
         # set up model
@@ -158,8 +165,9 @@ def main(args):
                     break
         model.set_trained_embedding()
 
-        if args.implicit:
-            K = [10, 20, 50]
+
+        K = [10, 20, 50]
+        if args.implicit: # torch & implicit > bpr, ncf, gmf
             tr_pos_idx = np.intersect1d(
                 (train_dataset.dataset.label == 1).nonzero().squeeze().detach().numpy(),
                 train_dataset.indices
@@ -168,13 +176,16 @@ def main(args):
                 (validation_dataset.dataset.label == 1).nonzero().squeeze().detach().numpy(),
                 validation_dataset.indices
             )
-            csr_train = implicit_to_csr(train_dataset.dataset.X[tr_pos_idx], shape)
-            csr_val = implicit_to_csr(validation_dataset.dataset.X[val_pos_idx], shape)
-            for k in K:
-                metric = ranking_metrics_at_k(model, csr_train, csr_val, K=k)
-                logger.info(f"Metric for K={k}")
-                logger.info(f"NDCG@{k}: {metric['ndcg']}")
-                logger.info(f"mAP@{k}: {metric['map']}")
+        else: # torch & explicit > svd, svd_bias
+            tr_pos_idx = train_dataset.indices
+            val_pos_idx = validation_dataset.indices
+        csr_train = implicit_to_csr(train_dataset.dataset.X[tr_pos_idx], shape)
+        csr_val = implicit_to_csr(validation_dataset.dataset.X[val_pos_idx], shape)
+        for k in K:
+            metric = ranking_metrics_at_k(model, csr_train, csr_val, K=k)
+            logger.info(f"Metric for K={k}")
+            logger.info(f"NDCG@{k}: {metric['ndcg']}")
+            logger.info(f"mAP@{k}: {metric['map']}")
 
         # Load the best model weights
         model.load_state_dict(best_model_weights)
