@@ -50,4 +50,4 @@ class Model(TorchModelBase):
                 (user_item_pred, self.forward(torch.tensor(user_idx).repeat(self.num_items), torch.tensor(item_idx)).reshape(1,-1)),
                 dim=0
             )
-        return user_item_pred.clone().detach().numpy()
+        return user_item_pred.clone().detach().cpu().numpy()
