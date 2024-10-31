@@ -52,7 +52,7 @@ def main(args):
         shape = (preprocessor.num_users, preprocessor.num_items)
         user_items_dct = implicit_to_csr(X, shape, True)
 
-        seed = torch.Generator().manual_seed(args.random_state)
+        seed = torch.Generator(device=device.type).manual_seed(args.random_state)
         dataset_args = {
             "X":X,
             "y":y,
