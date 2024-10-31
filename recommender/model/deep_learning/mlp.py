@@ -32,6 +32,12 @@ class Model(TorchModelBase):
             nn.Linear(num_factors, 1)
         )
 
+        nn.init.xavier_normal_(self.embed_user.weight)
+        nn.init.xavier_normal_(self.embed_item.weight)
+        nn.init.xavier_normal_(self.layer1[0].weight)
+        nn.init.xavier_normal_(self.layer2[0].weight)
+        nn.init.xavier_normal_(self.layer3[0].weight)
+
     def forward(self, user_idx, item_idx):
         user_item_concat = torch.concat((self.embed_user(user_idx), self.embed_item(item_idx)), dim=1)
         x = self.layer1(user_item_concat)
