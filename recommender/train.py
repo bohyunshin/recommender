@@ -33,12 +33,17 @@ def main(args):
         if args.movielens_data_type != None:
             logger.info(f"selected movielens data type: {args.movielens_data_type}")
 
+        # set device type: cpu or gpu
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         # prepare train / validation dataset
         # we use preprocessor in preprocess_csr.py when running pytorch based models
         preprocessor_module = importlib.import_module(f"preprocess.{args.dataset}.preprocess_torch").Preprocessor
         preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type)
         X,y = preprocessor.preprocess()
+
+        X = X.to(device)
+        y = y.to(device)
 
         # when implicit feedback, i.e., args.implicit equals True,
         # user-item interaction information is required when negative sampling
@@ -86,6 +91,7 @@ def main(args):
         args.num_items = preprocessor.num_items
         args.mu = mu
         model = model_module(**vars(args))
+        model = model.to(device)
         criterion = Criterion(args.model)
         optimizer = optim.SGD(model.parameters(), lr=args.lr)
 
