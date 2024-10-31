@@ -77,8 +77,8 @@ def main(args):
 
         # split train / validation dataset
         train_dataset, validation_dataset = random_split(dataset, [args.train_ratio, 1-args.train_ratio], generator=seed)
-        train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
-        validation_dataloader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=True)
+        train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, generator=seed)
+        validation_dataloader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=True, generator=seed)
         mu = train_dataset.dataset.y[train_dataset.indices].mean() if args.model in ["svd", "svd_bias"] else None
 
         # set up model
