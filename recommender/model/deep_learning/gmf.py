@@ -15,6 +15,3 @@ class Model(TorchModelBase):
 
     def forward(self, user_idx, item_idx):
         return F.sigmoid((self.embed_user(user_idx) * self.embed_item(item_idx)).sum(axis=1))
-
-    def predict(self, user_factors, item_factors, userid, **kwargs):
-        return np.dot(user_factors[userid], item_factors.T)

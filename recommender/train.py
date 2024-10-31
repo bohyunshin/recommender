@@ -158,8 +158,9 @@ def main(args):
                     break
         model.set_trained_embedding()
 
-        if args.implicit:
-            K = [10, 20, 50]
+
+        K = [10, 20, 50]
+        if args.implicit: # torch & implicit > bpr, ncf, gmf
             tr_pos_idx = np.intersect1d(
                 (train_dataset.dataset.label == 1).nonzero().squeeze().detach().numpy(),
                 train_dataset.indices
@@ -168,13 +169,16 @@ def main(args):
                 (validation_dataset.dataset.label == 1).nonzero().squeeze().detach().numpy(),
                 validation_dataset.indices
             )
-            csr_train = implicit_to_csr(train_dataset.dataset.X[tr_pos_idx], shape)
-            csr_val = implicit_to_csr(validation_dataset.dataset.X[val_pos_idx], shape)
-            for k in K:
-                metric = ranking_metrics_at_k(model, csr_train, csr_val, K=k)
-                logger.info(f"Metric for K={k}")
-                logger.info(f"NDCG@{k}: {metric['ndcg']}")
-                logger.info(f"mAP@{k}: {metric['map']}")
+        else: # torch & explicit > svd, svd_bias
+            tr_pos_idx = train_dataset.indices
+            val_pos_idx = validation_dataset.indices
+        csr_train = implicit_to_csr(train_dataset.dataset.X[tr_pos_idx], shape)
+        csr_val = implicit_to_csr(validation_dataset.dataset.X[val_pos_idx], shape)
+        for k in K:
+            metric = ranking_metrics_at_k(model, csr_train, csr_val, K=k)
+            logger.info(f"Metric for K={k}")
+            logger.info(f"NDCG@{k}: {metric['ndcg']}")
+            logger.info(f"mAP@{k}: {metric['map']}")
 
         # Load the best model weights
         model.load_state_dict(best_model_weights)
