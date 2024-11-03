@@ -31,6 +31,8 @@ Therefore, if you want to run model, take a look at the input data type and run 
 |implicit|ALS|csr matrix|`recommender/model/mf/als.py`|$L = \sum_{u,i} c_{ui}(r_{ui} - p_u^T q_i)^2 - \lambda (\| p_u \|^2 + \| q_i \|^2)$|
 |implicit|BPR|pytorch dataset|`recommender/model/bpr.py`|$L = \sum_{(u,i,j) \in D_S} \log \ \sigma(\hat{x}_{uij}) - \lambda (\| p_u \|^2 + \| q_i \|^2)$|
 
+|implicit|GMF|pytorch dataset|`recommender/model/deep_learning/gmf.py`|$L = \sum_{u,i}$ b_{ui} \log \sigma (h^T (p_u \odot q_i))
+
 ## How to contribute
 Although any kinds of PRs are warmly welcomed, please refer to following rules.
 
