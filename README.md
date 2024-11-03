@@ -30,8 +30,7 @@ Therefore, if you want to run model, take a look at the input data type and run 
 |explicit|SVD with bias|pytorch dataset|`recommender/model/mf/svd.py`|$L = \sum_{(u,i) \in \mathcal{K}} (r_{ui} - p_u^T q_i - b_u - b_i - \mu)^2 + \lambda (\| p_u \|^2 + \| q_i \|^2 + \| b_u \|^2 + \| b_i \|^2) $|
 |implicit|ALS|csr matrix|`recommender/model/mf/als.py`|$L = \sum_{u,i} c_{ui}(r_{ui} - p_u^T q_i)^2 - \lambda (\| p_u \|^2 + \| q_i \|^2)$|
 |implicit|BPR|pytorch dataset|`recommender/model/bpr.py`|$L = \sum_{(u,i,j) \in D_S} \log \ \sigma(\hat{x}_{uij}) - \lambda (\| p_u \|^2 + \| q_i \|^2)$|
-
-|implicit|GMF|pytorch dataset|`recommender/model/deep_learning/gmf.py`|$L = \sum_{u,i}$ b_{ui} \log \sigma (h^T (p_u \odot q_i))
+|implicit|GMF|pytorch dataset|`recommender/model/deep_learning/gmf.py`|$L = \sum_{u,i}$ ( b_{ui} \log \sigma (h^T (p_u \odot q_i)) + (1-b_{ui}) \log ( 1-\sigma (h^T (p_u \odot q_i)) ) )
 
 ## How to contribute
 Although any kinds of PRs are warmly welcomed, please refer to following rules.
