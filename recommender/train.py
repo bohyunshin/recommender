@@ -63,7 +63,7 @@ def main(args):
         if args.implicit == True:
             if args.model == "bpr":
                 dataset_path = "data_loader.triplet_uniform_negative_sampling_dataset"
-            elif args.model in ["gmf", "mlp"]:
+            elif args.model in ["gmf", "mlp", "two_tower"]:
                 dataset_path = "data_loader.bce_uniform_negative_sampling_dataset"
         else:
             dataset_path = f"data_loader.data"

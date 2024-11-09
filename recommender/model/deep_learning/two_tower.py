@@ -1,8 +1,11 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+
+from model.torch_model_base import TorchModelBase
 
 
-class Model(nn.Module):
+class Model(TorchModelBase):
     def __init__(self, num_users, num_items, num_factors, **kwargs):
         super().__init__()
 
@@ -31,7 +34,9 @@ class Model(nn.Module):
         item = torch.concat((self.item_embedding(item_idx), self.item_meta[item_idx]), axis=1)
         item = self.item_layers(item)
 
-        return self.h(torch.concat((user, item), axis=1))
+        concat = self.h(torch.concat((user, item), axis=1))
+
+        return F.sigmoid(concat)
 
     def create_sequential_layer(self, input_dim, num_layers=3):
         layers = []
