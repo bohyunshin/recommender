@@ -17,8 +17,12 @@ class Criterion:
         y = kwargs.get("y")
         params = kwargs.get("params")
         regularization = kwargs.get("regularization")
+        user_idx = kwargs.get("user_idx")
+        item_idx = kwargs.get("item_idx")
+        num_users = kwargs.get("num_users")
+        num_items = kwargs.get("num_items")
         if self.model in ["svd", "svd_bias"]:
-            return self.criterion(y_pred, y.squeeze(), params, regularization)
+            return self.criterion(y_pred, y.squeeze(), params, regularization, user_idx, item_idx, num_users, num_items)
         elif self.model in ["gmf", "mlp"]:
             return self.criterion(y_pred, y.squeeze())
         elif self.model == "bpr":
