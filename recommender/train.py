@@ -116,8 +116,12 @@ def main(args):
                 y_pred = model(*inputs)
                 loss = criterion.calculate_loss(y_pred=y_pred,
                                                 y=y_train,
-                                                params=model.parameters(),
-                                                regularization=args.regularization)
+                                                params=[param for param in model.parameters()],
+                                                regularization=args.regularization,
+                                                user_idx=users,
+                                                item_idx=items,
+                                                num_users=preprocessor.num_users,
+                                                num_items=preprocessor.num_items)
                 loss.backward()
                 optimizer.step()
 
@@ -141,8 +145,12 @@ def main(args):
                     y_pred = model(*inputs)
                     loss = criterion.calculate_loss(y_pred=y_pred,
                                                     y=y_val,
-                                                    params=model.parameters(),
-                                                    regularization=args.regularization)
+                                                    params=[param for param in model.parameters()],
+                                                    regularization=args.regularization,
+                                                    user_idx=users,
+                                                    item_idx=items,
+                                                    num_users=preprocessor.num_users,
+                                                    num_items=preprocessor.num_items)
 
                     val_loss += loss.item()
                 val_loss = round(val_loss / len(validation_dataloader), 6)
