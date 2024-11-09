@@ -9,13 +9,13 @@ class Model(TorchModelBase):
     def __init__(self, num_users, num_items, num_factors, **kwargs):
         super().__init__()
 
-        self.user_embedding = nn.Embedding(num_users, num_factors)
-        self.item_embedding = nn.Embedding(num_items, num_factors)
+        self.embed_user = nn.Embedding(num_users, num_factors)
+        self.embed_item = nn.Embedding(num_items, num_factors)
         self.user_meta = kwargs["user_meta"]
         self.item_meta = kwargs["item_meta"]
 
-        nn.init.xavier_normal_(self.user_embedding.weight)
-        nn.init.xavier_normal_(self.item_embedding.weight)
+        nn.init.xavier_normal_(self.embed_user.weight)
+        nn.init.xavier_normal_(self.embed_item.weight)
 
         user_input_dim = num_factors + self.user_meta.shape[1]
         item_input_dim = num_factors + self.item_meta.shape[1]
@@ -28,10 +28,10 @@ class Model(TorchModelBase):
         self.h = nn.Linear(user_output_dim+item_output_dim, 1, bias=False)
 
     def forward(self, user_idx, item_idx):
-        user = torch.concat((self.user_embedding(user_idx), self.user_meta[user_idx]), axis=1)
+        user = torch.concat((self.embed_user(user_idx), self.user_meta[user_idx]), axis=1)
         user = self.user_layers(user)
 
-        item = torch.concat((self.item_embedding(item_idx), self.item_meta[item_idx]), axis=1)
+        item = torch.concat((self.embed_item(item_idx), self.item_meta[item_idx]), axis=1)
         item = self.item_layers(item)
 
         concat = self.h(torch.concat((user, item), axis=1))
