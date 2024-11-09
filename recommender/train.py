@@ -105,6 +105,10 @@ def main(args):
             model.train()
             tr_loss = 0.0
             for data in train_dataloader:
+                loss_kwargs = {
+                    "regularization": args.regularization,
+                    "params": [param for param in model.parameters()]
+                }
                 if args.implicit == True:
                     inputs = data[:-1]
                     y_train = data[-1]
@@ -112,16 +116,15 @@ def main(args):
                     X_train, y_train = data
                     users, items = X_train[:, 0], X_train[:, 1]
                     inputs = (users, items)
+                    loss_kwargs["user_idx"] = users
+                    loss_kwargs["item_idx"] = items
+                    loss_kwargs["num_users"] = preprocessor.num_users
+                    loss_kwargs["num_items"] = preprocessor.num_items
                 optimizer.zero_grad()
                 y_pred = model(*inputs)
-                loss = criterion.calculate_loss(y_pred=y_pred,
-                                                y=y_train,
-                                                params=[param for param in model.parameters()],
-                                                regularization=args.regularization,
-                                                user_idx=users,
-                                                item_idx=items,
-                                                num_users=preprocessor.num_users,
-                                                num_items=preprocessor.num_items)
+                loss_kwargs["y_pred"] = y_pred
+                loss_kwargs["y"] = y_train
+                loss = criterion.calculate_loss(**loss_kwargs)
                 loss.backward()
                 optimizer.step()
 
@@ -134,6 +137,10 @@ def main(args):
             with torch.no_grad():
                 val_loss = 0.0
                 for data in validation_dataloader:
+                    loss_kwargs = {
+                        "regularization": args.regularization,
+                        "params": [param for param in model.parameters()]
+                    }
                     if args.implicit == True:
                         inputs = data[:-1]
                         y_val = data[-1]
@@ -141,16 +148,15 @@ def main(args):
                         X_val, y_val = data
                         users, items = X_val[:, 0], X_val[:, 1]
                         inputs = (users, items)
+                        loss_kwargs["user_idx"] = users
+                        loss_kwargs["item_idx"] = items
+                        loss_kwargs["num_users"] = preprocessor.num_users
+                        loss_kwargs["num_items"] = preprocessor.num_items
 
                     y_pred = model(*inputs)
-                    loss = criterion.calculate_loss(y_pred=y_pred,
-                                                    y=y_val,
-                                                    params=[param for param in model.parameters()],
-                                                    regularization=args.regularization,
-                                                    user_idx=users,
-                                                    item_idx=items,
-                                                    num_users=preprocessor.num_users,
-                                                    num_items=preprocessor.num_items)
+                    loss_kwargs["y_pred"] = y_pred
+                    loss_kwargs["y"] = y_val
+                    loss = criterion.calculate_loss(**loss_kwargs)
 
                     val_loss += loss.item()
                 val_loss = round(val_loss / len(validation_dataloader), 6)
