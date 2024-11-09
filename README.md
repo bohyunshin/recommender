@@ -32,7 +32,7 @@ Therefore, if you want to run model, take a look at the input data type and run 
 |implicit|BPR|pytorch dataset|`recommender/model/bpr.py`|$L = \sum_{(u,i,j) \in D_S} \log \ \sigma(\hat{x}_{uij}) - \lambda (\| p_u \|^2 + \| q_i \|^2)$|
 |implicit|GMF|pytorch dataset|`recommender/model/deep_learning/gmf.py`|$L = \sum_{u,i} ( b_{ui} \log \  \sigma (h^T (p_u \odot q_i)) + (1-b_{ui}) \log \  ( 1-\sigma (h^T (p_u \odot q_i)) ) )$|
 |implicit|MLP|pytorch dataset|`recommender/model/deep_learning/mlp.py`|$L = \sum_{u,i} ( b_{ui} \log \  \sigma (h^T Z(p_u, q_i)) + (1-b_{ui}) \log \  ( 1-\sigma (h^T Z(p_u, q_i)) ) )$|
-|implicit|TWO-TOWER|pytorch dataset|`recommender/model/deep_learning/two_tower.py`|$L = \sum_{u,i} ( b_{ui} \log \  \sigma (h^T concat(Z_u(p_u, m_u), Z_i(q_i, m_i)) ) + (1-b_{ui}) + (1-b_{ui}) \log \  (1-\sigma (h^T concat(Z_u(p_u, m_u), Z_i(q_i, m_i)) ) + (1-b_{ui}))  )$|
+|implicit|TWO-TOWER|pytorch dataset|`recommender/model/deep_learning/two_tower.py`|$L = \sum_{u,i} ( b_{ui} \log \  \sigma (h^T concat(Z_u(p_u, m_u), Z_i(q_i, m_i)) ) + (1-b_{ui}) \log \  (1-\sigma (h^T concat(Z_u(p_u, m_u), Z_i(q_i, m_i)) ) )  )$|
 
 ## How to contribute
 Although any kinds of PRs are warmly welcomed, please refer to following rules.
