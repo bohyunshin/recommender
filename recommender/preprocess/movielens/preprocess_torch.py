@@ -24,7 +24,7 @@ class Preprocessor(PreoprocessorBase):
         )
 
         movie_cols = ["movie_id", "movie_name", "genres"]
-        movies = pd.read_csv(
+        self.movies = pd.read_csv(
             path.format(ml_type=kwargs['movielens_data_type'], data="movies"),
             sep='::',
             names=movie_cols,
@@ -33,7 +33,7 @@ class Preprocessor(PreoprocessorBase):
         ).sort_values(by="movie_id")
 
         user_cols = ["user_id", "gender", "age", "occupation", "zip_code"]
-        users = pd.read_csv(
+        self.users = pd.read_csv(
             path.format(ml_type=kwargs['movielens_data_type'], data="users"),
             sep='::',
             names=user_cols,
@@ -41,17 +41,27 @@ class Preprocessor(PreoprocessorBase):
             encoding="ISO-8859-1"
         ).sort_values(by="user_id")
 
-        self.user_meta = self.get_user_meta(users)
-        self.item_meta = self.get_item_meta(movies)
+        self.num_users = self.users.shape[0]
+        self.num_items = self.movies.shape[0]
 
-        self.num_users = len(self.ratings["user_id"].unique())
-        self.num_items = len(self.ratings["movie_id"].unique())
+        # mapping dictionary user_id, movie_id to ascending id
+        self.user_id2idx = {id_: idx for (idx, id_) in enumerate(sorted(self.users["user_id"].unique()))}
+        self.movie_id2idx = {id_: idx for (idx, id_) in enumerate(sorted(self.movies["movie_id"].unique()))}
 
     def preprocess(self):
-        self.user_id2idx = {id_: idx for (idx, id_) in enumerate(sorted(self.ratings["user_id"].unique()))}
-        self.movie_id2idx = {id_: idx for (idx, id_) in enumerate(sorted(self.ratings["movie_id"].unique()))}
+        # mapping ids
         self.ratings["user_id"] = self.ratings["user_id"].map(self.user_id2idx)
         self.ratings["movie_id"] = self.ratings["movie_id"].map(self.movie_id2idx)
+        self.users["user_id"] = self.users["user_id"].map(self.user_id2idx)
+        self.movies["movie_id"] = self.movies["movie_id"].map(self.movie_id2idx)
+
+        # generate one-hot encoded metadata
+        # id in users and movies should be same ascending order with mapping dictionary
+        assert self.users["user_id"].tolist() == sorted(list(self.user_id2idx.values()))
+        assert self.movies["movie_id"].tolist() == sorted(list(self.movie_id2idx.values()))
+        self.user_meta = self.get_user_meta(self.users)
+        self.item_meta = self.get_item_meta(self.movies)
+
         X = torch.tensor(self.ratings[["user_id", "movie_id"]].values)
         y = torch.tensor(self.ratings[["rating"]].values, dtype=torch.float32)
         return X, y

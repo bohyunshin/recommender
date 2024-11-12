@@ -34,14 +34,17 @@ class Model(TorchModelBase):
         item = torch.concat((self.embed_item(item_idx), self.item_meta[item_idx]), axis=1)
         item = self.item_layers(item)
 
-        concat = self.h(torch.concat((user, item), axis=1))
+        x = (user * item).sum(dim=1)
+        x = F.sigmoid(x)
+        return x
 
-        return F.sigmoid(concat)
-
-    def create_sequential_layer(self, input_dim, num_layers=3):
+    def create_sequential_layer(self, input_dim, num_layers=3, last_dim=16):
         layers = []
-        for _ in range(num_layers):
-            output_dim = input_dim // 2
+        for i in range(num_layers):
+            if i == num_layers-1:
+                output_dim = last_dim
+            else:
+                output_dim = input_dim // 2
             layers.append(nn.Linear(input_dim, output_dim))
             layers.append(nn.ReLU())
             input_dim = output_dim
