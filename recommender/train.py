@@ -63,7 +63,7 @@ def main(args):
         if args.implicit == True:
             if args.model == "bpr":
                 dataset_path = "data_loader.triplet_uniform_negative_sampling_dataset"
-            elif args.model in ["gmf", "mlp"]:
+            elif args.model in ["gmf", "mlp", "two_tower"]:
                 dataset_path = "data_loader.bce_uniform_negative_sampling_dataset"
         else:
             dataset_path = f"data_loader.data"
@@ -84,7 +84,7 @@ def main(args):
         # set up model
         if args.model in ["svd", "svd_bias"]:
             model_path = f"model.mf.{args.model}"
-        elif args.model in ["gmf", "mlp"]:
+        elif args.model in ["gmf", "mlp", "two_tower"]:
             model_path = f"model.deep_learning.{args.model}"
         else: # bpr
             model_path = f"model.{args.model}"
@@ -92,6 +92,8 @@ def main(args):
         args.num_users = preprocessor.num_users
         args.num_items = preprocessor.num_items
         args.mu = mu
+        args.user_meta = preprocessor.user_meta
+        args.item_meta = preprocessor.item_meta
         model = model_module(**vars(args))
         criterion = Criterion(args.model)
         optimizer = optim.SGD(model.parameters(), lr=args.lr)

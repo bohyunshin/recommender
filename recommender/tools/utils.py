@@ -41,3 +41,9 @@ def check_csr(user_items):
             ParameterWarning,
         )
     return user_items
+
+
+def mapping_dict(vals):
+    u = sorted(list(set(vals)))
+    mapping = {v:i for i,v in enumerate(u)}
+    return mapping

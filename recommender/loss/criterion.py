@@ -9,7 +9,7 @@ class Criterion:
            self.criterion = svd_loss
         elif model == "bpr":
             self.criterion = bpr_loss
-        elif model in ["gmf", "mlp"]:
+        elif model in ["gmf", "mlp", "two_tower"]:
             self.criterion = nn.BCELoss()
 
     def calculate_loss(self, **kwargs):
@@ -23,7 +23,7 @@ class Criterion:
         num_items = kwargs.get("num_items")
         if self.model in ["svd", "svd_bias"]:
             return self.criterion(y_pred, y.squeeze(), params, regularization, user_idx, item_idx, num_users, num_items)
-        elif self.model in ["gmf", "mlp"]:
+        elif self.model in ["gmf", "mlp", "two_tower"]:
             return self.criterion(y_pred, y.squeeze())
         elif self.model == "bpr":
             return self.criterion(y_pred, params, regularization)
