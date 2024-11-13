@@ -23,10 +23,6 @@ class Model(TorchModelBase):
         self.user_layers = self.create_sequential_layer(user_input_dim)
         self.item_layers = self.create_sequential_layer(item_input_dim)
 
-        user_output_dim = self.user_layers[-2].out_features
-        item_output_dim = self.item_layers[-2].out_features
-        self.h = nn.Linear(user_output_dim+item_output_dim, 1, bias=False)
-
     def forward(self, user_idx, item_idx):
         user = torch.concat((self.embed_user(user_idx), self.user_meta[user_idx]), axis=1)
         user = self.user_layers(user)
