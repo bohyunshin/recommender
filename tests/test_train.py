@@ -23,6 +23,7 @@ def run_model(model, dataset, implicit):
     args.model_path = f"{model}.pkl"
     args.num_sim_user_top_N = 45
     args.movielens_data_type = "ml-1m"
+    args.test = True
 
     main(args)
 

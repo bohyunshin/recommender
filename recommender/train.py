@@ -41,7 +41,7 @@ def main(args):
         # prepare train / validation dataset
         # we use preprocessor in preprocess_csr.py when running pytorch based models
         preprocessor_module = importlib.import_module(f"preprocess.{args.dataset}.preprocess_torch").Preprocessor
-        preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type)
+        preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type, test=args.test)
         X,y = preprocessor.preprocess()
 
         X = X.to(device)

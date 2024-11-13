@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os
 import torch
 import torch.nn.functional as F
@@ -22,6 +23,11 @@ class Preprocessor(PreoprocessorBase):
             engine='python',
             encoding="ISO-8859-1"
         )
+
+        # for quick pytest
+        if kwargs["test"] == True:
+            idxs = np.random.choice(range(self.ratings.shape[0]), size=1000, replace=False)
+            self.ratings = self.ratings.iloc[idxs,:]
 
         movie_cols = ["movie_id", "movie_name", "genres"]
         self.movies = pd.read_csv(
