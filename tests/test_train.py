@@ -1,7 +1,6 @@
 import argparse
 import sys
 import os
-# sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../recommender"))
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../"))
 
 from train import main
@@ -42,3 +41,6 @@ def test_gmf():
 
 def test_mlp():
     run_model("mlp", "movielens", True)
+
+def test_two_tower():
+    run_model("two_tower", "movielens", True)
