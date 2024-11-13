@@ -9,12 +9,6 @@ class Preprocessor(PreoprocessorMovielensBase):
         super().__init__(**kwargs)
 
     def preprocess(self):
-        # mapping ids
-        self.ratings["user_id"] = self.ratings["user_id"].map(self.user_id2idx)
-        self.ratings["movie_id"] = self.ratings["movie_id"].map(self.movie_id2idx)
-        self.users["user_id"] = self.users["user_id"].map(self.user_id2idx)
-        self.movies["movie_id"] = self.movies["movie_id"].map(self.movie_id2idx)
-
         # generate one-hot encoded metadata
         # id in users and movies should be same ascending order with mapping dictionary
         assert self.users["user_id"].tolist() == sorted(list(self.user_id2idx.values()))

@@ -31,9 +31,9 @@ def main(args):
         # set preprocessor for csr input models
         preprocessor_module = importlib.import_module(f"preprocess.{args.dataset}.preprocess_csr").Preprocessor
         preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type,
-                                           test_ratio=args.train_ratio,
-                                           random_state=args.random_state)
-        csr_train, csr_val = preprocessor.preprocess()
+                                           test=args.test)
+        csr_train, csr_val = preprocessor.preprocess(test_ratio=1-args.train_ratio,
+                                                     random_state=args.random_state)
 
         params = {
             "factors": args.num_factors,

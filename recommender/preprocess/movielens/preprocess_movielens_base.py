@@ -50,5 +50,11 @@ class PreoprocessorMovielensBase(PreoprocessorBase):
         self.user_id2idx = {id_: idx for (idx, id_) in enumerate(sorted(self.users["user_id"].unique()))}
         self.movie_id2idx = {id_: idx for (idx, id_) in enumerate(sorted(self.movies["movie_id"].unique()))}
 
+        # mapping ids
+        self.ratings["user_id"] = self.ratings["user_id"].map(self.user_id2idx)
+        self.ratings["movie_id"] = self.ratings["movie_id"].map(self.movie_id2idx)
+        self.users["user_id"] = self.users["user_id"].map(self.user_id2idx)
+        self.movies["movie_id"] = self.movies["movie_id"].map(self.movie_id2idx)
+
     def preprocess(self, **kwargs):
         raise NotImplementedError

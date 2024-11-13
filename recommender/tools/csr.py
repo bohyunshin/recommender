@@ -27,14 +27,14 @@ def dataframe_to_csr(df, shape, implicit):
     user_item : csr matrix
     """
     assert "user_id" in df.columns
-    assert "item_id" in df.columns
-    assert "interactions" in df.columns
+    assert "movie_id" in df.columns
+    assert "rating" in df.columns
 
     user2item2value = defaultdict(dict)
 
     user_ids = sorted(df["user_id"].unique())
 
-    for user, item, interaction in zip(df["user_id"], df["item_id"], df["interactions"]):
+    for user, item, interaction in zip(df["user_id"], df["movie_id"], df["rating"]):
         if user2item2value[user].get(item, 0) == 0:
             user2item2value[user][item] = interaction
         else:
