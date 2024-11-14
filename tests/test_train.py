@@ -1,7 +1,6 @@
 import argparse
 import sys
 import os
-# sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../recommender"))
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../"))
 
 from train import main
@@ -23,6 +22,7 @@ def run_model(model, dataset, implicit):
     args.model_path = f"{model}.pkl"
     args.num_sim_user_top_N = 45
     args.movielens_data_type = "ml-1m"
+    args.test = True
 
     main(args)
 
@@ -41,3 +41,6 @@ def test_gmf():
 
 def test_mlp():
     run_model("mlp", "movielens", True)
+
+def test_two_tower():
+    run_model("two_tower", "movielens", True)
