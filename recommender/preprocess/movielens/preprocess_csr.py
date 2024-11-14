@@ -18,8 +18,3 @@ class Preprocessor(PreoprocessorMovielensBase):
                                               test_ratio,
                                               random_state)
         return csr_train, csr_val
-
-if __name__ == "__main__":
-    preproc = Preprocessor(movielens_data_type="ml-1m", test=False)
-    csr_train, csr_val = preproc.preprocess(test_ratio=0.2, random_state=42)
-    print("hello")
