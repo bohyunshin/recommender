@@ -24,12 +24,12 @@ class RecommenderBase:
             2D array of selected k item similarities for each user
         """
 
-        indices, distances = topk(self.predict(self.user_factors, self.item_factors, userid, user_items=user_items), user_items[userid], N)
+        indices, distances = topk(self.predict(userid, user_items=user_items), user_items[userid], N)
 
         return indices, distances
 
     @abstractmethod
-    def predict(self, user_factors, item_factors, userid, **kwargs):
+    def predict(self, user_idx, **kwargs):
         """
         Predicts users' ratings (or preference) based on factorized user_factors and item_factors.
         For matrix factorization models, this could be dot product between user_factors and item_factors.
@@ -37,12 +37,8 @@ class RecommenderBase:
 
         Parameters
         ----------
-        user_factors : M1 x K (np.ndarray)
-            Genearally, M1 does not need to be M, which is total number of users in dataset. We consider general
-            situation where we want to recommend for selected M1 users
-        item_factors : N x K (np.ndarray)
-            Although we may not want to recommend items for all users, still we need all item embedding vectors.
-            That's why we use all of item vectors.
+        user_idx : M1, (np.ndarray)
+            Set of user idxs who are recommendation target
 
         Returns
         -------
