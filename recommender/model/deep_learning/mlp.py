@@ -40,13 +40,3 @@ class Model(TorchModelBase):
             x = layer(x)
         x = self.h(x)
         return F.sigmoid(x)
-
-    def predict(self, user_factors, item_factors, userid, **kwargs):
-        item_idx = torch.arange(self.num_items)
-        user_item_pred = torch.tensor([])
-        for user_idx in userid:
-            user_item_pred = torch.concat(
-                (user_item_pred, self.forward(torch.tensor(user_idx).repeat(self.num_items), torch.tensor(item_idx)).reshape(1,-1)),
-                dim=0
-            )
-        return user_item_pred.clone().detach().cpu().numpy()
