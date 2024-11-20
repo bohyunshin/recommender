@@ -7,7 +7,7 @@ class RecommenderBase:
         self.user_factors = None
         self.item_factors = None
 
-    def recommend(self, userid, user_items, filter_already_liked_items=True, N=10):
+    def recommend(self, user_idx, item_idx, user_items, N=10):
         """
         Recommends items for users
 
@@ -24,7 +24,7 @@ class RecommenderBase:
             2D array of selected k item similarities for each user
         """
 
-        indices, distances = topk(self.predict(userid, user_items=user_items), user_items[userid], N)
+        indices, distances = topk(self.predict(user_idx, user_items=user_items, item_idx=item_idx), user_items[user_idx], N)
 
         return indices, distances
 
