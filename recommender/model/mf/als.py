@@ -2,7 +2,6 @@ import numpy as np
 import time
 from scipy.sparse import csr_matrix
 import logging
-logger = logging.getLogger("recommender")
 
 from tools.utils import check_csr, check_random_state, nonzeros
 from model.fit_model_base import FitModelBase
@@ -73,7 +72,7 @@ class Model(FitModelBase):
 
         for iteration in range(self.iterations):
 
-            logger.info(f"iteration: {iteration} out of {self.iterations}")
+            logging.info(f"iteration: {iteration} out of {self.iterations}")
 
             start = time.time()
 
@@ -91,14 +90,14 @@ class Model(FitModelBase):
             # calculate training / validation loss
             tr_loss = self.calculate_loss(user_items)
             self.tr_loss.append(tr_loss)
-            logger.info(f"training loss: {tr_loss}")
+            logging.info(f"training loss: {tr_loss}")
 
             if val_user_items is not None:
                 val_loss = self.calculate_loss(val_user_items)
                 self.val_loss.append(val_loss)
-                logger.info(f"validation loss: {val_loss}")
+                logging.info(f"validation loss: {val_loss}")
 
-            logger.info(f"executed time for {iteration} iteration: {time.time() - start}")
+            logging.info(f"executed time for {iteration} iteration: {time.time() - start}")
 
     def update_user_factors(self, u, Q, Cui):
         """

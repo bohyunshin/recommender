@@ -1,6 +1,7 @@
 import os
 import sys
 import traceback
+import logging
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../.."))
 
 import importlib
@@ -13,20 +14,20 @@ from tools.parse_args import parse_args
 
 
 def main(args):
-    logger = setup_logger(args.log_path)
+    setup_logger(args.log_path)
     try:
-        logger.info(f"selected dataset: {args.dataset}")
-        logger.info(f"selected model: {args.model}")
+        logging.info(f"selected dataset: {args.dataset}")
+        logging.info(f"selected model: {args.model}")
         if args.model in ["als"]:
-            logger.info(f"batch size: {args.batch_size}")
-            logger.info(f"learning rate: {args.lr}")
-            logger.info(f"regularization: {args.regularization}")
-            logger.info(f"epochs: {args.epochs}")
-            logger.info(f"number of factors for user / item embedding: {args.num_factors}")
-            logger.info(f"patience for watching validation loss: {args.patience}")
-        logger.info(f"train ratio: {args.train_ratio}")
+            logging.info(f"batch size: {args.batch_size}")
+            logging.info(f"learning rate: {args.lr}")
+            logging.info(f"regularization: {args.regularization}")
+            logging.info(f"epochs: {args.epochs}")
+            logging.info(f"number of factors for user / item embedding: {args.num_factors}")
+            logging.info(f"patience for watching validation loss: {args.patience}")
+        logging.info(f"train ratio: {args.train_ratio}")
         if args.movielens_data_type != None:
-            logger.info(f"selected movielens data type: {args.movielens_data_type}")
+            logging.info(f"selected movielens data type: {args.movielens_data_type}")
 
         # set preprocessor for csr input models
         preprocessor_module = importlib.import_module(f"preprocess.{args.dataset}.preprocess_csr").Preprocessor
@@ -53,19 +54,27 @@ def main(args):
             model_module = importlib.import_module(f"model.neighborhood.{args.model}").Model
         model = model_module(**params)
         model.fit(user_items=csr_train, val_user_items=csr_val)
-        logger.info(f"total executed time: {(time.time() - start)/60}")
+        logging.info(f"total executed time: {(time.time() - start)/60}")
 
         K = [10, 20, 50]
+        ndcg = []
+        map = []
         for k in K:
             metric = ranking_metrics_at_k(model, csr_train, csr_val, K=k)
-            logger.info(f"Metric for K={k}")
-            logger.info(f"NDCG@{k}: {metric['ndcg']}")
-            logger.info(f"mAP@{k}: {metric['map']}")
+            logging.info(f"Metric for K={k}")
+            logging.info(f"NDCG@{k}: {metric['ndcg']}")
+            logging.info(f"mAP@{k}: {metric['map']}")
+
+            ndcg.append(round(metric['ndcg'], 4))
+            map.append(round(metric['map'], 4))
+
+        logging.info(f"NDCG result: {'|'.join([str(i) for i in ndcg])}")
+        logging.info(f"mAP result: {'|'.join([str(i) for i in map])}")
 
         pickle.dump(model, open(args.model_path, "wb"))
-        logger.info("Save final model")
+        logging.info("Save final model")
     except Exception:
-        logger.error(traceback.format_exc())
+        logging.error(traceback.format_exc())
         raise
 
 
