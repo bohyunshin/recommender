@@ -179,7 +179,6 @@ def main(args):
                 if patience == 0:
                     logger.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
                     break
-        model.set_trained_embedding()
 
 
         K = [10, 20, 50]
@@ -197,11 +196,19 @@ def main(args):
             val_pos_idx = validation_dataset.indices
         csr_train = implicit_to_csr(train_dataset.dataset.X[tr_pos_idx], shape)
         csr_val = implicit_to_csr(validation_dataset.dataset.X[val_pos_idx], shape)
+        ndcg = []
+        map = []
         for k in K:
             metric = ranking_metrics_at_k(model, csr_train, csr_val, K=k)
             logger.info(f"Metric for K={k}")
             logger.info(f"NDCG@{k}: {metric['ndcg']}")
             logger.info(f"mAP@{k}: {metric['map']}")
+
+            ndcg.append(round(metric['ndcg'], 4))
+            map.append(round(metric['map'], 4))
+
+        logger.info(f"NDCG result: {'|'.join([str(i) for i in ndcg])}")
+        logger.info(f"mAP result: {'|'.join([str(i) for i in map])}")
 
         # Load the best model weights
         model.load_state_dict(best_model_weights)

@@ -25,3 +25,18 @@ def test_dataframe_to_csr():
     ])
     csr = dataframe_to_csr(df, (4,3), True)
     assert np.array_equal(csr.toarray(), expected)
+
+    df = pd.DataFrame({
+        "user_id": [1, 2, 3, 4],
+        "movie_id": [3, 3, 2, 1],
+        "rating": [1, 1, 1, 1]
+    })
+    expected = np.array([
+        [0, 0, 0, 0],
+        [0, 0, 0, 1],
+        [0, 0, 0, 1],
+        [0, 0, 1, 0],
+        [0, 1, 0, 0]
+    ])
+    csr = dataframe_to_csr(df, (5, 4), True)
+    assert np.array_equal(csr.toarray(), expected)

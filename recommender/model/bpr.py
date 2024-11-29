@@ -21,3 +21,8 @@ class Model(TorchModelBase):
         embed_neg_item = self.embed_item(neg_item_idx)  # batch_size * num_factors
         output = (embed_user * (embed_pos_item - embed_neg_item)).sum(axis=1)  # batch_size * 1
         return output
+
+    def predict(self, user_idx, **kwargs):
+        embed_users = self.embed_user.weight[user_idx].detach().cpu().numpy()
+        embed_items = self.embed_item.weight.detach().cpu().numpy()
+        return np.dot(embed_users, embed_items.T)

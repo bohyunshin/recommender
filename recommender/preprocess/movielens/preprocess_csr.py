@@ -1,9 +1,6 @@
-import os
-import pandas as pd
-
-from tools.csr import dataframe_to_csr, mapping_index
+from tools.csr import dataframe_to_csr
 from preprocess.movielens.preprocess_movielens_base import PreoprocessorMovielensBase
-from preprocess.train_test_split import TrainTestSplit, train_test_split
+from preprocess.train_test_split import train_test_split
 
 
 class Preprocessor(PreoprocessorMovielensBase):
