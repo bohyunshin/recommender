@@ -19,7 +19,3 @@ class TorchModelBase(nn.Module, RecommenderBase):
         with torch.no_grad():
             user_item_score = self.forward(user_idx, item_idx).detach().numpy()
         return user_item_score.reshape(-1, num_items)
-
-    def set_trained_embedding(self):
-        self.user_factors = self.embed_user.weight.data.clone().detach().cpu().numpy()
-        self.item_factors = self.embed_item.weight.data.clone().detach().cpu().numpy()

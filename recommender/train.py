@@ -179,7 +179,6 @@ def main(args):
                 if patience == 0:
                     logger.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
                     break
-        model.set_trained_embedding()
 
 
         K = [10, 20, 50]
