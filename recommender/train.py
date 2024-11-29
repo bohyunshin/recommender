@@ -1,6 +1,7 @@
 import os
 import sys
 import traceback
+import logging
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../.."))
 
 import torch
@@ -19,24 +20,25 @@ from loss.criterion import Criterion
 
 
 def main(args):
-    logger = setup_logger(args.log_path)
+    setup_logger(args.log_path)
     try:
-        logger.info(f"selected dataset: {args.dataset}")
-        logger.info(f"selected model: {args.model}")
-        logger.info(f"batch size: {args.batch_size}")
-        logger.info(f"learning rate: {args.lr}")
-        logger.info(f"regularization: {args.regularization}")
-        logger.info(f"epochs: {args.epochs}")
-        logger.info(f"number of factors for user / item embedding: {args.num_factors}")
-        logger.info(f"train ratio: {args.train_ratio}")
-        logger.info(f"patience for watching validation loss: {args.patience}")
+        logging.info(f"selected dataset: {args.dataset}")
+        logging.info(f"selected model: {args.model}")
+        logging.info(f"batch size: {args.batch_size}")
+        logging.info(f"learning rate: {args.lr}")
+        logging.info(f"regularization: {args.regularization}")
+        logging.info(f"epochs: {args.epochs}")
+        logging.info(f"number of factors for user / item embedding: {args.num_factors}")
+        logging.info(f"train ratio: {args.train_ratio}")
+        logging.info(f"number of negative samples: {args.num_neg}")
+        logging.info(f"patience for watching validation loss: {args.patience}")
         if args.movielens_data_type != None:
-            logger.info(f"selected movielens data type: {args.movielens_data_type}")
+            logging.info(f"selected movielens data type: {args.movielens_data_type}")
 
         # set device type: cpu or gpu
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         torch.set_default_device(device.type)
-        logger.info(f"device info: {torch.get_default_device()}")
+        logging.info(f"device info: {torch.get_default_device()}")
 
         # prepare train / validation dataset
         # we use preprocessor in preprocess_csr.py when running pytorch based models
@@ -46,6 +48,8 @@ def main(args):
 
         X = X.to(device)
         y = y.to(device)
+
+        logging.info(f"number of positive samples: {len(X)}")
 
         # when implicit feedback, i.e., args.implicit equals True,
         # user-item interaction information is required when negative sampling
@@ -57,7 +61,8 @@ def main(args):
             "X":X,
             "y":y,
             "user_items_dct":user_items_dct,
-            "num_items":preprocessor.num_items
+            "num_items":preprocessor.num_items,
+            "num_neg":args.num_neg
         }
 
         if args.implicit == True:
@@ -73,7 +78,7 @@ def main(args):
         if args.implicit == True:
             start = time.time()
             dataset.negative_sampling()
-            logger.info(f"token time for negative sampling: {time.time() - start}")
+            logging.info(f"token time for negative sampling: {time.time() - start}")
 
         # split train / validation dataset
         train_dataset, validation_dataset = random_split(dataset, [args.train_ratio, 1-args.train_ratio], generator=seed)
@@ -101,7 +106,7 @@ def main(args):
         # train model
         best_loss = float('inf')
         for epoch in range(args.epochs):
-            logger.info(f"####### Epoch {epoch} #######")
+            logging.info(f"####### Epoch {epoch} #######")
 
             # training
             model.train()
@@ -163,8 +168,8 @@ def main(args):
                     val_loss += loss.item()
                 val_loss = round(val_loss / len(validation_dataloader), 6)
 
-            logger.info(f"Train Loss: {tr_loss}")
-            logger.info(f"Validation Loss: {val_loss}")
+            logging.info(f"Train Loss: {tr_loss}")
+            logging.info(f"Validation Loss: {val_loss}")
 
             if best_loss > val_loss:
                 prev_best_loss = best_loss
@@ -172,12 +177,12 @@ def main(args):
                 best_model_weights = copy.deepcopy(model.state_dict())
                 patience = args.patience
                 torch.save(model.state_dict(), args.model_path)
-                logger.info(f"Best validation: {best_loss}, Previous validation loss: {prev_best_loss}")
+                logging.info(f"Best validation: {best_loss}, Previous validation loss: {prev_best_loss}")
             else:
                 patience -= 1
-                logger.info(f"Validation loss did not decrease. Patience {patience} left.")
+                logging.info(f"Validation loss did not decrease. Patience {patience} left.")
                 if patience == 0:
-                    logger.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
+                    logging.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
                     break
 
 
@@ -200,24 +205,24 @@ def main(args):
         map = []
         for k in K:
             metric = ranking_metrics_at_k(model, csr_train, csr_val, K=k)
-            logger.info(f"Metric for K={k}")
-            logger.info(f"NDCG@{k}: {metric['ndcg']}")
-            logger.info(f"mAP@{k}: {metric['map']}")
+            logging.info(f"Metric for K={k}")
+            logging.info(f"NDCG@{k}: {metric['ndcg']}")
+            logging.info(f"mAP@{k}: {metric['map']}")
 
             ndcg.append(round(metric['ndcg'], 4))
             map.append(round(metric['map'], 4))
 
-        logger.info(f"NDCG result: {'|'.join([str(i) for i in ndcg])}")
-        logger.info(f"mAP result: {'|'.join([str(i) for i in map])}")
+        logging.info(f"NDCG result: {'|'.join([str(i) for i in ndcg])}")
+        logging.info(f"mAP result: {'|'.join([str(i) for i in map])}")
 
         # Load the best model weights
         model.load_state_dict(best_model_weights)
-        logger.info("Load weight with best validation loss")
+        logging.info("Load weight with best validation loss")
 
         torch.save(model.state_dict(), args.model_path)
-        logger.info("Save final model")
+        logging.info("Save final model")
     except Exception:
-        logger.error(traceback.format_exc())
+        logging.error(traceback.format_exc())
         raise
 
 
