@@ -17,5 +17,5 @@ class TorchModelBase(nn.Module, RecommenderBase):
         user_idx = torch.tensor(np.repeat(user_idx, num_items))
         item_idx = torch.tensor(np.tile(item_idx, num_users))
         with torch.no_grad():
-            user_item_score = self.forward(user_idx, item_idx).detach().numpy()
+            user_item_score = self.forward(user_idx, item_idx).detach().cpu().numpy()
         return user_item_score.reshape(-1, num_items)
