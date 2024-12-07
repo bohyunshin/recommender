@@ -16,17 +16,18 @@ class Data(Dataset):
         is_sampled = {}
         for pos in self.X:
             u, i = pos
-            # if already sampled, pass
-            if is_sampled.get(u.item()) == True:
-                continue
-            is_sampled[u.item()] = True
-            neg_samples_per_pos_sample = []
+            neg_samples_per_pos_user = []
             for _ in range(self.num_neg):
                 j = np.random.randint(self.num_items)  # sample only ONE negative sample
-                while self.user_items_dct[u.item()].get(j) != None or j in neg_samples_per_pos_sample:
+                while self.user_items_dct[u.item()].get(j) != None or j in neg_samples_per_pos_user:
                     j = np.random.randint(self.num_items)
                 self.triplet.append((u,i,j))
-                neg_samples_per_pos_sample.append(j)
+                neg_samples_per_pos_user.append(j)
+
+                if is_sampled.get(u.item()) == True:
+                    break
+
+            is_sampled[u.item()] = True
         logging.info(f"number of total samples: {len(self.triplet)}")
         self.label = torch.tensor([1.0]).expand(len(self.triplet))
 
