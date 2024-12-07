@@ -13,8 +13,13 @@ class Data(Dataset):
 
     def negative_sampling(self):
         self.triplet = []
+        is_sampled = {}
         for pos in self.X:
             u, i = pos
+            # if already sampled, pass
+            if is_sampled.get(u) == True:
+                continue
+            is_sampled[u] = True
             neg_samples_per_pos_sample = []
             for _ in range(self.num_neg):
                 j = np.random.randint(self.num_items)  # sample only ONE negative sample
@@ -22,7 +27,7 @@ class Data(Dataset):
                     j = np.random.randint(self.num_items)
                 self.triplet.append((u,i,j))
                 neg_samples_per_pos_sample.append(j)
-        logging.info(f"number of negative samples: {len(self.triplet)}")
+        logging.info(f"number of total samples: {len(self.triplet)}")
         self.label = torch.tensor([1.0]).expand(len(self.triplet))
 
     def __len__(self):

@@ -19,6 +19,7 @@ class Data(Dataset):
             # if already sampled, pass
             if is_sampled.get(u) == True:
                 continue
+            is_sampled[u] = True
             neg_samples_per_user = []
             for _ in range(self.num_neg):
                 j = np.random.randint(self.num_items)  # sample only ONE negative sample
