@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "recommender"
+version = "0.1.0"
+description = ""
+authors = ["bohyun-shin <shinbo0613@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+scikit-learn = "1.5.2"
+torch = "2.5.1"
+numpy = "2.1.3"
+pandas = "2.2.3"
+tqdm = ">=4.65.0,<4.66.0"
+implicit = ">=0.7.2,<0.8.0"
+pytest = "8.3.3"
+pytest-cov = "6.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
