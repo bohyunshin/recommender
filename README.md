@@ -3,6 +3,34 @@
 
 This repository aims for implementing various machine learning algorithms in recommender system with unified pipeline. Any PRs are warmly welcomed!
 
+## Setting up environment
+
+Ensure that latest `poetry` version is installed.
+
+```shell
+$ poetry --version
+Poetry (version 1.8.5)
+```
+
+Python version higher than 3.11 is required.
+
+```shell
+$ python3 --version
+Python 3.11.11
+```
+
+Make virtual environment using poetry.
+
+```shell
+$ poetry shell
+```
+
+Install required packages from `poetry.lock`.
+
+```shell
+$ poetry install
+```
+
 ## Why made this repository?
 - There are lots of algorithms in recommender system starting from item-based recommendation, matrix factorization to deep-learning based recommendation.
 - To understand better, this repository provides implementation of various recommender algorithms using pytorch or custom learning methods.
