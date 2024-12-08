@@ -17,7 +17,7 @@ class Data(Dataset):
             u, i = pos
             neg_samples_per_pos_sample = []
             for _ in range(self.num_neg):
-                j = np.random.randint(self.num_items)  # sample only ONE negative sample
+                j = np.random.randint(self.num_items)
                 while self.user_items_dct[u.item()].get(j) != None or j in neg_samples_per_pos_sample:
                     j = np.random.randint(self.num_items)
                 self.triplet.append((u,i,j))
