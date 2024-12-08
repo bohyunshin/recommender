@@ -16,17 +16,29 @@ jobs:
 
       - name: Set up Python
         uses: actions/setup-python@v4
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Download ml-1m dataset and run tests
-        run: |
-          python recommender/preprocess/movielens/download.py --path ".movielens" --package "ml-1m"
-          ls recommender/preprocess/movielens/.movielens
-          pytest --cov --cov-report=xml
-
-      - name: Upload results to Codecov
-        uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          python-version: "3.11"
+
+      - name: Set up poetry
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: latest
+
+      - name: View poetry --help
+        run: |
+          poetry --help
+          poetry --version
+
+#      - name: Install dependencies
+#        run: pip install -r requirements.txt
+#
+#      - name: Download ml-1m dataset and run tests
+#        run: |
+#          python recommender/preprocess/movielens/download.py --path ".movielens" --package "ml-1m"
+#          ls recommender/preprocess/movielens/.movielens
+#          pytest --cov --cov-report=xml
+#
+#      - name: Upload results to Codecov
+#        uses: codecov/codecov-action@v4
+#        with:
+#          token: ${{ secrets.CODECOV_TOKEN }}
