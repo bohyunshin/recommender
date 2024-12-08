@@ -28,6 +28,7 @@ jobs:
         run: |
           poetry --help
           poetry --version
+          python --version
 
 #      - name: Install dependencies
 #        run: pip install -r requirements.txt
