@@ -1,25 +1,29 @@
+from typing import Optional, Dict
+
 import numpy as np
 from scipy.sparse import csr_matrix
 from collections import defaultdict
 
+from model.recommender_base import RecommenderBase
 
-def ranking_metrics_at_k(model, train_user_items, test_user_items, K=10):
-    """ Calculates ranking metrics for a given trained model
 
-    Parameters
-    ----------
-    model : RecommenderBase
-        The fitted recommendation model to test
-    test_user_items : csr_matrix
-        Sparse matrix of user by item that contains withheld elements to
-        test on
-    K : int
-        Number of items to test on
+def ranking_metrics_at_k(
+        model: RecommenderBase,
+        train_user_items: csr_matrix,
+        test_user_items: csr_matrix,
+        K: Optional[int] = 10
+) -> Dict[str, float]:
+    """
+    Calculates ranking metrics for a given trained model
 
-    Returns
-    -------
-    float
-        the calculated p@k
+    Args:
+        model (RecommenderBase): The fitted recommendation model to test.
+        test_user_items (csr_matrix): Sparse matrix of user by item that contains
+        withheld elements to test on.
+        K (int): Number of items to test on.
+
+    Returns (float):
+        Calculated metrics.
     """
 
     if not isinstance(test_user_items, csr_matrix):

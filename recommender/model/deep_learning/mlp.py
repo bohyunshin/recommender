@@ -6,7 +6,21 @@ from model.torch_model_base import TorchModelBase
 
 
 class Model(TorchModelBase):
-    def __init__(self, num_users, num_items, num_factors, **kwargs):
+    def __init__(
+            self,
+            num_users: int,
+            num_items: int,
+            num_factors: int,
+            **kwargs,
+        ):
+        """
+        MLP neural network getting input as concatenation of user and item embeddings.
+
+        Args:
+            num_users (int): Number of users.
+            num_items (int): Number of items.
+            num_factors (int): Dimension of user/item embeddings.
+        """
         super().__init__()
 
         self.num_users = num_users
@@ -34,7 +48,26 @@ class Model(TorchModelBase):
                 nn.init.xavier_normal_(layer.weight)
         nn.init.xavier_normal_(self.h.weight)
 
-    def forward(self, user_idx, item_idx):
+    def forward(
+            self,
+            user_idx: torch.Tensor,
+            item_idx: torch.Tensor,
+        ) -> torch.Tensor:
+        """
+        Calculates associated probability between user_idx and item_idx using mlp architecture.
+
+        [Forward step]
+        1. Concatenates user and item embeddings
+        2. Pass linear layers.
+        3. Finally, pass sigmoid function.
+
+        Args:
+            user_idx (torch.Tensor): User index.
+            item_idx (torch.Tensor): Item index.
+
+        Returns (torch.Tensor):
+            Probability between user_idx and item_idx.
+        """
         x = torch.concat((self.embed_user(user_idx), self.embed_item(item_idx)), dim=1)
         for layer in self.layers:
             x = layer(x)

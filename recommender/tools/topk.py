@@ -1,21 +1,24 @@
+from typing import Tuple
+
 import numpy as np
+from numpy.typing import NDArray
+from scipy.sparse import csr_matrix
 from heapq import heappush, heappop
 
-def topk(user_item_score, filter_query_items, k):
+def topk(
+        user_item_score: NDArray,
+        filter_query_items: csr_matrix,
+        k: int
+) -> Tuple[NDArray, NDArray]:
     """
     Calculates top k items for selected users
 
-    Parameters
-    ----------
-    user_item_score : M1 x N (np.ndarray)
-        2D array of item score for selected M1 users
+    Args:
+        user_item_score (NDArray): 2D array of item score for selected M1 users
 
-    Returns
-    -------
-    indices : M1 x k numpy array
-        2D array of selected k item indices for each user
-    distances : M1 x k numpy array
-        2D array of selected k item similarities for each user
+    Returns (Tuple[NDArray, NDArray]):
+        indices: 2D array of selected k item indices for each user
+        distances: 2D array of selected k item similarities for each user
     """
     assert user_item_score.shape == filter_query_items.shape
 

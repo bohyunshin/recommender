@@ -6,6 +6,17 @@ from preprocess.preprocess_base import PreoprocessorBase
 
 class PreoprocessorMovielensBase(PreoprocessorBase):
     def __init__(self, **kwargs):
+        """
+        Base class for preprocessing movielens data.
+        In init function, loads rating, movie, user data.
+
+        rating.csv: data with likes pair (user_id, item_id)
+        movie.csv: metadata associated with movies.
+        user.csv: metadata associated with users.
+
+        After loading required dataset, it maps original user_id and item_id into
+        ascending integer by 1-1 relationship.
+        """
         super().__init__(**kwargs)
         # load rating and meta data
         path = os.path.join(
@@ -14,9 +25,9 @@ class PreoprocessorMovielensBase(PreoprocessorBase):
         )
         rating_cols = ["user_id", "movie_id", "rating", "timestamp"]
         self.ratings = pd.read_csv(
-            path.format(ml_type=kwargs['movielens_data_type'], data="ratings"),
-            sep='::', names=rating_cols,
-            engine='python',
+            path.format(ml_type=kwargs["movielens_data_type"], data="ratings"),
+            sep="::", names=rating_cols,
+            engine="python",
             encoding="ISO-8859-1"
         )
 
@@ -27,19 +38,19 @@ class PreoprocessorMovielensBase(PreoprocessorBase):
 
         movie_cols = ["movie_id", "movie_name", "genres"]
         self.movies = pd.read_csv(
-            path.format(ml_type=kwargs['movielens_data_type'], data="movies"),
-            sep='::',
+            path.format(ml_type=kwargs["movielens_data_type"], data="movies"),
+            sep="::",
             names=movie_cols,
-            engine='python',
+            engine="python",
             encoding="ISO-8859-1"
         ).sort_values(by="movie_id")
 
         user_cols = ["user_id", "gender", "age", "occupation", "zip_code"]
         self.users = pd.read_csv(
-            path.format(ml_type=kwargs['movielens_data_type'], data="users"),
-            sep='::',
+            path.format(ml_type=kwargs["movielens_data_type"], data="users"),
+            sep="::",
             names=user_cols,
-            engine='python',
+            engine="python",
             encoding="ISO-8859-1"
         ).sort_values(by="user_id")
 
