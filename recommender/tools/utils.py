@@ -1,14 +1,15 @@
-import scipy
+from numpy.typing import NDArray
+from scipy.sparse import csr_matrix
 import time
 import warnings
 import numpy as np
 
-def nonzeros(m, row):
+def nonzeros(m: csr_matrix, row: int):
     """returns the non zeroes of a row in csr_matrix"""
     for index in range(m.indptr[row], m.indptr[row + 1]):
         yield m.indices[index], m.data[index]
 
-def check_random_state(random_state):
+def check_random_state(random_state: int):
     """Validate the random state.
 
     Check a random seed or existing numpy RandomState
@@ -30,8 +31,8 @@ def check_random_state(random_state):
 class ParameterWarning(Warning):
     pass
 
-def check_csr(user_items):
-    if not isinstance(user_items, scipy.sparse.csr_matrix):
+def check_csr(user_items: csr_matrix):
+    if not isinstance(user_items, csr_matrix):
         class_name = user_items.__clas__.__name__
         start = time.time()
         user_items = user_items.tocsr()
@@ -43,7 +44,7 @@ def check_csr(user_items):
     return user_items
 
 
-def mapping_dict(vals):
+def mapping_dict(vals: NDArray):
     u = sorted(list(set(vals)))
     mapping = {v:i for i,v in enumerate(u)}
     return mapping

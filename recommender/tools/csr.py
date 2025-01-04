@@ -1,30 +1,32 @@
-import numpy as np
-from scipy.sparse import csr_matrix
+from typing import Tuple, Dict
 from collections import defaultdict
 
+import pandas as pd
+import numpy as np
+from numpy.typing import NDArray, ArrayLike
+from scipy.sparse import csr_matrix
 
-def dataframe_to_csr(df, shape, implicit):
+
+def dataframe_to_csr(
+        df: pd.DataFrame,
+        shape: Tuple[int, int],
+        implicit: bool
+) -> csr_matrix:
     """
     Converts a pandas dataframe to a csr matrix.
 
-    Parameters
-    ----------
-    df : pd.DataFrame (user_id | item_id | interactions.)
-        Dataframe should be sort by user_id and timestamp (if timestamp column is given)
-        When implicit is true, interactions column denotes total number of interaction
-        between user and item.
-        When implicit is false, interactions column denotes explicit rating
-        between user and item.
+    Args:
+        df (pd.DataFrame[user_id | item_id | interactions]):
+            Dataframe should be sort by user_id and timestamp (if timestamp column is given)
+            When implicit is true, interactions column denotes total number of interaction
+            between user and item.
+            When implicit is false, interactions column denotes explicit rating
+            between user and item.
+        shape (Tuple[int, int]): Total number of user_ids, total number of item_ids
+        implicit (bool): True when feedback data is implicit, False if explicit.
 
-    shape : tuple
-        (total number of user_ids, total number of item_ids)
-
-    implicit : bool
-        True when feedback data is implicit, False if explicit.
-
-    Returns
-    -------
-    user_item : csr matrix
+    Returns (csr_matrix):
+        Converted csr matrix.
     """
     assert "user_id" in df.columns
     assert "movie_id" in df.columns
@@ -67,21 +69,20 @@ def dataframe_to_csr(df, shape, implicit):
     return csr
 
 
-def implicit_to_csr(arr, shape, dct=False):
+def implicit_to_csr(
+        arr: NDArray,
+        shape: Tuple[int, int],
+        dct: bool = False
+) -> csr_matrix:
     """
     Converts user-item interaction data to user-item interaction csr matrix.
 
-    Parameters
-    ----------
-    arr : np.ndarray (n_samples, 2)
-        Each row represents (user_id, item_id) interaction.
+    Args:
+        arr (NDArray): Each row represents (user_id, item_id) interaction.
+        shape (Tuple[int, int]): Total number of user_ids, total number of item_ids
 
-    shape : tuple
-        (total number of user_ids, total number of item_ids)
-
-    Returns
-    -------
-    user_item : csr matrix
+    Returns (csr_matrix):
+        Converted csr matrix.
     """
 
     assert arr.shape[1] == 2
@@ -117,7 +118,16 @@ def implicit_to_csr(arr, shape, dct=False):
     return csr
 
 
-def mapping_index(ids):
+def mapping_index(ids: NDArray) -> Dict[int, int]:
+    """
+    Maps original ids to ascending integer.
+
+    Args:
+        ids (NDArray): Some unique or non-unique integer ids.
+
+    Returns (Dict[int, int]):
+        Mapping dictionary.
+    """
     ids = list(set(ids))
     id2idx = {}
     for idx, val in enumerate(sorted(ids)):
@@ -125,9 +135,23 @@ def mapping_index(ids):
     return id2idx
 
 
-def slice_csr_matrix(csr, row, col):
+def slice_csr_matrix(
+        csr: csr_matrix,
+        row: int,
+        col: int
+) -> int:
     """
-    Returns csr[row, col] value not using slicing operation in csr matrix
+    Returns csr[row, col] value not using slicing operation in csr matrix.
+    When dimension of csr_matrix is too large, slicing such as csr_matrix[row, col]
+    could be inefficient.
+
+    Args:
+        csr (csr_matrix): csr_matrix to be sliced.
+        row (int): The index of the row to be sliced.
+        col (int): The index of the column to be sliced.
+
+    Returns (int):
+        Sliced value.
     """
     indices = csr.indices[csr.indptr[row]:csr.indptr[row + 1]]
     data = csr.data[csr.indptr[row]:csr.indptr[row + 1]]

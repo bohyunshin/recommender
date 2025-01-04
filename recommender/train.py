@@ -1,6 +1,7 @@
 import os
 import sys
 import traceback
+from argparse import ArgumentParser
 import logging
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../.."))
 
@@ -19,7 +20,7 @@ from tools.csr import implicit_to_csr
 from loss.criterion import Criterion
 
 
-def main(args):
+def main(args: ArgumentParser.parse_args):
     setup_logger(args.log_path)
     try:
         logging.info(f"selected dataset: {args.dataset}")

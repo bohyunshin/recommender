@@ -5,7 +5,11 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../"))
 
 from train import main
 
-def run_model(model, dataset, implicit):
+def run_model(
+        model: str,
+        dataset: str,
+        implicit: bool
+):
     args = argparse.ArgumentParser()
     args.dataset = dataset
     args.model = model

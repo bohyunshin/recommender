@@ -1,13 +1,33 @@
-import numpy as np
+from typing import Dict, Tuple, List, Any
 import logging
 logger = logging.getLogger("recommender")
+
+import numpy as np
+from numpy.typing import NDArray
+from scipy.sparse import csr_matrix
 
 from model.fit_model_base import FitModelBase
 from tools.csr import slice_csr_matrix
 
 
 class Model(FitModelBase):
-    def __init__(self, num_users, num_items, num_sim_user_top_N, **kwargs):
+    def __init__(
+            self,
+            num_users: int,
+            num_items: int,
+            num_sim_user_top_N: int,
+            **kwargs
+        ):
+        """
+        User based collaborative filtering model.
+        In this model, user gets recommendation based on likes of user's closest users.
+        Definition of closeness depends on metric. This model defines it as cosine similarity.
+
+        Args:
+            num_users (int): Number of users.
+            num_items (int): Number of items.
+            num_sim_user_top_N (int): Number of similar users.
+        """
         super().__init__()
         self.user_ids = np.arange(num_users)
         self.item_ids = np.arange(num_items)
@@ -15,7 +35,20 @@ class Model(FitModelBase):
         self.num_users = num_users
         self.num_items = num_items
 
-    def fit(self, user_items, val_user_items):
+    def fit(
+            self,
+            user_items: csr_matrix,
+            val_user_items: csr_matrix,
+        ) -> None:
+        """
+        Fit user based model.
+
+        1. Calculate cosine similarity of between every user.
+            This step requires time complexity as O(N^2).
+        2. After calculating cosine similarity, for each of user, sort other users
+            in descending order of cosine similarity.
+        3. Predict user's recommendation based on likes of closest users.
+        """
         logger.info("Calculating cosine similarity between every user")
         user_sim_pair = self.calculate_user_sim(self.user_ids, user_items)
 
@@ -25,7 +58,21 @@ class Model(FitModelBase):
         logger.info("Predicting users' unseen item rating")
         # return self.predict(self.user_factors, self.item_factors, user_items=user_items)
 
-    def calculate_user_sim(self, user_ids, csr):
+    def calculate_user_sim(
+            self,
+            user_ids: NDArray,
+            csr: csr_matrix,
+        ) -> Dict[Tuple[Any, Any], float]:
+        """
+        Calculate cosine similarity between every user based on items liked by both of users.
+
+        Args:
+            user_ids (NDArray): List of total user ids.
+            csr (csr_matrix): Sparse matrix storing likes of each user.
+
+        Returns (Dict[Tuple[Any, Any], float]):
+            Keys are tuple of user ids and its values are corresponding cosine similarity.
+        """
         res = {}
         for i in range(len(user_ids)):
             x = user_ids[i]
@@ -40,7 +87,25 @@ class Model(FitModelBase):
                     res[(x, y)] = self._calculate_user_sim(x, y, items_liked_by_x_y, csr)
         return res
 
-    def _calculate_user_sim(self, x, y, items_liked_by_x_y, csr):
+    def _calculate_user_sim(
+            self,
+            x: int,
+            y: int,
+            items_liked_by_x_y: List[int],
+            csr: csr_matrix,
+        ) -> float:
+        """
+        Inner function calculating cosine similarity.
+
+        Args:
+            x (int): User id.
+            y (int): User id.
+            items_liked_by_x_y (List[int]): List of items liked by both users.
+            csr (csr_matrix): Sparse matrix storing likes of each user.
+
+        Returns (float):
+            Calculated cosine similarity between user x and y.
+        """
         r_x = 0
         r_y = 0
         r_xy = 0
@@ -60,7 +125,19 @@ class Model(FitModelBase):
 
         return r_xy / (r_x * r_y)
 
-    def get_top_N_sim_user(self, user_sim):
+    def get_top_N_sim_user(
+            self,
+            user_sim: Dict[Tuple[Any, Any], float],
+        ) -> Dict[int, List[Tuple[int, int]]]:
+        """
+        Get closest N users for each user.
+
+        Args:
+            user_sim (Dict[Tuple[Any, Any], float]): Cosine similarity between every user.
+
+        Returns (Dict[int, List[Tuple[int, int]]]):
+            N closest users for each user.
+        """
         res = {}
         for pair, sim in user_sim.items():
             x, y = pair

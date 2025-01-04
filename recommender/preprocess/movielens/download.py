@@ -16,9 +16,9 @@ MOVIELENS_URLS = {
 }
 
 def download_movielens(
-        dest='movielens',
-        package='latest-small',
-        verbose=False,
+        dest: str = "movielens",
+        package: str = "latest-small",
+        verbose: bool = False,
     ):
     """
     Reference: https://www.codingforentrepreneurs.com/blog/download-the-movielens-dataset-with-python
@@ -32,8 +32,8 @@ def download_movielens(
     os.makedirs(output_dir, exist_ok=True)
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
-        total_size_in_bytes= int(r.headers.get('content-length', 0))
-        with tempfile.NamedTemporaryFile(mode='rb+') as temp_f:
+        total_size_in_bytes= int(r.headers.get("content-length", 0))
+        with tempfile.NamedTemporaryFile(mode="rb+") as temp_f:
             downloaded = 0
             dl_iteration = 0
             chunk_size = 8192
@@ -44,21 +44,21 @@ def download_movielens(
                     dl_iteration += 1
                     percent = (100 * dl_iteration * 1.0/total_chunks)
                     if dl_iteration % 10 == 0 and percent < 100:
-                        print(f'Completed {percent:2f}%')
+                        print(f"Completed {percent:2f}%")
                     elif percent >= 99.9:
-                        print(f'Download completed. Now unzipping...')
+                        print(f"Download completed. Now unzipping...")
                 temp_f.write(chunk)
-            with ZipFile(temp_f, 'r') as zipf:
+            with ZipFile(temp_f, "r") as zipf:
                 zipf.extractall(output_dir)
                 if verbose is True:
                     print(f"\n\nUnzipped.\n\nFiles downloaded and unziped to:\n\n{dest.resolve()}")
 
 
 def setup_args():
-    parser = argparse.ArgumentParser(description='Download movielens')
-    parser.add_argument('--path', default='.movielens', type=pathlib.Path, nargs='?', help='Write the download path')
-    parser.add_argument('--verbose', default=True, action='store_true')
-    parser.add_argument('--package', default='latest-small', type=str)
+    parser = argparse.ArgumentParser(description="Download movielens")
+    parser.add_argument("--path", default=".movielens", type=pathlib.Path, nargs="?", help="Write the download path")
+    parser.add_argument("--verbose", default=True, action="store_true")
+    parser.add_argument("--package", default="latest-small", type=str)
     return parser.parse_args()
 
 if __name__ == "__main__":

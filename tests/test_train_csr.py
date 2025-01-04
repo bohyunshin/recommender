@@ -5,7 +5,10 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../"))
 
 from train_csr import main
 
-def run_csr_model(model, dataset):
+def run_csr_model(
+        model: str,
+        dataset: str
+):
     args = argparse.ArgumentParser()
     args.dataset = dataset
     args.model = model

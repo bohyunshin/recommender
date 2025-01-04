@@ -1,7 +1,10 @@
-import numpy as np
+from typing import Optional
 import time
-from scipy.sparse import csr_matrix
 import logging
+
+import numpy as np
+from numpy.typing import NDArray
+from scipy.sparse import csr_matrix
 
 from tools.utils import check_csr, check_random_state, nonzeros
 from model.fit_model_base import FitModelBase
@@ -9,15 +12,28 @@ from model.fit_model_base import FitModelBase
 class Model(FitModelBase):
     def __init__(
             self,
-            factors=10,
-            regularization=0.01,
-            alpha=0.1,
-            dtype=np.float32,
-            iterations=100,
-            calculate_training_loss=False,
-            random_state=42,
+            factors: Optional[int] = 10,
+            regularization: Optional[float] = 0.01,
+            alpha: Optional[float] = 0.1,
+            dtype: Optional[np.dtypes] = np.float32,
+            iterations: Optional[int] = 100,
+            calculate_training_loss: Optional[bool] = False,
+            random_state: Optional[int] = 42,
             **kwargs
     ):
+        """
+        Alternating Least Squares algorithm to factorize user x item matrix into each of embedding matrix.
+        Reference: Collaborative Filtering for Implicit Feedback Datasets, Yifan Hu et al.
+
+        Args:
+            factors (int, optional): Dimension of user/item embeddings.
+            regularization (float, optional): Regularization parameter balancing main loss and penalty term.
+            alpha (float, optional): Alpha value in c_ui = 1 + \alpha r_ui. This controls the strength of positive samples.
+            dtype (numpy.dtype, optional): Data type of the embedding matrix.
+            iterations (int, optional): Maximum number of iterations.
+            calculate_training_loss (bool, optional): Whether to calculate training loss.
+            random_state (int, optional): Random seed value.
+        """
         super().__init__()
         self.factors = factors
         self.regularization = regularization
@@ -27,7 +43,11 @@ class Model(FitModelBase):
         self.calculate_training_loss = calculate_training_loss
         self.random_state = random_state
 
-    def fit(self, user_items, val_user_items=None):
+    def fit(
+            self,
+            user_items: csr_matrix,
+            val_user_items: Optional[csr_matrix]
+        ) -> None:
         """
         Factorizes the user_items matrix.
         While selected iterations, this method updates user and item factors using closed form
@@ -41,16 +61,12 @@ class Model(FitModelBase):
         Rui : M x N binarized matrix
         Wu : N x N diagonal matrix whose (i,i) element is c_ui
 
-        Parameters
-        ----------
-        user_items : csr_matrix
-            This is user x item matrix whose dimension is M x N. It is used in training step
-        val_user_items : csr_matrix, optional
-            This is user x item matrix whose dimension is M x N. It is used in validation step.
+        Args:
+            user_items (csr_matrix): This is user x item matrix whose dimension
+            is M x N. It is used in training step.
+            val_user_items (csr_matrix, optional): This is user x item matrix
+            whose dimension is M x N. It is used in validation step.
             Note that in training step, we do not use this matrix.
-
-        Returns
-        -------
         """
         # initialize the random state
         random_state = check_random_state(self.random_state)
@@ -99,21 +115,19 @@ class Model(FitModelBase):
 
             logging.info(f"executed time for {iteration} iteration: {time.time() - start}")
 
-    def update_user_factors(self, u, Q, Cui):
+    def update_user_factors(
+            self,
+            u: int,
+            Q: NDArray,
+            Cui: csr_matrix,
+        ) -> None:
         """
         Update user embedding factors for user u using closed form optimization
 
-        Parameters
-        ----------
-        u : integer
-            Index for user u
-        Q : np.array
-            N x K item factors matrix
-        Cui : csr_matrix
-            M x N confidence sparse matrix
-
-        Returns
-        -------
+        Args:
+            u (int): User index to be updated.
+            Q (NDArray): N x K item factors matrix.
+            Cui (csr_matrix): M x N confidence sparse matrix
         """
         N,K = Q.shape
 
@@ -137,21 +151,19 @@ class Model(FitModelBase):
 
         self.user_factors[u] = p_u
 
-    def update_item_factors(self, i, P, Ciu):
+    def update_item_factors(
+            self,
+            i: int,
+            P: NDArray,
+            Ciu: csr_matrix
+        ) -> None:
         """
         Update item embedding factors for item i using closed form optimization
 
-        Parameters
-        ----------
-        i : integer
-            Index for item i
-        P : np.ndarray
-            M x K user factors matrix
-        Ciu : csr_matrix
-            N x M confidence sparse matrix
-
-        Returns
-        -------
+        Args:
+            i (int): Item index to be updated.
+            P (NDArray): M x K user factors matrix.
+            Ciu (csr_matrix): N x M confidence sparse matrix.
         """
         M, K = P.shape
 
@@ -175,10 +187,28 @@ class Model(FitModelBase):
 
         self.item_factors[i] = q_i
 
-    def predict(self, user_idx, **kwargs):
+    def predict(
+            self,
+            user_idx: NDArray,
+            **kwargs
+        ) -> NDArray:
+        """
+        Calculate prediction scores for target user_idx.
+        Batch users are user_idx, and prediction scores associated with all items
+        are calculated.
+
+        Args:
+            user_idx (NDArray): Batch user index.
+
+        Returns (NDArray):
+            Prediction scores NDArray whose dimension is (# of batch users, # of total items)
+        """
         return np.dot(self.user_factors[user_idx], self.item_factors.T)
 
-    def calculate_loss(self, user_items):
+    def calculate_loss(
+            self,
+            user_items: csr_matrix,
+        ) -> float:
         """
         Calculates training/validation loss in each iteration.
 
@@ -188,15 +218,11 @@ class Model(FitModelBase):
         It is strongly recommended that it should be checked whether validation loss drops
         and becomes stable
 
-        Parameters
-        ----------
-        user_items : csr_matrix
-            Training or validation user x item matrix
+        Args:
+            user_items (csr_matrix): Training or validation user x item matrix.
 
-        Returns
-        -------
-        loss : float
-            Calculated loss value
+        Returns (float):
+            Calculated loss value.
         """
         loss = 0
         M,N = user_items.shape
@@ -221,22 +247,79 @@ class Model(FitModelBase):
         # todo: why divide loss? (from implicit github repo)
         return loss / (total_confidence + user_items.shape[0] * user_items.shape[1] - user_items.nnz)
 
-    def QtQ(self):
+    def QtQ(self) -> NDArray:
+        """
+        Helper function used when iterating als.
+        When calculating closed forms of als, it is efficient to pre-calculate QtQ.
+
+        Returns (NDArray):
+            Calculated QtQ.
+        """
         Q = self.item_factors
         return Q.T.dot(Q)
 
-    def PtP(self):
+    def PtP(self) -> NDArray:
+        """
+        Helper function used when iterating als.
+        When calculating closed forms of als, it is efficient to pre-calculate PtP.
+
+        Returns (NDArray):
+            Calculated PtP.
+        """
         P = self.user_factors
         return P.T.dot(P)
 
-    def binarize(self, c):
-        # binarize c
+    def binarize(
+            self,
+            c: NDArray,
+        ):
+        """
+        Binarizes input NDArray making dataset as implicit.
+        In implicit dataset, even if an user interacted with an item greater than one time,
+        the user is regarded as interacting with an item one time.
+        This model assumption inherently has disadvantage, therefore fixes it with `alpha` parameter.
+
+        Args:
+             c (NDArray): NDArray to be binarized.
+
+        Returns (NDArray):
+            Binarized NDArray.
+        """
         return np.where(c >= 1, 1, 0)
 
-    def linear_equation(self, A, b):
+    def linear_equation(
+            self,
+            A: NDArray,
+            b: NDArray,
+        ) -> NDArray:
+        """
+        Solves linear equation Ax = b.
+        When deriving closed forms of als, need to solve this linear equation.
+
+        Args:
+            A (NDArray): Weight matrix in linear equation.
+            b (NDArray): Bias vector in linear equation.
+
+        Returns (NDArray):
+            Solution of linear equation.
+        """
         return np.linalg.solve(A, b)
 
-    def transform_Cui(self, Cui):
+    def transform_Cui(
+            self,
+            Cui: csr_matrix,
+        ) -> csr_matrix:
+        """
+        Transforms Cui matrix using confidence parameter, `alpha`.
+        If `alpha` equals 1, do not transform anything.
+        Experiment with validation dataset should be conducted which `alpha` is best value.
+
+        Args:
+            Cui (csr_matrix): User x item csr matrix.
+
+        Returns (csr_matrix):
+            Transformed Cui matrix.
+        """
         indptr = Cui.indptr
         indices = Cui.indices
         data = [1 + self.alpha * c for c in Cui.data]

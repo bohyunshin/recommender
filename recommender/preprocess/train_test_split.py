@@ -1,4 +1,6 @@
-from scipy.sparse import csr_matrix
+from typing import Optional, Tuple
+
+from scipy.sparse import csr_matrix, coo_matrix
 from tools.utils import check_random_state
 
 
@@ -60,22 +62,22 @@ class TrainTestSplit:
         return df.iloc[train_idx], df.iloc[val_idx]
 
 
-def train_test_split(ratings, train_percentage=0.8, random_state=None):
-    """ Randomly splits the ratings matrix into two matrices for training/testing.
+def train_test_split(
+        ratings: coo_matrix,
+        train_percentage: float = 0.8,
+        random_state: Optional[int] = 42
+) -> Tuple[csr_matrix, csr_matrix]:
+    """
+    Randomly splits the ratings matrix into two matrices for training/testing.
 
-    Parameters
-    ----------
-    ratings : coo_matrix
-        A sparse matrix to split
-    train_percentage : float
-        What percentage of ratings should be used for training
-    random_state : int, None or RandomState
-        The existing RandomState. If None, or an int, will be used
-        to seed a new numpy RandomState.
-    Returns
-    -------
-    (train, test) : csr_matrix, csr_matrix
-        A tuple of csr_matrices for training/testing """
+    Args:
+        ratings (coo_matrix): A sparse matrix to split
+        train_percentage (float, optional): What percentage of ratings should be used for training
+        random_state (int, optional): Random seed for reproducibility.
+
+    Returns (Tuple[csr_matrix, csr_matrix]):
+        A tuple of csr_matrices for training/testing
+    """
 
     ratings = ratings.tocoo()
     random_state = check_random_state(random_state)

@@ -1,3 +1,6 @@
+from typing import Tuple
+
+import pandas as pd
 import torch
 import torch.nn.functional as F
 
@@ -6,10 +9,20 @@ from tools.utils import mapping_dict
 
 class Preprocessor(PreoprocessorMovielensBase):
     def __init__(self, **kwargs):
+        """
+        Preprocessor for torch based model.
+        """
         super().__init__(**kwargs)
 
-    def preprocess(self):
-        # generate one-hot encoded metadata
+    def preprocess(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Generates one-hot encoded metadata and returns (X, y) tensor.
+        X includes interaction information with user_id and movie_id.
+        y includes true rating value.
+
+        Returns (Tuple[torch.Tensor, torch.Tensor]):
+            Input and target tensors.
+        """
         # id in users and movies should be same ascending order with mapping dictionary
         assert self.users["user_id"].tolist() == sorted(list(self.user_id2idx.values()))
         assert self.movies["movie_id"].tolist() == sorted(list(self.movie_id2idx.values()))
@@ -20,7 +33,19 @@ class Preprocessor(PreoprocessorMovielensBase):
         y = torch.tensor(self.ratings[["rating"]].values, dtype=torch.float32)
         return X, y
 
-    def get_user_meta(self, users):
+    def get_user_meta(
+            self,
+            users: pd.DataFrame,
+        ) -> torch.Tensor:
+        """
+        Convert user meta dataframe into one-hot encoded tensor.
+
+        Args:
+            users (pd.DataFrame): Input metadata for users
+
+        Returns (torch.Tensor):
+            Converted one-hot encoded tensor.
+        """
         user_meta_cols = ["gender", "age", "occupation"]
         user_meta = torch.tensor([])
         for col in user_meta_cols:
@@ -32,7 +57,19 @@ class Preprocessor(PreoprocessorMovielensBase):
             user_meta = torch.concat((user_meta, one_hot_vector), dim=1)
         return user_meta
 
-    def get_item_meta(self, movies):
+    def get_item_meta(
+            self,
+            movies: pd.DataFrame,
+        ) -> torch.Tensor:
+        """
+        Convert item meta dataframe into one-hot encoded tensor.
+
+        Args:
+            users (pd.DataFrame): Input metadata for items
+
+        Returns (torch.Tensor):
+            Converted one-hot encoded tensor.
+        """
         genres = movies["genres"].map(lambda x: x.split("|")).tolist()
         unique_genres = set()
         for genre in genres: # genre: ["Animation", "Action"]
