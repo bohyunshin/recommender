@@ -25,19 +25,21 @@ class Criterion:
 
     def calculate_loss(
             self,
-            y_pred: Optional[torch.Tensor] = None,
-            y: Optional[torch.Tensor] = None,
-            params: Optional[torch.nn.parameter] = None,
-            regularization: Optional[int] = None,
-            user_idx: Optional[torch.Tensor] = None,
-            item_idx: Optional[torch.Tensor] = None,
-            num_users: Optional[int] = None,
-            num_items: Optional[int] = None,
             **kwargs
         ) -> torch.Tensor:
         """
         Calculates loss for given model using defined loss function.
         Because arguments for each loss function are different, `**kwargs` is used as function argument.
+
+        TODO: gets arguments not from kwargs, but from optional argument
+        y_pred: Optional[torch.Tensor] = None,
+        y: Optional[torch.Tensor] = None,
+        params: Optional[torch.nn.parameter] = None,
+        regularization: Optional[int] = None,
+        user_idx: Optional[torch.Tensor] = None,
+        item_idx: Optional[torch.Tensor] = None,
+        num_users: Optional[int] = None,
+        num_items: Optional[int] = None,
         """
         y_pred = kwargs.get("y_pred").squeeze()
         y = kwargs.get("y")
