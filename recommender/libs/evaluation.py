@@ -4,7 +4,7 @@ import numpy as np
 from scipy.sparse import csr_matrix
 from collections import defaultdict
 
-from model.recommender_base import RecommenderBase
+from recommender.model.recommender_base import RecommenderBase
 
 
 def ranking_metrics_at_k(

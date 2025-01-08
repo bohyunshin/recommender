@@ -3,7 +3,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../"))
 
-from train import main
+from recommender.train import main
 
 def run_model(
         model: str,

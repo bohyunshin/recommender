@@ -1,5 +1,4 @@
 import argparse
-import pathlib
 import tempfile
 from zipfile import ZipFile
 import os
@@ -16,19 +15,21 @@ MOVIELENS_URLS = {
 }
 
 def download_movielens(
-        dest: str = "movielens",
         package: str = "latest-small",
         verbose: bool = False,
     ):
     """
     Reference: https://www.codingforentrepreneurs.com/blog/download-the-movielens-dataset-with-python
     """
+    output_dir = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "../../recommender/.data/movielens"
+    )
     url = MOVIELENS_URLS.get(package)
     if not url:
         raise Exception(f"Movie lens package: {package} was not found.")
     if verbose is True:
         print(f"Downloading from {url}")
-    output_dir = os.path.join(os.path.dirname(__file__), dest)
     os.makedirs(output_dir, exist_ok=True)
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
@@ -51,19 +52,17 @@ def download_movielens(
             with ZipFile(temp_f, "r") as zipf:
                 zipf.extractall(output_dir)
                 if verbose is True:
-                    print(f"\n\nUnzipped.\n\nFiles downloaded and unziped to:\n\n{dest.resolve()}")
+                    print(f"\n\nUnzipped.\n\nFiles downloaded and unziped to:\n\n{output_dir}")
 
 
 def setup_args():
     parser = argparse.ArgumentParser(description="Download movielens")
-    parser.add_argument("--path", default=".movielens", type=pathlib.Path, nargs="?", help="Write the download path")
     parser.add_argument("--verbose", default=True, action="store_true")
-    parser.add_argument("--package", default="latest-small", type=str)
+    parser.add_argument("--package", default="ml-1m", type=str)
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = setup_args()
-    path = args.path
     verbose = args.verbose
     package = args.package
-    download_movielens(path, package=package, verbose=verbose)
+    download_movielens(package=package, verbose=verbose)

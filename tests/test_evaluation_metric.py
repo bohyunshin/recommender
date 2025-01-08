@@ -4,8 +4,8 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../recommender"))
 
-from tools.evaluation import ranking_metrics_at_k
-from model.mf.als import Model as AlternatingLeastSquares
+from recommender.libs.evaluation import ranking_metrics_at_k
+from recommender.model.mf.als import Model as AlternatingLeastSquares
 
 
 def test_evaluation_metric():

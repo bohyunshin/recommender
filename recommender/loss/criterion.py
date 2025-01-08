@@ -1,9 +1,7 @@
-from typing import Optional
-
 import torch
 import torch.nn as nn
 
-from loss.custom import bpr_loss, svd_loss
+from recommender.loss.custom import bpr_loss, svd_loss
 
 
 class Criterion:

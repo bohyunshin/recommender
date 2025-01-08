@@ -1,8 +1,9 @@
 from abc import abstractmethod
 from typing import Optional
+
 from scipy.sparse import csr_matrix
 
-from model.recommender_base import RecommenderBase
+from recommender.model.recommender_base import RecommenderBase
 
 
 class FitModelBase(RecommenderBase):

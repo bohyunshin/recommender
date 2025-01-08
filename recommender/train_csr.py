@@ -1,17 +1,18 @@
 import os
-import sys
 import traceback
 from argparse import ArgumentParser
 import logging
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../.."))
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 import importlib
 import pickle
 import time
 
-from tools.evaluation import ranking_metrics_at_k
-from tools.logger import setup_logger
-from tools.parse_args import parse_args
+from recommender.prepare_model_data.prepare_model_data_csr import PrepareModelDataCsr
+from recommender.libs.constant.model.module_path import MODEL_PATH
+from recommender.libs.evaluation import ranking_metrics_at_k
+from recommender.libs.logger import setup_logger
+from recommender.libs.parse_args import parse_args
 
 
 def main(args: ArgumentParser.parse_args):
@@ -30,30 +31,46 @@ def main(args: ArgumentParser.parse_args):
         if args.movielens_data_type != None:
             logging.info(f"selected movielens data type: {args.movielens_data_type}")
 
-        # set preprocessor for csr input models
-        preprocessor_module = importlib.import_module(f"preprocess.{args.dataset}.preprocess_csr").Preprocessor
-        preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type,
-                                           test=args.test)
-        csr_train, csr_val = preprocessor.preprocess(test_ratio=1-args.train_ratio,
-                                                     random_state=args.random_state)
+        # load raw data
+        load_data_module = importlib.import_module(f"load_data.load_data_{args.dataset}").LoadData
+        data = load_data_module().load(test=args.test)
 
-        params = {
-            "factors": args.num_factors,
-            "iterations": args.epochs,
-            "regularization": args.regularization,
-            "random_state": args.random_state,
-            "num_users": csr_train.shape[0],
-            "num_items": csr_train.shape[1],
-            "num_sim_user_top_N": args.num_sim_user_top_N,
-        }
+        # preprocess data
+        preprocess_module = importlib.import_module(f"preprocess.preprocess_{args.dataset}").Preprocessor
+        data = preprocess_module().preprocess(data)
+        NUM_USERS = data.get("num_users")
+        NUM_ITEMS = data.get("num_items")
 
-        # set models
+        # prepare dataset for model
+        prepare_model_data = PrepareModelDataCsr(
+            model=args.model,
+            num_users=NUM_USERS,
+            num_items=NUM_ITEMS,
+            train_ratio=args.train_ratio,
+            num_negative_samples=args.num_neg,
+            implicit=args.implicit,
+            random_state=args.random_state,
+            batch_size=args.batch_size,
+            user_meta=data.get("users"),
+            item_meta=data.get("items"),
+        )
+        csr_train, csr_val = prepare_model_data.get_train_validation_data(data=data)
+
+        # setup models
         start = time.time()
-        if args.model in ["als"]:
-            model_module = importlib.import_module(f"model.mf.{args.model}").Model
-        elif args.model in ["user_based"]:
-            model_module = importlib.import_module(f"model.neighborhood.{args.model}").Model
-        model = model_module(**params)
+        model_path = MODEL_PATH.get(args.model)
+        if model_path is None:
+            raise
+        model_module = importlib.import_module(model_path).Model
+        model = model_module(
+            factors=args.num_factors,
+            regularization=args.regularization,
+            iterations=args.epochs,
+            random_state=args.random_state,
+            num_users=NUM_USERS,
+            num_items=NUM_ITEMS,
+            num_sim_user_top_N=args.num_sim_user_top_N,
+        )
         model.fit(user_items=csr_train, val_user_items=csr_val)
         logging.info(f"total executed time: {(time.time() - start)/60}")
 

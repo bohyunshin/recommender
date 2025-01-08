@@ -4,7 +4,7 @@ from typing import Tuple, Optional
 from numpy.typing import NDArray
 from scipy.sparse import csr_matrix
 
-from tools.topk import topk
+from recommender.libs.topk import topk
 
 
 class RecommenderBase:

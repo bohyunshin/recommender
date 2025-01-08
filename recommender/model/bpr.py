@@ -1,9 +1,10 @@
 import numpy as np
 from numpy.typing import NDArray
+
 import torch
 from torch import nn
 
-from model.torch_model_base import TorchModelBase
+from recommender.model.torch_model_base import TorchModelBase
 
 
 class Model(TorchModelBase):
