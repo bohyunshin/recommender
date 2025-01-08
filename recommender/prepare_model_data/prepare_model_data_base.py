@@ -29,4 +29,22 @@ class PrepareModelDataBase(ABC):
             self,
             data: Dict[str, Union[pd.DataFrame, Dict[int, int]]],
         ) -> Tuple[Any, Any]:
-        pass
+        """
+        Split data into train and validation in corresponding format for model.
+
+        Different data formats are required depending on which models are run.
+        For example, numpy type will be appropriate for scikit-learn based models.
+        Or data_loader from torch library will be appropriate for torch based models.
+
+        This abstractmethod aims for splitting data into train and validation in the
+        preferred data format depending on models.
+
+        Args:
+            data (Dict[str, Union[pd.DataFrame, Dict[int, int]]]):
+                Return value from `recommender/preprocess/preprocess_base/PreoprocessorBase.preprocess`
+                will be used.
+
+        Returns (Tuple[Any, Any]):
+            Train, validation dataset in order. Format could be numpy, data_loader or csr.
+        """
+        raise NotImplementedError

@@ -11,13 +11,32 @@ class PreoprocessorBase(ABC):
         pass
 
     @abstractmethod
-    def preprocess(self, data: Dict[str, pd.DataFrame]):
+    def preprocess(self, data: Dict[str, pd.DataFrame]) -> Dict[str, Union[pd.DataFrame, Dict[int, int]]]:
         """
         Abstract method for preprocssing data.
+        In preprocessing step, various preprocess logic could be included depending on dataset.
+        However, preprocess step which maps user ids and item ids is included as basis.
+
+        Args:
+            data (Dict[str, pd.DataFrame]): Return value from
+                recommender/load_data/load_data_base.LoadDataBase.base will be used.
+
+        Returns (Dict[str, Union[pd.DataFrame, Dict[int, int]]]):
+            Preprocessed pandas dataframe and its mapping information.
         """
         raise NotImplementedError
 
     def mapping(self, data: Dict[str, pd.DataFrame]) -> Dict[str, Union[pd.DataFrame, Dict[int, int]]]:
+        """
+        Map original user_id and item_id into ascending integer.
+
+        Args:
+            data (Dict[str, pd.DataFrame]): Return value from
+                recommender/load_data/load_data_base.LoadDataBase.base will be used.
+
+        Returns (Dict[str, Union[pd.DataFrame, Dict[int, int]]]):
+            Preprocessed pandas dataframe and its mapping information.
+        """
         ratings = data.get("ratings")
         users = data.get("users")
         items = data.get("items")

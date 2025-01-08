@@ -13,20 +13,23 @@ from recommender.libs.constant.data.movielens import (
 
 class LoadData(LoadDataBase):
     def __init__(self, **kwargs):
-        """
-        Base class for preprocessing movielens data.
-        In init function, loads rating, movie, user data.
-
-        rating.csv: data with likes pair (user_id, item_id)
-        movie.csv: metadata associated with movies.
-        user.csv: metadata associated with users.
-
-        After loading required dataset, it maps original user_id and item_id into
-        ascending integer by 1-1 relationship.
-        """
         super().__init__(**kwargs)
 
     def load(self, **kwargs) -> Dict[str, pd.DataFrame]:
+        """
+        Loads movielens data.
+        After downloading movielens data using script in scripts/download/movielens.py,
+        load data into pandas dataframe.
+        Depending on type of movielens dataset such as ml-1m or ml-10m, loading logic will be
+        different because format or column names are different.
+        First, focus on consisting pipeline with movielens 1m, then will integrate 10m later.
+
+        Returns (Dict[str, pd.DataFrame]):
+            Basically, abstractmethod `load` is designed to return three types of dataframes.
+            Ratings, user-meta, item-meta related are target dataset to be loaded.
+            However, depending on situation of different dataset (movielens, yelp, pinterest),
+            this return type will be modified.
+        """
         # load rating and meta data
         ratings = pd.read_csv(
             MovieLens1mPath.ratings.value,

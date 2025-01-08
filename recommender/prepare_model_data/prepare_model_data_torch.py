@@ -30,6 +30,9 @@ class PrepareModelDataTorch(PrepareModelDataBase):
             item_meta: pd.DataFrame,
             **kwargs,
         ):
+        """
+        Prepare train / validation torch data_loader.
+        """
         super().__init__(
             model=model,
             num_users=num_users,
@@ -48,6 +51,23 @@ class PrepareModelDataTorch(PrepareModelDataBase):
             self,
             data: Dict[str, Union[pd.DataFrame, Dict[int, int]]]
         ) -> Tuple[Any, Any]:
+        """
+        Getting pandas dataframe, make train / validation torch data_loader.
+
+        First, extract feature and target tensor.
+        Second, make torch dataset. Depending on chosen model, modified dataset will be used.
+        For example, for some models, negative sampling is required.
+        See recommender/libs/torch_dataset for more details.
+        Finally, split torch dataset into train and validation and make them as torch data_loader.
+
+        Args:
+            data (Dict[str, Union[pd.DataFrame, Dict[int, int]]]):
+                Return value from `recommender/preprocess/preprocess_base/PreoprocessorBase.preprocess`
+                will be used.
+
+        Returns (Tuple[Any, Any]):
+            Train, validation dataset in order. Format could be numpy, data_loader or csr.
+        """
 
         # get feature / target tensor
         X,y = self.get_X_y(data=data)
@@ -68,6 +88,19 @@ class PrepareModelDataTorch(PrepareModelDataBase):
             X: torch.Tensor,
             y: torch.Tensor,
         ) -> Dataset:
+        """
+        Make torch dataset to be used for torch data_loader.
+
+        Different torch dataset will be made depending on chosen model.
+        See recommender/libs/torch_dataset for more details.
+
+        Args:
+            X (torch.Tensor): Input tensors. Usually, user_id and item_id.
+            y (torch.Tensor): Target tensors. Usually, rating value.
+
+        Returns (Dataset):
+            Torch dataset.
+        """
         shape = self.num_users, self.num_items
         user_items_dct = implicit_to_csr(X, shape, True)
 
@@ -101,6 +134,11 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         X includes interaction information with user_id and movie_id.
         y includes true rating value.
 
+        Args:
+            data (Dict[str, Union[pd.DataFrame, Dict[int, int]]]):
+                Return value from `recommender/preprocess/preprocess_base/PreoprocessorBase.preprocess`
+                will be used.
+
         Returns (Tuple[torch.Tensor, torch.Tensor]):
             Input and target tensors.
         """
@@ -115,6 +153,16 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         return X, y
 
     def get_torch_data_loader(self, dataset: Dataset) -> Tuple[DataLoader, DataLoader]:
+        """
+        Make train / validation torch data_loader.
+
+        Args:
+            dataset (Dataset): Torch dataset from `get_torch_dataset` method
+                will be used as `dataset` argument.
+
+        Returns (Tuple[DataLoader, DataLoader]):
+            Train / validation torch data_loader in order.
+        """
         seed = torch.Generator(device=DEVICE.type).manual_seed(self.random_state)
         # split train / validation dataset
         train_dataset, validation_dataset = random_split(
