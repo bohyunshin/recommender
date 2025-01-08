@@ -1,23 +1,23 @@
 import os
-import sys
 import traceback
 from argparse import ArgumentParser
 import logging
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../.."))
+import copy
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 import torch
-from torch.utils.data import DataLoader, random_split
 from torch import optim
 import numpy as np
 import importlib
-import copy
-import time
 
-from tools.logger import setup_logger
-from tools.parse_args import parse_args
-from tools.evaluation import ranking_metrics_at_k
-from tools.csr import implicit_to_csr
-from loss.criterion import Criterion
+from recommender.prepare_model_data.prepare_model_data_torch import PrepareModelDataTorch
+from recommender.loss.criterion import Criterion
+from recommender.libs.logger import setup_logger
+from recommender.libs.parse_args import parse_args
+from recommender.libs.evaluation import ranking_metrics_at_k
+from recommender.libs.csr import implicit_to_csr
+from recommender.libs.constant.model.module_path import MODEL_PATH
+from recommender.libs.constant.torch.device import DEVICE
 
 
 def main(args: ArgumentParser.parse_args):
@@ -35,72 +35,47 @@ def main(args: ArgumentParser.parse_args):
         logging.info(f"patience for watching validation loss: {args.patience}")
         if args.movielens_data_type != None:
             logging.info(f"selected movielens data type: {args.movielens_data_type}")
+        logging.info(f"device info: {DEVICE}")
 
-        # set device type: cpu or gpu
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        torch.set_default_device(device.type)
-        logging.info(f"device info: {torch.get_default_device()}")
+        # load raw data
+        load_data_module = importlib.import_module(f"load_data.load_data_{args.dataset}").LoadData
+        data = load_data_module().load(test=args.test)
 
-        # prepare train / validation dataset
-        # we use preprocessor in preprocess_csr.py when running pytorch based models
-        preprocessor_module = importlib.import_module(f"preprocess.{args.dataset}.preprocess_torch").Preprocessor
-        preprocessor = preprocessor_module(movielens_data_type=args.movielens_data_type, test=args.test)
-        X,y = preprocessor.preprocess()
+        # preprocess data
+        preprocess_module = importlib.import_module(f"preprocess.preprocess_{args.dataset}").Preprocessor
+        data = preprocess_module().preprocess(data)
+        NUM_USERS = data.get("num_users")
+        NUM_ITEMS = data.get("num_items")
 
-        X = X.to(device)
-        y = y.to(device)
-
-        logging.info(f"number of positive samples: {len(X)}")
-
-        # when implicit feedback, i.e., args.implicit equals True,
-        # user-item interaction information is required when negative sampling
-        shape = (preprocessor.num_users, preprocessor.num_items)
-        user_items_dct = implicit_to_csr(X, shape, True)
-
-        seed = torch.Generator(device=device.type).manual_seed(args.random_state)
-        dataset_args = {
-            "X":X,
-            "y":y,
-            "user_items_dct":user_items_dct,
-            "num_items":preprocessor.num_items,
-            "num_neg":args.num_neg
-        }
-
-        if args.implicit == True:
-            if args.model == "bpr":
-                dataset_path = "data_loader.triplet_uniform_negative_sampling_dataset"
-            elif args.model in ["gmf", "mlp", "two_tower"]:
-                dataset_path = "data_loader.bce_uniform_negative_sampling_dataset"
-        else:
-            dataset_path = f"data_loader.data"
-        dataset_module = importlib.import_module(dataset_path).Data
-        dataset = dataset_module(**dataset_args)
-
-        if args.implicit == True:
-            start = time.time()
-            dataset.negative_sampling()
-            logging.info(f"token time for negative sampling: {time.time() - start}")
-
-        # split train / validation dataset
-        train_dataset, validation_dataset = random_split(dataset, [args.train_ratio, 1-args.train_ratio], generator=seed)
-        train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, generator=seed)
-        validation_dataloader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=True, generator=seed)
-        mu = train_dataset.dataset.y[train_dataset.indices].mean() if args.model in ["svd", "svd_bias"] else None
+        # prepare dataset for model
+        prepare_model_data = PrepareModelDataTorch(
+            model=args.model,
+            num_users=NUM_USERS,
+            num_items=NUM_ITEMS,
+            train_ratio=args.train_ratio,
+            num_negative_samples=args.num_neg,
+            implicit=args.implicit,
+            random_state=args.random_state,
+            batch_size=args.batch_size,
+            user_meta=data.get("users"),
+            item_meta=data.get("items"),
+        )
+        train_dataloader, validation_dataloader = prepare_model_data.get_train_validation_data(data=data)
 
         # set up model
-        if args.model in ["svd", "svd_bias"]:
-            model_path = f"model.mf.{args.model}"
-        elif args.model in ["gmf", "mlp", "two_tower"]:
-            model_path = f"model.deep_learning.{args.model}"
-        else: # bpr
-            model_path = f"model.{args.model}"
+        model_path = MODEL_PATH.get(args.model)
+        if model_path is None:
+            raise
         model_module = importlib.import_module(model_path).Model
-        args.num_users = preprocessor.num_users
-        args.num_items = preprocessor.num_items
-        args.mu = mu
-        args.user_meta = preprocessor.user_meta
-        args.item_meta = preprocessor.item_meta
-        model = model_module(**vars(args))
+        model = model_module(
+            num_users=NUM_USERS, # common model parameter
+            num_items=NUM_ITEMS, # common model parameter
+            num_factors=args.num_factors, # common model parameter
+            mu=prepare_model_data.mu, # for svd_bias model
+            user_meta=prepare_model_data.user_meta, # for two_tower model
+            item_meta=prepare_model_data.item_meta, # for two_tower model
+        )
+
         criterion = Criterion(args.model)
         optimizer = optim.SGD(model.parameters(), lr=args.lr)
 
@@ -126,8 +101,8 @@ def main(args: ArgumentParser.parse_args):
                     inputs = (users, items)
                     loss_kwargs["user_idx"] = users
                     loss_kwargs["item_idx"] = items
-                    loss_kwargs["num_users"] = preprocessor.num_users
-                    loss_kwargs["num_items"] = preprocessor.num_items
+                    loss_kwargs["num_users"] = NUM_USERS
+                    loss_kwargs["num_items"] = NUM_ITEMS
                 optimizer.zero_grad()
                 y_pred = model(*inputs)
                 loss_kwargs["y_pred"] = y_pred
@@ -158,8 +133,8 @@ def main(args: ArgumentParser.parse_args):
                         inputs = (users, items)
                         loss_kwargs["user_idx"] = users
                         loss_kwargs["item_idx"] = items
-                        loss_kwargs["num_users"] = preprocessor.num_users
-                        loss_kwargs["num_items"] = preprocessor.num_items
+                        loss_kwargs["num_users"] = NUM_USERS
+                        loss_kwargs["num_items"] = NUM_ITEMS
 
                     y_pred = model(*inputs)
                     loss_kwargs["y_pred"] = y_pred
@@ -190,18 +165,18 @@ def main(args: ArgumentParser.parse_args):
         K = [10, 20, 50]
         if args.implicit: # torch & implicit > bpr, ncf, gmf
             tr_pos_idx = np.intersect1d(
-                (train_dataset.dataset.label == 1).nonzero().squeeze().detach().cpu().numpy(),
-                train_dataset.indices
+                (prepare_model_data.train_dataset.dataset.label == 1).nonzero().squeeze().detach().cpu().numpy(),
+                prepare_model_data.train_dataset.indices
             )
             val_pos_idx = np.intersect1d(
-                (validation_dataset.dataset.label == 1).nonzero().squeeze().detach().cpu().numpy(),
-                validation_dataset.indices
+                (prepare_model_data.validation_dataset.dataset.label == 1).nonzero().squeeze().detach().cpu().numpy(),
+                prepare_model_data.validation_dataset.indices
             )
         else: # torch & explicit > svd, svd_bias
-            tr_pos_idx = train_dataset.indices
-            val_pos_idx = validation_dataset.indices
-        csr_train = implicit_to_csr(train_dataset.dataset.X[tr_pos_idx], shape)
-        csr_val = implicit_to_csr(validation_dataset.dataset.X[val_pos_idx], shape)
+            tr_pos_idx = prepare_model_data.train_dataset.indices
+            val_pos_idx = prepare_model_data.validation_dataset.indices
+        csr_train = implicit_to_csr(prepare_model_data.train_dataset.dataset.X[tr_pos_idx], (NUM_USERS, NUM_ITEMS))
+        csr_val = implicit_to_csr(prepare_model_data.validation_dataset.dataset.X[val_pos_idx], (NUM_USERS, NUM_ITEMS))
         ndcg = []
         map = []
         for k in K:

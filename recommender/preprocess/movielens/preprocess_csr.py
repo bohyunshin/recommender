@@ -1,9 +1,9 @@
 from typing import Tuple
 from scipy.sparse import csr_matrix
 
-from tools.csr import dataframe_to_csr
-from preprocess.movielens.preprocess_movielens_base import PreoprocessorMovielensBase
-from preprocess.train_test_split import train_test_split
+from recommender.libs.csr import dataframe_to_csr
+from recommender.preprocess.movielens.preprocess_movielens_base import PreoprocessorMovielensBase
+from recommender.preprocess.train_test_split import train_test_split
 
 
 class Preprocessor(PreoprocessorMovielensBase):

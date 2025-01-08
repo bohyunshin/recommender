@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 
 from preprocess.movielens.preprocess_movielens_base import PreoprocessorMovielensBase
-from tools.utils import mapping_dict
+from libs.utils import mapping_dict
 
 class Preprocessor(PreoprocessorMovielensBase):
     def __init__(self, **kwargs):

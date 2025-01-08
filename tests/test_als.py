@@ -7,7 +7,7 @@ import implicit
 from scipy.sparse import csr_matrix
 from numpy.testing import assert_array_equal, assert_almost_equal
 
-from model.mf.als import Model as AlternatingLeastSquares
+from recommender.model.mf.als import Model as AlternatingLeastSquares
 
 
 def test_binarize():

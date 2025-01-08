@@ -1,7 +1,7 @@
 from typing import Optional, Tuple
 
 from scipy.sparse import csr_matrix, coo_matrix
-from tools.utils import check_random_state
+from libs.utils import check_random_state
 
 
 class TrainTestSplit:

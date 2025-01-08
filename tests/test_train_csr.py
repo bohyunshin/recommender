@@ -3,7 +3,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../"))
 
-from train_csr import main
+from recommender.train_csr import main
 
 def run_csr_model(
         model: str,

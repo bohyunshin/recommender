@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from model.torch_model_base import TorchModelBase
+from recommender.model.torch_model_base import TorchModelBase
 
 
 class Model(TorchModelBase):

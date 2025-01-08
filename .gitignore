@@ -16,6 +16,8 @@ recommender/preprocess/movielens/.movielens
 recommender/preprocess/avazu_ctr/.avazu_ctr
 recommender/preprocess/sample/.sample
 
+recommender/load_data/movielens/.movielens
+
 # venv
 .venv/
 venv/
@@ -33,3 +35,7 @@ tests/*.pkl
 
 # code cov
 .coverage
+
+# data
+.data/
+recommender/.data
