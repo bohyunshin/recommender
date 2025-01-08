@@ -27,9 +27,13 @@ def run_csr_model(
     args.num_sim_user_top_N = 45
     args.movielens_data_type = "ml-1m"
     args.test = True
+    args.num_sim_user_top_N = 5
 
     main(args)
 
 
 def test_als():
     run_csr_model("als", "movielens")
+
+def test_user_based():
+    run_csr_model("user_based", "movielens")

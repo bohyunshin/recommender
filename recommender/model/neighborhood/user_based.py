@@ -1,6 +1,5 @@
 from typing import Dict, Tuple, List, Any
 import logging
-logger = logging.getLogger("recommender")
 
 import numpy as np
 from numpy.typing import NDArray
@@ -49,13 +48,13 @@ class Model(FitModelBase):
             in descending order of cosine similarity.
         3. Predict user's recommendation based on likes of closest users.
         """
-        logger.info("Calculating cosine similarity between every user")
+        logging.info("Calculating cosine similarity between every user")
         user_sim_pair = self.calculate_user_sim(self.user_ids, user_items)
 
-        logger.info("Getting similar users ordering by cosine similarity")
+        logging.info("Getting similar users ordering by cosine similarity")
         self.top_N_sim_user = self.get_top_N_sim_user(user_sim_pair)
 
-        logger.info("Predicting users' unseen item rating")
+        logging.info("Predicting users' unseen item rating")
         # return self.predict(self.user_factors, self.item_factors, user_items=user_items)
 
     def calculate_user_sim(
@@ -154,7 +153,7 @@ class Model(FitModelBase):
             final_res[u] = sorted(rank, key=lambda x: x[1], reverse=True)[:self.num_sim_user_top_N]
         return final_res
 
-    def predict(self, user_factors, item_factors, userid, **kwargs):
+    def predict(self, userid, **kwargs):
         """
         In user-based CF model, there are not any embeddings w.r.t users / items.
         However, we pass user_factors, item_factors as None value to follow RecommenderBase abstract class.
@@ -166,11 +165,11 @@ class Model(FitModelBase):
         user_item_rating = np.zeros((self.num_users, self.num_items))
         for u in self.user_ids:
             rating_by_u = csr.data[csr.indptr[u]:csr.indptr[u+1]]
-            mean_r[u] = sum(rating_by_u) / len(rating_by_u)
+            mean_r[u] = 0 if len(rating_by_u) == 0 else sum(rating_by_u) / len(rating_by_u)
 
         for idx,u in enumerate(self.user_ids):
             if idx % 5000 == 0:
-                logger.info(f"Predicting {idx}th user unseen item rating out of total {len(self.user_ids)} users.")
+                logging.info(f"Predicting {idx}th user unseen item rating out of total {len(self.user_ids)} users.")
 
             if res.get(u) is None:
                 res[u] = []
