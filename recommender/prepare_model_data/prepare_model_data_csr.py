@@ -3,7 +3,7 @@ import pandas as pd
 
 from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
 from recommender.libs.csr import dataframe_to_csr
-from recommender.preprocess.train_test_split import train_test_split
+from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS
 
 
 class PrepareModelDataCsr(PrepareModelDataBase):
@@ -34,20 +34,30 @@ class PrepareModelDataCsr(PrepareModelDataBase):
             data: Dict[str, Union[pd.DataFrame, Dict[int, int]]]
         ) -> Tuple[Any, Any]:
         """
-                Split rating data into train / validation dataset, in csr_matrix format.
+        Split rating data into train / validation dataset, in csr_matrix format.
 
-                Returns (Tuple[csr_matrix, csr_matrix]):
-                    Tuple of train / validation dataset in csr_matrix.
-                """
-        ratings = data.get("ratings")
+        Returns (Tuple[csr_matrix, csr_matrix]):
+            Tuple of train / validation dataset in csr_matrix.
+        """
         shape = (self.num_users, self.num_items)
-        csr_train, csr_val = train_test_split(
-            ratings=dataframe_to_csr(
-                df=ratings,
-                shape=shape,
-                implicit=True
-            ),
-            train_percentage=self.train_ratio,
-            random_state=self.random_state
+        ratings = data.get("ratings")
+
+        # filter user_id whose number of reviews is lower than MIN_REVIEWS
+        user2item_count = ratings["user_id"].value_counts().to_dict()
+        user_id_min_reviews = [user_id for user_id, item_count in user2item_count.items() if item_count >= MIN_REVIEWS]
+        ratings = ratings[lambda x: x["user_id"].isin(user_id_min_reviews)]
+
+        # split train / validation
+        train, val = self.split_train_validation(ratings=ratings)
+
+        csr_train = dataframe_to_csr(
+            df=train,
+            shape=shape,
+            implicit=True,
+        )
+        csr_val = dataframe_to_csr(
+            df=val,
+            shape=shape,
+            implicit=True,
         )
         return csr_train, csr_val

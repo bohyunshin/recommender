@@ -4,19 +4,16 @@ import importlib
 import logging
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
 import torch
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset, DataLoader
 
 from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
 from recommender.libs.utils.utils import mapping_dict
 from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary
-from recommender.libs.csr import implicit_to_csr
 from recommender.libs.constant.torch.device import DEVICE
 from recommender.libs.constant.torch.dataset import DATASET_PATH
-from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS, STRATIFY_COLUMN
-from recommender.libs.constant.data import DatasetName
+from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS
 
 
 class PrepareModelDataTorch(PrepareModelDataBase):
@@ -58,7 +55,7 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         """
         Getting pandas dataframe, make train / validation torch data_loader.
 
-        First, extract feature and target tensor.
+        First, split dataset into train / validation and separate feature / target by X, y.
         Second, make torch dataset. Depending on chosen model, modified dataset will be used.
         For example, for some models, negative sampling is required.
         See recommender/libs/torch_dataset for more details.
@@ -74,7 +71,7 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         """
 
         # get feature / target tensor
-        train_val_tensors = self.get_X_y(data=data)
+        train_val_tensors = self.get_X_y_train_validation(data=data)
 
         # make torch dataset
         torch_dataset = self.get_torch_dataset(
@@ -98,7 +95,7 @@ class PrepareModelDataTorch(PrepareModelDataBase):
             y_train: torch.Tensor,
             X_val: torch.Tensor,
             y_val: torch.Tensor,
-        ) -> Dict:
+        ) -> Dict[str, Dataset]:
         """
         Make torch dataset to be used for torch data_loader.
 
@@ -106,10 +103,10 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         See recommender/libs/torch_dataset for more details.
 
         Args:
-            X_train (torch.Tensor): Input tensors. Usually, user_id and item_id.
-            y_train (torch.Tensor): Target tensors. Usually, rating value.
-            X_val (torch.Tensor): Input tensors. Usually, user_id and item_id.
-            y_val (torch.Tensor): Target tensors. Usually, rating value.
+            X_train (torch.Tensor): Input tensors for train step. Usually, user_id and item_id.
+            y_train (torch.Tensor): Target tensors for train step. Usually, rating value.
+            X_val (torch.Tensor): Input tensors for validation step. Usually, user_id and item_id.
+            y_val (torch.Tensor): Target tensors for validation step. Usually, rating value.
 
         Returns (Dataset):
             Torch dataset.
@@ -125,13 +122,6 @@ class PrepareModelDataTorch(PrepareModelDataBase):
                 ts=X,
                 structure=dict,
             )
-            # dataset_args = {
-            #     "X": X,
-            #     "y": y,
-            #     "user_items_dct": user_items_summary,
-            #     "num_items": self.num_items,
-            #     "num_neg": self.num_negative_samples,
-            # }
 
             dataset_path = DATASET_PATH.get(self.model)
             if dataset_path is None:
@@ -154,7 +144,7 @@ class PrepareModelDataTorch(PrepareModelDataBase):
 
         return torch_dataset
 
-    def get_X_y(
+    def get_X_y_train_validation(
             self,
             data: Dict[str, Union[pd.DataFrame, Dict[int, int]]],
         ) -> Dict[str, torch.Tensor]:
@@ -185,12 +175,7 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         self.item_meta = self.get_item_meta(items)
 
         # split train / validation
-        train, val = train_test_split(
-            ratings,
-            test_size=1-self.train_ratio,
-            random_state=self.random_state,
-            stratify=ratings[STRATIFY_COLUMN[DatasetName.MOVIELENS.value]],
-        )
+        train, val = self.split_train_validation(ratings=ratings)
 
         X_train = torch.tensor(train[["user_id", "movie_id"]].values)
         y_train = torch.tensor(train["rating"].values, dtype=torch.float32)
@@ -198,8 +183,6 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         X_val = torch.tensor(val[["user_id", "movie_id"]].values)
         y_val = torch.tensor(val["rating"].values, dtype=torch.float32)
 
-        # X = torch.tensor(ratings[["user_id", "movie_id"]].values)
-        # y = torch.tensor(ratings[["rating"]].values, dtype=torch.float32)
         return {
             "X_train": X_train,
             "y_train": y_train,
@@ -223,12 +206,6 @@ class PrepareModelDataTorch(PrepareModelDataBase):
             Train / validation torch data_loader in order.
         """
         seed = torch.Generator(device=DEVICE.type).manual_seed(self.random_state)
-        # split train / validation dataset
-        # train_dataset, validation_dataset = random_split(
-        #     dataset=dataset,
-        #     lengths=[self.train_ratio, 1 - self.train_ratio],
-        #     generator=seed
-        # )
         self.train_dataset = train_dataset
         self.validation_dataset = val_dataset
         train_dataloader = DataLoader(
@@ -279,7 +256,7 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         Convert item meta dataframe into one-hot encoded tensor.
 
         Args:
-            users (pd.DataFrame): Input metadata for items
+            items (pd.DataFrame): Input metadata for items
 
         Returns (torch.Tensor):
             Converted one-hot encoded tensor.
