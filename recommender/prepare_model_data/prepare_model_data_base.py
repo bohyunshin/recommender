@@ -2,6 +2,10 @@ from abc import ABC, abstractmethod
 from typing import Tuple, Any, Dict, Union
 
 import pandas as pd
+from sklearn.model_selection import train_test_split
+
+from recommender.libs.constant.prepare_model_data.prepare_model_data import STRATIFY_COLUMN
+from recommender.libs.constant.data import DatasetName
 
 
 class PrepareModelDataBase(ABC):
@@ -23,6 +27,25 @@ class PrepareModelDataBase(ABC):
         self.train_ratio = train_ratio
         self.implicit = implicit
         self.random_state = random_state
+
+    def split_train_validation(self, ratings: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """
+        Split rating dataframe using scikit-learn function.
+        Stratified column name will be given depending on dataset.
+
+        Args:
+            ratings (pd.DataFrame): Rating dataframe consisting of user_id and item_id.
+
+        Returns (Tuple[pd.DataFrame, pd.DataFrame]):
+            Tuple of train and validation dataframes.
+        """
+        train, validation = train_test_split(
+            ratings,
+            test_size=1 - self.train_ratio,
+            random_state=self.random_state,
+            stratify=ratings[STRATIFY_COLUMN[DatasetName.MOVIELENS.value]],
+        )
+        return train, validation
 
     @abstractmethod
     def get_train_validation_data(

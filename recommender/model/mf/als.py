@@ -6,7 +6,7 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.sparse import csr_matrix
 
-from recommender.libs.utils import check_csr, check_random_state, nonzeros
+from recommender.libs.utils.utils import check_csr, check_random_state, nonzeros
 from recommender.model.fit_model_base import FitModelBase
 
 class Model(FitModelBase):

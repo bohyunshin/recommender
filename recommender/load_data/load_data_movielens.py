@@ -41,7 +41,7 @@ class LoadData(LoadDataBase):
 
         # for quick pytest
         if kwargs["test"] == True:
-            idxs = np.random.choice(range(ratings.shape[0]), size=1000, replace=False)
+            idxs = np.random.choice(range(ratings.shape[0]), size=5000, replace=False)
             ratings = ratings.iloc[idxs, :]
 
         items = pd.read_csv(
