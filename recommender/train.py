@@ -164,19 +164,15 @@ def main(args: ArgumentParser.parse_args):
 
         K = [10, 20, 50]
         if args.implicit: # torch & implicit > bpr, ncf, gmf
-            tr_pos_idx = np.intersect1d(
-                (prepare_model_data.train_dataset.dataset.label == 1).nonzero().squeeze().detach().cpu().numpy(),
-                prepare_model_data.train_dataset.indices
-            )
-            val_pos_idx = np.intersect1d(
-                (prepare_model_data.validation_dataset.dataset.label == 1).nonzero().squeeze().detach().cpu().numpy(),
-                prepare_model_data.validation_dataset.indices
-            )
+            tr_pos_idx = (prepare_model_data.train_dataset.label == 1).nonzero().squeeze().detach().cpu().numpy()
+            val_pos_idx = (prepare_model_data.validation_dataset.label == 1).nonzero().squeeze().detach().cpu().numpy()
+            X_train = prepare_model_data.train_dataset.X[tr_pos_idx]
+            X_val = prepare_model_data.validation_dataset.X[val_pos_idx]
         else: # torch & explicit > svd, svd_bias
-            tr_pos_idx = prepare_model_data.train_dataset.indices
-            val_pos_idx = prepare_model_data.validation_dataset.indices
-        csr_train = implicit_to_csr(prepare_model_data.train_dataset.dataset.X[tr_pos_idx], (NUM_USERS, NUM_ITEMS))
-        csr_val = implicit_to_csr(prepare_model_data.validation_dataset.dataset.X[val_pos_idx], (NUM_USERS, NUM_ITEMS))
+            X_train = prepare_model_data.train_dataset.X
+            X_val = prepare_model_data.validation_dataset.X
+        csr_train = implicit_to_csr(X_train, (NUM_USERS, NUM_ITEMS))
+        csr_val = implicit_to_csr(X_val, (NUM_USERS, NUM_ITEMS))
         ndcg = []
         map = []
         for k in K:

@@ -4,15 +4,19 @@ import importlib
 import logging
 
 import pandas as pd
+from sklearn.model_selection import train_test_split
 import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, random_split
 
 from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
-from recommender.libs.utils import mapping_dict
+from recommender.libs.utils.utils import mapping_dict
+from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary
 from recommender.libs.csr import implicit_to_csr
 from recommender.libs.constant.torch.device import DEVICE
 from recommender.libs.constant.torch.dataset import DATASET_PATH
+from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS, STRATIFY_COLUMN
+from recommender.libs.constant.data import DatasetName
 
 
 class PrepareModelDataTorch(PrepareModelDataBase):
@@ -70,24 +74,31 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         """
 
         # get feature / target tensor
-        X,y = self.get_X_y(data=data)
+        train_val_tensors = self.get_X_y(data=data)
 
         # make torch dataset
-        dataset = self.get_torch_dataset(
-            X=X,
-            y=y,
+        torch_dataset = self.get_torch_dataset(
+            X_train=train_val_tensors.get("X_train"),
+            y_train=train_val_tensors.get("y_train"),
+            X_val=train_val_tensors.get("X_val"),
+            y_val=train_val_tensors.get("y_val"),
         )
 
         # get train / validation data loader
-        train_dataloader, validation_dataloader = self.get_torch_data_loader(dataset=dataset)
+        train_dataloader, validation_dataloader = self.get_torch_data_loader(
+            train_dataset=torch_dataset.get("train"),
+            val_dataset=torch_dataset.get("val"),
+        )
 
         return train_dataloader, validation_dataloader
 
     def get_torch_dataset(
             self,
-            X: torch.Tensor,
-            y: torch.Tensor,
-        ) -> Dataset:
+            X_train: torch.Tensor,
+            y_train: torch.Tensor,
+            X_val: torch.Tensor,
+            y_val: torch.Tensor,
+        ) -> Dict:
         """
         Make torch dataset to be used for torch data_loader.
 
@@ -95,40 +106,58 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         See recommender/libs/torch_dataset for more details.
 
         Args:
-            X (torch.Tensor): Input tensors. Usually, user_id and item_id.
-            y (torch.Tensor): Target tensors. Usually, rating value.
+            X_train (torch.Tensor): Input tensors. Usually, user_id and item_id.
+            y_train (torch.Tensor): Target tensors. Usually, rating value.
+            X_val (torch.Tensor): Input tensors. Usually, user_id and item_id.
+            y_val (torch.Tensor): Target tensors. Usually, rating value.
 
         Returns (Dataset):
             Torch dataset.
         """
-        shape = self.num_users, self.num_items
-        user_items_dct = implicit_to_csr(X, shape, True)
-
-        dataset_args = {
-            "X": X,
-            "y": y,
-            "user_items_dct": user_items_dct,
-            "num_items": self.num_items,
-            "num_neg": self.num_negative_samples,
+        tensors = {
+            "train": (X_train, y_train),
+            "val": (X_val, y_val),
         }
+        torch_dataset = {}
 
-        dataset_path = DATASET_PATH.get(self.model)
-        if dataset_path is None:
-            raise
-        dataset_module = importlib.import_module(dataset_path).Data
-        dataset = dataset_module(**dataset_args)
+        for name, (X, y) in tensors.items():
+            user_items_summary = convert_tensor_to_user_item_summary(
+                ts=X,
+                structure=dict,
+            )
+            # dataset_args = {
+            #     "X": X,
+            #     "y": y,
+            #     "user_items_dct": user_items_summary,
+            #     "num_items": self.num_items,
+            #     "num_neg": self.num_negative_samples,
+            # }
 
-        if self.implicit == True:
-            start = time.time()
-            dataset.negative_sampling()
-            logging.info(f"token time for negative sampling: {time.time() - start}")
+            dataset_path = DATASET_PATH.get(self.model)
+            if dataset_path is None:
+                raise
+            dataset_module = importlib.import_module(dataset_path).Data
+            dataset = dataset_module(
+                X=X,
+                y=y,
+                user_items_dct=user_items_summary,
+                num_items=self.num_items,
+                num_neg=self.num_negative_samples,
+            )
 
-        return dataset
+            if self.implicit == True:
+                start = time.time()
+                dataset.negative_sampling()
+                logging.info(f"token time for negative sampling: {time.time() - start}")
+
+            torch_dataset[name] = dataset
+
+        return torch_dataset
 
     def get_X_y(
             self,
             data: Dict[str, Union[pd.DataFrame, Dict[int, int]]],
-        ) -> Tuple[torch.Tensor, torch.Tensor]:
+        ) -> Dict[str, torch.Tensor]:
         """
         Generates one-hot encoded metadata and returns (X, y) tensor.
         X includes interaction information with user_id and movie_id.
@@ -145,19 +174,49 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         ratings = data.get("ratings")
         users = data.get("users")
         items = data.get("items")
+
+        # filter user_id whose number of reviews is lower than MIN_REVIEWS
+        user2item_count = ratings["user_id"].value_counts().to_dict()
+        user_id_min_reviews = [user_id for user_id, item_count in user2item_count.items() if item_count >= MIN_REVIEWS]
+        ratings = ratings[lambda x: x["user_id"].isin(user_id_min_reviews)]
+
+        # get one-hot encoded metadata
         self.user_meta = self.get_user_meta(users)
         self.item_meta = self.get_item_meta(items)
 
-        X = torch.tensor(ratings[["user_id", "movie_id"]].values)
-        y = torch.tensor(ratings[["rating"]].values, dtype=torch.float32)
-        return X, y
+        # split train / validation
+        train, val = train_test_split(
+            ratings,
+            test_size=1-self.train_ratio,
+            random_state=self.random_state,
+            stratify=ratings[STRATIFY_COLUMN[DatasetName.MOVIELENS.value]],
+        )
 
-    def get_torch_data_loader(self, dataset: Dataset) -> Tuple[DataLoader, DataLoader]:
+        X_train = torch.tensor(train[["user_id", "movie_id"]].values)
+        y_train = torch.tensor(train["rating"].values, dtype=torch.float32)
+
+        X_val = torch.tensor(val[["user_id", "movie_id"]].values)
+        y_val = torch.tensor(val["rating"].values, dtype=torch.float32)
+
+        # X = torch.tensor(ratings[["user_id", "movie_id"]].values)
+        # y = torch.tensor(ratings[["rating"]].values, dtype=torch.float32)
+        return {
+            "X_train": X_train,
+            "y_train": y_train,
+            "X_val": X_val,
+            "y_val": y_val,
+        }
+
+    def get_torch_data_loader(
+            self,
+            train_dataset: Dataset,
+            val_dataset: Dataset,
+        ) -> Tuple[DataLoader, DataLoader]:
         """
         Make train / validation torch data_loader.
 
         Args:
-            dataset (Dataset): Torch dataset from `get_torch_dataset` method
+            train_dataset (Dataset): Torch dataset from `get_torch_dataset` method
                 will be used as `dataset` argument.
 
         Returns (Tuple[DataLoader, DataLoader]):
@@ -165,13 +224,13 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         """
         seed = torch.Generator(device=DEVICE.type).manual_seed(self.random_state)
         # split train / validation dataset
-        train_dataset, validation_dataset = random_split(
-            dataset=dataset,
-            lengths=[self.train_ratio, 1 - self.train_ratio],
-            generator=seed
-        )
+        # train_dataset, validation_dataset = random_split(
+        #     dataset=dataset,
+        #     lengths=[self.train_ratio, 1 - self.train_ratio],
+        #     generator=seed
+        # )
         self.train_dataset = train_dataset
-        self.validation_dataset = validation_dataset
+        self.validation_dataset = val_dataset
         train_dataloader = DataLoader(
             dataset=train_dataset,
             batch_size=self.batch_size,
@@ -179,12 +238,12 @@ class PrepareModelDataTorch(PrepareModelDataBase):
             generator=seed
         )
         validation_dataloader = DataLoader(
-            dataset=validation_dataset,
+            dataset=val_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             generator=seed
         )
-        self.mu = train_dataset.dataset.y[train_dataset.indices].mean() if self.model in ["svd", "svd_bias"] else None
+        self.mu = train_dataset.y.mean() if self.model in ["svd", "svd_bias"] else None
 
         return train_dataloader, validation_dataloader
 
