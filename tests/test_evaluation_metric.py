@@ -1,38 +1,27 @@
 import numpy as np
-from scipy.sparse import csr_matrix
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../recommender"))
 
 from recommender.libs.evaluation import ranking_metrics_at_k
-from recommender.model.mf.als import Model as AlternatingLeastSquares
 
 
-def test_evaluation_metric():
-    implicit_mf = AlternatingLeastSquares()
-    user_factors = np.array([
-        [1,0,0],
-        [0,1,0],
-        [0,0,1],
-        [0,0.5,0],
-        [0,0,0.5]
-    ])
-    item_factors = np.array([
-        [1,0,0],
-        [0,1,0],
-        [0,0,1],
-        [0,0,0.5]
-    ])
-    implicit_mf.user_factors = user_factors
-    implicit_mf.item_factors = item_factors
+def test_map_ndcg():
+    liked_items = np.array([100, 10, 50, 0, 11, 22, 33, 44, 55, 66])
+    # case 1: hit at item_id 100, 10
+    reco_items = np.array([2, 3, 4, 100, 10])
+    K = len(reco_items)
+    metric = ranking_metrics_at_k(liked_items, reco_items)
+    dcg = 1.0 / np.log2(np.arange(2, K + 2))
+    idcg = np.sum(dcg)
 
-    data = [1,1,1,1,1]
-    indices = [0,1,2,2,1]
-    indptr = [0,1,2,3,4,5]
-    test_user_items = csr_matrix((data, indices, indptr), shape=(5,4)) # [[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,1,0], [0,1,0,0]]
-    users, items = test_user_items.shape
+    expected_ndcg = (dcg[3] + dcg[4]) / idcg
+    expected_map = (1 / 4 + 2 / 5) / K
 
-    metric = ranking_metrics_at_k(implicit_mf, csr_matrix((5,4)), test_user_items, K=3)
-    expected_map = (1 + 1 + 1 + 1/3 + 0) / users
+    np.testing.assert_almost_equal(metric["ndcg"], expected_ndcg)
+    np.testing.assert_almost_equal(metric["ap"], expected_map)
 
-    np.testing.assert_almost_equal(metric["map"], expected_map)
+    # case 2: hit at item_id 100, 10, 50
+    reco_items = np.array([100, 10, 50, 2, 3])
+    metric = ranking_metrics_at_k(liked_items, reco_items)
+    expected_ndcg = (dcg[0] + dcg[1] + dcg[2]) / idcg
+    expected_map = (1 + 1 + 1) / K
+    np.testing.assert_almost_equal(metric["ndcg"], expected_ndcg)
+    np.testing.assert_almost_equal(metric["ap"], expected_map)
