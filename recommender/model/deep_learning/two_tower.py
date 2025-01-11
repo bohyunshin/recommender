@@ -8,6 +8,8 @@ from recommender.model.torch_model_base import TorchModelBase
 class Model(TorchModelBase):
     def __init__(
             self,
+            user_ids: torch.Tensor,
+            item_ids: torch.Tensor,
             num_users: int,
             num_items: int,
             num_factors: int,
@@ -21,7 +23,14 @@ class Model(TorchModelBase):
             num_items (int): Number of items.
             num_factors (int): Dimension of user/item embeddings.
         """
-        super().__init__()
+        super().__init__(
+            user_ids=user_ids,
+            item_ids=item_ids,
+            num_users=num_users,
+            num_items=num_items,
+            num_factors=num_factors,
+            **kwargs
+        )
 
         self.embed_user = nn.Embedding(num_users, num_factors)
         self.embed_item = nn.Embedding(num_items, num_factors)

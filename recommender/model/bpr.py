@@ -1,3 +1,5 @@
+from typing import Union
+
 import numpy as np
 from numpy.typing import NDArray
 
@@ -10,6 +12,8 @@ from recommender.model.torch_model_base import TorchModelBase
 class Model(TorchModelBase):
     def __init__(
             self,
+            user_ids: torch.Tensor,
+            item_ids: torch.Tensor,
             num_users: int,
             num_items: int,
             num_factors: int,
@@ -27,7 +31,14 @@ class Model(TorchModelBase):
             num_items (int): Number of items.
             num_factors (int): Number of factors.
         """
-        super().__init__()
+        super().__init__(
+            user_ids=user_ids,
+            item_ids=item_ids,
+            num_users=num_users,
+            num_items=num_items,
+            num_factors=num_factors,
+            **kwargs
+        )
 
         self.embed_user = nn.Embedding(num_users, num_factors)
         self.embed_item = nn.Embedding(num_items, num_factors)
@@ -65,23 +76,25 @@ class Model(TorchModelBase):
 
     def predict(
             self,
-            user_idx,
-            **kwargs
-        ) -> NDArray:
+            user_id: Union[NDArray, torch.Tensor],
+            item_id: Union[NDArray, torch.Tensor],
+            **kwargs,
+    ) -> Union[NDArray, torch.Tensor]:
         """
-        Overrides predict method.
-        Parent class `TorchModelBase` has `predict` method using `forward` method.
-        However, bpr loss model cannot use `forward` directly for prediction.
-        Therefore, overrides this `predict` method with simple dot product
-        between user and item embeddings.
-        Return value type is NDArray, not tensor.Tensor.
+        Predicts users' ratings (or preference, scores) based on factorized user_factors and item_factors.
+        For matrix factorization models, this could be dot product between user_factors and item_factors.
+        For deep learning models, this could be inference step fed with user/item information to neural network
 
         Args:
-            user_idx (torch.Tensor): User index.
+            user_id (Union[NDArray, torch.Tensor]): Set of user_ids who are recommendation target.
+                Typically, batch user_ids will be given.
+            item_id (Union[NDArray, torch.Tensor]): Set of item_ids to calculate scores.
+                Typically, all item_ids will be given because all scores should be cauclated with one user.
 
-        Returns (NDArray):
-            Calculated prediction scores between all users and items.
+        Returns (Union[NDArray, torch.Tensor]):
+            User x item prediction score matrix.
         """
-        embed_users = self.embed_user.weight[user_idx].detach().cpu().numpy()
-        embed_items = self.embed_item.weight.detach().cpu().numpy()
-        return np.dot(embed_users, embed_items.T)
+        embed_users = self.embed_user(user_id)
+        embed_items = self.embed_item(item_id)
+        scores = torch.mm(embed_users, embed_items.t())
+        return scores

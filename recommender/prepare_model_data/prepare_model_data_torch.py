@@ -183,12 +183,14 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         X_val = torch.tensor(val[["user_id", "movie_id"]].values)
         y_val = torch.tensor(val["rating"].values, dtype=torch.float32)
 
-        return {
+        self.X_y = {
             "X_train": X_train,
             "y_train": y_train,
             "X_val": X_val,
             "y_val": y_val,
         }
+
+        return self.X_y
 
     def get_torch_data_loader(
             self,

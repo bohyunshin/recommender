@@ -7,21 +7,20 @@ os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 import torch
 from torch import optim
-import numpy as np
 import importlib
 
 from recommender.prepare_model_data.prepare_model_data_torch import PrepareModelDataTorch
 from recommender.loss.criterion import Criterion
 from recommender.libs.logger import setup_logger
 from recommender.libs.parse_args import parse_args
-from recommender.libs.evaluation import ranking_metrics_at_k
-from recommender.libs.csr import implicit_to_csr
 from recommender.libs.constant.model.module_path import MODEL_PATH
 from recommender.libs.constant.torch.device import DEVICE
+from recommender.libs.constant.inference.recommend import TOP_K_VALUES
 
 
 def main(args: ArgumentParser.parse_args):
-    setup_logger(args.log_path)
+    os.makedirs(args.result_path, exist_ok=True)
+    setup_logger(os.path.join(args.result_path, "log.log"))
     try:
         logging.info(f"selected dataset: {args.dataset}")
         logging.info(f"selected model: {args.model}")
@@ -43,9 +42,9 @@ def main(args: ArgumentParser.parse_args):
 
         # preprocess data
         preprocess_module = importlib.import_module(f"preprocess.preprocess_{args.dataset}").Preprocessor
-        data = preprocess_module().preprocess(data)
-        NUM_USERS = data.get("num_users")
-        NUM_ITEMS = data.get("num_items")
+        preprocessed_data = preprocess_module().preprocess(data)
+        NUM_USERS = preprocessed_data.get("num_users")
+        NUM_ITEMS = preprocessed_data.get("num_items")
 
         # prepare dataset for model
         prepare_model_data = PrepareModelDataTorch(
@@ -57,10 +56,10 @@ def main(args: ArgumentParser.parse_args):
             implicit=args.implicit,
             random_state=args.random_state,
             batch_size=args.batch_size,
-            user_meta=data.get("users"),
-            item_meta=data.get("items"),
+            user_meta=preprocessed_data.get("users"),
+            item_meta=preprocessed_data.get("items"),
         )
-        train_dataloader, validation_dataloader = prepare_model_data.get_train_validation_data(data=data)
+        train_dataloader, validation_dataloader = prepare_model_data.get_train_validation_data(data=preprocessed_data)
 
         # set up model
         model_path = MODEL_PATH.get(args.model)
@@ -68,6 +67,8 @@ def main(args: ArgumentParser.parse_args):
             raise
         model_module = importlib.import_module(model_path).Model
         model = model_module(
+            user_ids=torch.tensor(list(preprocessed_data.get("user_id2idx").values())), # common model parameter
+            item_ids=torch.tensor(list(preprocessed_data.get("item_id2idx").values())), # common model parameter
             num_users=NUM_USERS, # common model parameter
             num_items=NUM_ITEMS, # common model parameter
             num_factors=args.num_factors, # common model parameter
@@ -152,7 +153,7 @@ def main(args: ArgumentParser.parse_args):
                 best_loss = val_loss
                 best_model_weights = copy.deepcopy(model.state_dict())
                 patience = args.patience
-                torch.save(model.state_dict(), args.model_path)
+                torch.save(model.state_dict(), os.path.join(args.result_path, "model.pt"))
                 logging.info(f"Best validation: {best_loss}, Previous validation loss: {prev_best_loss}")
             else:
                 patience -= 1
@@ -161,37 +162,22 @@ def main(args: ArgumentParser.parse_args):
                     logging.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
                     break
 
+            # calculate metrics for all users
+            model.recommend_all(
+                X_train=prepare_model_data.X_y.get("X_train"),
+                X_val=prepare_model_data.X_y.get("X_val"),
+                top_k_values=TOP_K_VALUES,
+                filter_already_liked=True
+            )
 
-        K = [10, 20, 50]
-        if args.implicit: # torch & implicit > bpr, ncf, gmf
-            tr_pos_idx = (prepare_model_data.train_dataset.label == 1).nonzero().squeeze().detach().cpu().numpy()
-            val_pos_idx = (prepare_model_data.validation_dataset.label == 1).nonzero().squeeze().detach().cpu().numpy()
-            X_train = prepare_model_data.train_dataset.X[tr_pos_idx]
-            X_val = prepare_model_data.validation_dataset.X[val_pos_idx]
-        else: # torch & explicit > svd, svd_bias
-            X_train = prepare_model_data.train_dataset.X
-            X_val = prepare_model_data.validation_dataset.X
-        csr_train = implicit_to_csr(X_train, (NUM_USERS, NUM_ITEMS))
-        csr_val = implicit_to_csr(X_val, (NUM_USERS, NUM_ITEMS))
-        ndcg = []
-        map = []
-        for k in K:
-            metric = ranking_metrics_at_k(model, csr_train, csr_val, K=k)
-            logging.info(f"Metric for K={k}")
-            logging.info(f"NDCG@{k}: {metric['ndcg']}")
-            logging.info(f"mAP@{k}: {metric['map']}")
-
-            ndcg.append(round(metric['ndcg'], 4))
-            map.append(round(metric['map'], 4))
-
-        logging.info(f"NDCG result: {'|'.join([str(i) for i in ndcg])}")
-        logging.info(f"mAP result: {'|'.join([str(i) for i in map])}")
+            # logging calculated metrics for current epoch
+            model.collect_metrics()
 
         # Load the best model weights
         model.load_state_dict(best_model_weights)
         logging.info("Load weight with best validation loss")
 
-        torch.save(model.state_dict(), args.model_path)
+        torch.save(model.state_dict(), os.path.join(args.result_path, "model.pt"))
         logging.info("Save final model")
     except Exception:
         logging.error(traceback.format_exc())

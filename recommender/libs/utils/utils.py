@@ -48,3 +48,10 @@ def mapping_dict(vals: NDArray):
     u = sorted(list(set(vals)))
     mapping = {v:i for i,v in enumerate(u)}
     return mapping
+
+
+def safe_divide(numerator, denominator):
+    try:
+        return numerator / denominator
+    except ZeroDivisionError:
+        return 0
