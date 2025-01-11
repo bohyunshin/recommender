@@ -93,6 +93,8 @@ def main(args: ArgumentParser.parse_args):
                     if patience == 0:
                         logging.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
                         break
+            else:
+                pickle.dump(model, open(os.path.join(args.result_path, "model.pkl"), "wb"))
 
             # calculate metrics for all users
             model.recommend_all(
