@@ -1,7 +1,7 @@
-from typing import Optional
-import time
+from typing import Optional, Union
 import logging
 
+import torch
 import numpy as np
 from numpy.typing import NDArray
 from scipy.sparse import csr_matrix
@@ -12,13 +12,15 @@ from recommender.model.fit_model_base import FitModelBase
 class Model(FitModelBase):
     def __init__(
             self,
-            factors: Optional[int] = 10,
-            regularization: Optional[float] = 0.01,
+            user_ids: torch.Tensor,
+            item_ids: torch.Tensor,
+            num_users: int,
+            num_items: int,
+            num_factors: int,
+            regularization: float,
+            random_state: int,
             alpha: Optional[float] = 0.1,
             dtype: Optional[np.dtypes] = np.float32,
-            iterations: Optional[int] = 100,
-            calculate_training_loss: Optional[bool] = False,
-            random_state: Optional[int] = 42,
             **kwargs
     ):
         """
@@ -30,18 +32,23 @@ class Model(FitModelBase):
             regularization (float, optional): Regularization parameter balancing main loss and penalty term.
             alpha (float, optional): Alpha value in c_ui = 1 + \alpha r_ui. This controls the strength of positive samples.
             dtype (numpy.dtype, optional): Data type of the embedding matrix.
-            iterations (int, optional): Maximum number of iterations.
-            calculate_training_loss (bool, optional): Whether to calculate training loss.
             random_state (int, optional): Random seed value.
         """
-        super().__init__()
-        self.factors = factors
+        super().__init__(
+            user_ids=user_ids,
+            item_ids=item_ids,
+            num_users=num_users,
+            num_items=num_items,
+            num_factors=num_factors,
+        )
+        self.factors = num_factors
         self.regularization = regularization
         self.alpha = alpha
         self.dtype = dtype
-        self.iterations = iterations
-        self.calculate_training_loss = calculate_training_loss
         self.random_state = random_state
+
+        self.user_factors = None
+        self.item_factors = None
 
     def fit(
             self,
@@ -49,9 +56,9 @@ class Model(FitModelBase):
             val_user_items: Optional[csr_matrix]
         ) -> None:
         """
-        Factorizes the user_items matrix.
+        Factorizes the user_items matrix with iterative process.
         While selected iterations, this method updates user and item factors using closed form
-        derived in koren et al. who proposed calculating YtY in advance to reduce computation time
+        derived in koren et al. who proposed calculating YtY in advance to reduce computation time.
 
         As noted in Xiangnan et al., time complexity of original als is O((M+N)K^3 + |R|K^2)
 
@@ -86,34 +93,27 @@ class Model(FitModelBase):
         self.tr_loss = []
         self.val_loss = []
 
-        for iteration in range(self.iterations):
+        # alternate updating user and item factors
+        # update user factors
+        self._QtQ = self.QtQ()
+        for u in range(M):
+            self.update_user_factors(u, self.item_factors, Cui)
 
-            logging.info(f"iteration: {iteration} out of {self.iterations}")
+        # update item factors
+        self._PtP = self.PtP()
+        for i in range(N):
+            self.update_item_factors(i, self.user_factors, Cui.T.tocsr())
 
-            start = time.time()
+        # calculate training / validation loss
+        tr_loss = self.calculate_loss(user_items)
+        self.tr_loss.append(tr_loss)
+        logging.info(f"training loss: {tr_loss}")
 
-            # alternate updating user and item factors
-            # update user factors
-            self._QtQ = self.QtQ()
-            for u in range(M):
-                self.update_user_factors(u, self.item_factors, Cui)
-
-            # update item factors
-            self._PtP = self.PtP()
-            for i in range(N):
-                self.update_item_factors(i, self.user_factors, Cui.T.tocsr())
-
-            # calculate training / validation loss
-            tr_loss = self.calculate_loss(user_items)
-            self.tr_loss.append(tr_loss)
-            logging.info(f"training loss: {tr_loss}")
-
-            if val_user_items is not None:
-                val_loss = self.calculate_loss(val_user_items)
-                self.val_loss.append(val_loss)
-                logging.info(f"validation loss: {val_loss}")
-
-            logging.info(f"executed time for {iteration} iteration: {time.time() - start}")
+        if val_user_items is not None:
+            val_loss = self.calculate_loss(val_user_items)
+            self.current_val_loss = val_loss
+            self.val_loss.append(val_loss)
+            logging.info(f"validation loss: {val_loss}")
 
     def update_user_factors(
             self,
@@ -189,21 +189,30 @@ class Model(FitModelBase):
 
     def predict(
             self,
-            user_idx: NDArray,
-            **kwargs
-        ) -> NDArray:
+            user_id: Union[NDArray, torch.Tensor],
+            item_id: Union[NDArray, torch.Tensor],
+            **kwargs,
+        ) -> torch.Tensor:
         """
-        Calculate prediction scores for target user_idx.
-        Batch users are user_idx, and prediction scores associated with all items
-        are calculated.
+        For batch users, calculates prediction score for all of item ids.
+        In inference pipeline, `kwargs["item_idx"]` will be all of item ids.
+        Using `forward` method in torch model, batch_sie x num_items score matrix will be created.
 
         Args:
-            user_idx (NDArray): Batch user index.
+            user_id (Union[NDArray, torch.Tensor]): Set of user_ids who are recommendation target.
+                Typically, batch user_ids will be given.
+            item_id (Union[NDArray, torch.Tensor]): Set of item_ids to calculate scores.
+                Typically, all item_ids will be given because all scores should be cauclated with one user.
 
-        Returns (NDArray):
-            Prediction scores NDArray whose dimension is (# of batch users, # of total items)
+        Returns (Union[NDArray, torch.Tensor]):
+            Batch_size x num_items score matrix.
         """
-        return np.dot(self.user_factors[user_idx], self.item_factors.T)
+        assert isinstance(user_id, torch.Tensor)
+        assert isinstance(item_id, torch.Tensor)
+        user_id = user_id.detach().cpu().numpy()
+        item_id = item_id.detach().cpu().numpy()
+        scores = np.dot(self.user_factors[user_id], self.item_factors[item_id].T)
+        return torch.tensor(scores)
 
     def calculate_loss(
             self,

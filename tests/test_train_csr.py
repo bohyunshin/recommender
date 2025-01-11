@@ -22,8 +22,7 @@ def run_csr_model(
     args.train_ratio = 0.8
     args.random_state = 42
     args.patience = 5
-    args.log_path = f"{model}.log"
-    args.model_path = f"{model}.pkl"
+    args.result_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"../result/{model}")
     args.num_sim_user_top_N = 45
     args.movielens_data_type = "ml-1m"
     args.test = True

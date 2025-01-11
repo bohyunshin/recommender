@@ -63,6 +63,7 @@ class RecommenderBase(ABC):
             X_val: torch.Tensor,
             top_k_values: List[int],
             filter_already_liked: bool = True,
+            **kwargs,
         ):
         """
         Generate recommendations for all users.
@@ -103,6 +104,7 @@ class RecommenderBase(ABC):
             scores = self.predict(
                 user_id=batch_users,
                 item_id=self.item_ids,
+                user_items=kwargs.get("user_items"),
             )
             # scores = torch.mm(user_embeds, item_embeds.t())
 
@@ -235,7 +237,7 @@ class RecommenderBase(ABC):
             user_id: Union[NDArray, torch.Tensor],
             item_id: Union[NDArray, torch.Tensor],
             **kwargs,
-        ) -> Union[NDArray, torch.Tensor]:
+        ) -> torch.Tensor:
         """
         Predicts users' ratings (or preference, scores) based on factorized user_factors and item_factors.
         For matrix factorization models, this could be dot product between user_factors and item_factors.

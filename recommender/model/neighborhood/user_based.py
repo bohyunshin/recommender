@@ -1,6 +1,7 @@
-from typing import Dict, Tuple, List, Any
+from typing import Dict, Tuple, List, Any, Union
 import logging
 
+import torch
 import numpy as np
 from numpy.typing import NDArray
 from scipy.sparse import csr_matrix
@@ -12,9 +13,12 @@ from recommender.libs.csr import slice_csr_matrix
 class Model(FitModelBase):
     def __init__(
             self,
+            user_ids: torch.Tensor,
+            item_ids: torch.Tensor,
             num_users: int,
             num_items: int,
             num_sim_user_top_N: int,
+            num_factors: int = 10,
             **kwargs
         ):
         """
@@ -27,12 +31,14 @@ class Model(FitModelBase):
             num_items (int): Number of items.
             num_sim_user_top_N (int): Number of similar users.
         """
-        super().__init__()
-        self.user_ids = np.arange(num_users)
-        self.item_ids = np.arange(num_items)
+        super().__init__(
+            user_ids=user_ids,
+            item_ids=item_ids,
+            num_users=num_users,
+            num_items=num_items,
+            num_factors=num_factors,
+        )
         self.num_sim_user_top_N = num_sim_user_top_N
-        self.num_users = num_users
-        self.num_items = num_items
 
     def fit(
             self,
@@ -55,7 +61,6 @@ class Model(FitModelBase):
         self.top_N_sim_user = self.get_top_N_sim_user(user_sim_pair)
 
         logging.info("Predicting users' unseen item rating")
-        # return self.predict(self.user_factors, self.item_factors, user_items=user_items)
 
     def calculate_user_sim(
             self,
@@ -74,8 +79,9 @@ class Model(FitModelBase):
         """
         res = {}
         for i in range(len(user_ids)):
-            x = user_ids[i]
+            x = user_ids[i].item()
             for y in user_ids[i + 1:]:
+                y = y.item()
                 items_liked_by_x = csr.indices[csr.indptr[x]:csr.indptr[x+1]]
                 items_liked_by_y = csr.indices[csr.indptr[y]:csr.indptr[y+1]]
                 items_liked_by_x_y = list(set(items_liked_by_x) & set(items_liked_by_y))
@@ -153,32 +159,47 @@ class Model(FitModelBase):
             final_res[u] = sorted(rank, key=lambda x: x[1], reverse=True)[:self.num_sim_user_top_N]
         return final_res
 
-    def predict(self, userid, **kwargs):
+    def predict(
+            self,
+            user_id: Union[NDArray, torch.Tensor],
+            item_id: Union[NDArray, torch.Tensor],
+            **kwargs,
+    ) -> torch.Tensor:
         """
-        In user-based CF model, there are not any embeddings w.r.t users / items.
-        However, we pass user_factors, item_factors as None value to follow RecommenderBase abstract class.
-        By doing this, we can efficiently use asis training pipeline, i.e., train_csr.py
+        For batch users, calculates prediction score for all of item ids.
+        In inference pipeline, `kwargs["item_idx"]` will be all of item ids.
+        Using `forward` method in torch model, batch_sie x num_items score matrix will be created.
+
+        Args:
+            user_id (Union[NDArray, torch.Tensor]): Set of user_ids who are recommendation target.
+                Typically, batch user_ids will be given.
+            item_id (Union[NDArray, torch.Tensor]): Set of item_ids to calculate scores.
+                Typically, all item_ids will be given because all scores should be cauclated with one user.
+
+        Returns (torch.Tensor):
+            Batch_size x num_items score matrix.
         """
+        assert isinstance(user_id, torch.Tensor)
+        assert isinstance(item_id, torch.Tensor)
+        user_id = user_id.detach().cpu().numpy()
+        item_id = item_id.detach().cpu().numpy()
         res = {}
         mean_r = {}
-        csr = kwargs["user_items"]
-        user_item_rating = np.zeros((self.num_users, self.num_items))
-        for u in self.user_ids:
+        csr = kwargs.get("user_items")
+        user_item_rating = np.zeros((len(user_id), len(item_id)))
+        for u in user_id:
             rating_by_u = csr.data[csr.indptr[u]:csr.indptr[u+1]]
             mean_r[u] = 0 if len(rating_by_u) == 0 else sum(rating_by_u) / len(rating_by_u)
 
-        for idx,u in enumerate(self.user_ids):
-            if idx % 5000 == 0:
-                logging.info(f"Predicting {idx}th user unseen item rating out of total {len(self.user_ids)} users.")
-
+        for idx, u in enumerate(user_id):
             if res.get(u) is None:
                 res[u] = []
             r_u = mean_r[u]
 
             # filter items not rated by u
             reco_item_ids = []
-            for i in self.item_ids:
-                if slice_csr_matrix(csr,u,i) == 0:
+            for i in item_id:
+                if slice_csr_matrix(csr, u, i) == 0:
                     reco_item_ids.append(i)
 
             for i in reco_item_ids:
@@ -186,14 +207,14 @@ class Model(FitModelBase):
                 k = 0
                 items_liked_by_neighbor = False
                 for u_, sim in self.top_N_sim_user[u]:
-                    if slice_csr_matrix(csr,u_,i) == 0:
+                    if slice_csr_matrix(csr, u_, i) == 0:
                         continue
                     items_liked_by_neighbor = True
                     k += abs(sim)
                     mean_r_u_ = mean_r[u_]
-                    r_u__i = slice_csr_matrix(csr,u_,i)
+                    r_u__i = slice_csr_matrix(csr, u_, i)
                     summation += (r_u__i - mean_r_u_) * sim
                 if items_liked_by_neighbor == True:
                     user_item_rating[u][i] = r_u + summation / k
                     res[u].append((i, r_u + summation / k))
-        return user_item_rating[userid]
+        return torch.tensor(user_item_rating)

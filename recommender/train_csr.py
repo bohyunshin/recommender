@@ -2,21 +2,22 @@ import os
 import traceback
 from argparse import ArgumentParser
 import logging
+import pickle
+import importlib
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
-import importlib
-import pickle
-import time
+import torch
 
 from recommender.prepare_model_data.prepare_model_data_csr import PrepareModelDataCsr
-from recommender.libs.constant.model.module_path import MODEL_PATH
-from recommender.libs.evaluation import ranking_metrics_at_k
 from recommender.libs.logger import setup_logger
 from recommender.libs.parse_args import parse_args
+from recommender.libs.constant.model.module_path import MODEL_PATH
+from recommender.libs.constant.inference.recommend import TOP_K_VALUES
 
 
 def main(args: ArgumentParser.parse_args):
-    setup_logger(args.log_path)
+    os.makedirs(args.result_path, exist_ok=True)
+    setup_logger(os.path.join(args.result_path, "log.log"))
     try:
         logging.info(f"selected dataset: {args.dataset}")
         logging.info(f"selected model: {args.model}")
@@ -37,9 +38,9 @@ def main(args: ArgumentParser.parse_args):
 
         # preprocess data
         preprocess_module = importlib.import_module(f"preprocess.preprocess_{args.dataset}").Preprocessor
-        data = preprocess_module().preprocess(data)
-        NUM_USERS = data.get("num_users")
-        NUM_ITEMS = data.get("num_items")
+        preprocessed_data = preprocess_module().preprocess(data)
+        NUM_USERS = preprocessed_data.get("num_users")
+        NUM_ITEMS = preprocessed_data.get("num_items")
 
         # prepare dataset for model
         prepare_model_data = PrepareModelDataCsr(
@@ -54,43 +55,57 @@ def main(args: ArgumentParser.parse_args):
             user_meta=data.get("users"),
             item_meta=data.get("items"),
         )
-        csr_train, csr_val = prepare_model_data.get_train_validation_data(data=data)
+        csr_train, csr_val = prepare_model_data.get_train_validation_data(data=preprocessed_data)
 
         # setup models
-        start = time.time()
         model_path = MODEL_PATH.get(args.model)
         if model_path is None:
             raise
         model_module = importlib.import_module(model_path).Model
         model = model_module(
-            factors=args.num_factors,
-            regularization=args.regularization,
-            iterations=args.epochs,
-            random_state=args.random_state,
-            num_users=NUM_USERS,
-            num_items=NUM_ITEMS,
-            num_sim_user_top_N=args.num_sim_user_top_N,
+            user_ids=torch.tensor(list(preprocessed_data.get("user_id2idx").values())),  # common model parameter
+            item_ids=torch.tensor(list(preprocessed_data.get("item_id2idx").values())),  # common model parameter
+            num_users=NUM_USERS,  # common model parameter
+            num_items=NUM_ITEMS,  # common model parameter
+            num_factors=args.num_factors,  # common model parameter
+            regularization=args.regularization,  # als parameter
+            iterations=args.epochs,  # als parameter
+            random_state=args.random_state,  # als parameter
+            num_sim_user_top_N=args.num_sim_user_top_N,  # user_based parameter
         )
-        model.fit(user_items=csr_train, val_user_items=csr_val)
-        logging.info(f"total executed time: {(time.time() - start)/60}")
 
-        K = [10, 20, 50]
-        ndcg = []
-        map = []
-        for k in K:
-            metric = ranking_metrics_at_k(model, csr_train, csr_val, K=k)
-            logging.info(f"Metric for K={k}")
-            logging.info(f"NDCG@{k}: {metric['ndcg']}")
-            logging.info(f"mAP@{k}: {metric['map']}")
+        # train model
+        best_loss = float("inf")
+        for epoch in range(args.epochs):
+            logging.info(f"####### Epoch {epoch} #######")
+            model.fit(user_items=csr_train, val_user_items=csr_val)
 
-            ndcg.append(round(metric['ndcg'], 4))
-            map.append(round(metric['map'], 4))
+            if args.model != "user_based":
+                if best_loss > model.current_val_loss:
+                    prev_best_loss = best_loss
+                    best_loss = model.current_val_loss
+                    patience = args.patience
+                    pickle.dump(model, open(os.path.join(args.result_path, "model.pkl"), "wb"))
+                    logging.info(f"Best validation: {best_loss}, Previous validation loss: {prev_best_loss}")
+                else:
+                    patience -= 1
+                    logging.info(f"Validation loss did not decrease. Patience {patience} left.")
+                    if patience == 0:
+                        logging.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
+                        break
 
-        logging.info(f"NDCG result: {'|'.join([str(i) for i in ndcg])}")
-        logging.info(f"mAP result: {'|'.join([str(i) for i in map])}")
+            # calculate metrics for all users
+            model.recommend_all(
+                X_train=prepare_model_data.X_y.get("X_train"),
+                X_val=prepare_model_data.X_y.get("X_val"),
+                top_k_values=TOP_K_VALUES,
+                filter_already_liked=True,
+                user_items=csr_train,
+            )
 
-        pickle.dump(model, open(args.model_path, "wb"))
-        logging.info("Save final model")
+            # logging calculated metrics for current epoch
+            model.collect_metrics()
+
     except Exception:
         logging.error(traceback.format_exc())
         raise

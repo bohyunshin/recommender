@@ -1,5 +1,7 @@
 from typing import Tuple, Dict, Union, Any
+
 import pandas as pd
+import torch
 
 from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
 from recommender.libs.csr import dataframe_to_csr
@@ -49,6 +51,20 @@ class PrepareModelDataCsr(PrepareModelDataBase):
 
         # split train / validation
         train, val = self.split_train_validation(ratings=ratings)
+
+        # for inference
+        X_train = torch.tensor(train[["user_id", "movie_id"]].values)
+        y_train = torch.tensor(train["rating"].values, dtype=torch.float32)
+
+        X_val = torch.tensor(val[["user_id", "movie_id"]].values)
+        y_val = torch.tensor(val["rating"].values, dtype=torch.float32)
+
+        self.X_y = {
+            "X_train": X_train,
+            "y_train": y_train,
+            "X_val": X_val,
+            "y_val": y_val,
+        }
 
         csr_train = dataframe_to_csr(
             df=train,

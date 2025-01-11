@@ -1,6 +1,5 @@
 from typing import Union
 
-import numpy as np
 from numpy.typing import NDArray
 
 import torch
@@ -43,7 +42,7 @@ class TorchModelBase(nn.Module, RecommenderBase):
             user_id: Union[NDArray, torch.Tensor],
             item_id: Union[NDArray, torch.Tensor],
             **kwargs,
-        ) -> Union[NDArray, torch.Tensor]:
+        ) -> torch.Tensor:
         """
         For batch users, calculates prediction score for all of item ids.
         In inference pipeline, `kwargs["item_idx"]` will be all of item ids.

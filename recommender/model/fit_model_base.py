@@ -1,17 +1,33 @@
 from abc import abstractmethod
 from typing import Optional
 
+import torch
 from scipy.sparse import csr_matrix
 
 from recommender.model.recommender_base import RecommenderBase
 
 
 class FitModelBase(RecommenderBase):
-    def __init__(self):
+    def __init__(
+            self,
+            user_ids: torch.Tensor,
+            item_ids: torch.Tensor,
+            num_users: int,
+            num_items: int,
+            num_factors: int,
+            **kwargs
+        ):
         """
         Abstract base class for fit based model such as als, user-based model.
         """
-        super().__init__()
+        super().__init__(
+            user_ids=user_ids,
+            item_ids=item_ids,
+            num_users=num_users,
+            num_items=num_items,
+            num_factors=num_factors,
+            **kwargs
+        )
 
     @abstractmethod
     def fit(
@@ -31,7 +47,7 @@ class FitModelBase(RecommenderBase):
         """
         raise NotImplementedError
 
-    @abstractmethod
+    # @abstractmethod
     def calculate_loss(
             self,
             user_items: csr_matrix

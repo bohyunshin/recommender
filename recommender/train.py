@@ -81,7 +81,7 @@ def main(args: ArgumentParser.parse_args):
         optimizer = optim.SGD(model.parameters(), lr=args.lr)
 
         # train model
-        best_loss = float('inf')
+        best_loss = float("inf")
         for epoch in range(args.epochs):
             logging.info(f"####### Epoch {epoch} #######")
 
