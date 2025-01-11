@@ -21,6 +21,13 @@ class TorchModelBase(nn.Module, RecommenderBase):
         ):
         """
         Abstract base class for torch based models.
+
+        Args:
+            user_ids (torch.Tensor): List of user_id.
+            item_ids (torch.Tensor): List of item_id.
+            num_users (int): Number of users. Should match with dimension of user_ids.
+            num_items (int): Number of items. Should match with dimension of item_ids.
+            num_factors (int): Embedding dimension for user, item embeddings.
         """
         self.call_super_init = True
         super().__init__(

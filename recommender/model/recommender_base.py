@@ -26,6 +26,16 @@ class RecommenderBase(ABC):
             num_factors: int,
             **kwargs,
         ):
+        """
+        Abstract base class for all recommender models including torch based, fit based models.
+
+        Args:
+            user_ids (torch.Tensor): List of user_id.
+            item_ids (torch.Tensor): List of item_id.
+            num_users (int): Number of users. Should match with dimension of user_ids.
+            num_items (int): Number of items. Should match with dimension of item_ids.
+            num_factors (int): Embedding dimension for user, item embeddings.
+        """
         self.user_ids = user_ids
         self.item_ids = item_ids
 

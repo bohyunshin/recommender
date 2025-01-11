@@ -19,9 +19,11 @@ class Model(TorchModelBase):
         This model is famous for the history that it was used in netflix competition.
 
         Args:
-            num_users (int): Number of users.
-            num_items (int): Number of items.
-            num_factors (int): Number of factors.
+            user_ids (torch.Tensor): List of user_id.
+            item_ids (torch.Tensor): List of item_id.
+            num_users (int): Number of users. Should match with dimension of user_ids.
+            num_items (int): Number of items. Should match with dimension of item_ids.
+            num_factors (int): Embedding dimension for user, item embeddings.
         """
         super().__init__(
             user_ids=user_ids,
