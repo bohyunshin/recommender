@@ -207,30 +207,6 @@ class RecommenderBase(ABC):
         logging.info(f"ndcg result: {'|'.join(ndcgs)}")
         logging.info(f"recall: {'|'.join(recalls)}")
 
-    def recommend(
-            self,
-            user_idx: NDArray,
-            item_idx: NDArray,
-            user_items: csr_matrix,
-            N: Optional[int] = 10,
-        ) -> Tuple[NDArray, NDArray]:
-        """
-        Recommends N items to given users.
-
-        Args:
-            user_idx (NDArray): User ids to recommend.
-            item_idx (NDArray): List of all items.
-            user_items (csr_matrix): User x items matrix
-
-        Returns (Tuple[NDArray, NDArray]):
-            indices (NDArray): 2D array of selected k item indices for each user
-            distances (NDArray): 2D array of selected k item similarities for each user
-        """
-
-        indices, distances = topk(self.predict(user_idx, user_items=user_items, item_idx=item_idx), user_items[user_idx], N)
-
-        return indices, distances
-
     @abstractmethod
     def predict(
             self,
