@@ -100,7 +100,7 @@ flowchart LR
 |Step|Code|Description|
 |----|----|-----------|
 |Download data|`scripts/download`|Download selected dataset from public url|
-|Load data|`scripts/load_data`|Load downloaded dataset with pandas data type|
+|Load data|`recommender/load_data`|Load downloaded dataset with pandas data type|
 |Preprocess data|`recommender/preprocess`|Preprocess dataset|
 |Prepare model data|`recommender/prepare_model_data`|Convert dataset which will be fed to models|
 |Training|`recommender/model`|Train various recommender algorithms|
