@@ -1,19 +1,17 @@
 from abc import ABC, abstractmethod
-from typing import Tuple, Optional, List, Union
+from typing import List, Union
 import logging
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.sparse import csr_matrix
 import torch
 import torch.nn as nn
 
-from recommender.libs.topk import topk
-from recommender.libs.constant.inference.evaluation import Metric
-from recommender.libs.constant.inference.recommend import RECOMMEND_BATCH_SIZE, TOP_K_VALUES
 from recommender.libs.evaluation import ranking_metrics_at_k
 from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary
 from recommender.libs.utils.utils import safe_divide
+from recommender.libs.constant.inference.evaluation import Metric
+from recommender.libs.constant.inference.recommend import RECOMMEND_BATCH_SIZE, TOP_K_VALUES
 
 
 class RecommenderBase(ABC):
@@ -56,6 +54,9 @@ class RecommenderBase(ABC):
             }
             for k in TOP_K_VALUES
         }
+
+        self.tr_loss = []
+        self.val_loss = []
 
     def recommend_all(
             self,
