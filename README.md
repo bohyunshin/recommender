@@ -31,6 +31,55 @@ Install required packages from `poetry.lock`.
 $ poetry install
 ```
 
+## Quick start
+
+Let's run singular value decomposition on movielens 1m dataset using our pipeline.
+
+### Download dataset
+
+Dataset will be downloaded in `recommender/.data/movielens`.
+
+```bash
+$ python3 scripts/download/movielens.py --package ml-1m
+```
+
+### Run pipeline
+There are two kinds of `main scripts` depending on model type.
+
+- torch based model: `recommender/train.py`
+- csr based model: `recommender/train_csr.py`
+
+Because svd is torch based model, run `recommender/train.py`.
+
+```bash
+$ python3 recommender/train.py \
+  --dataset movielens \
+  --model svd \
+  --epochs 30 \
+  --num_factors 16 \
+  --train_ratio 0.8 \
+  --random_state 42 \
+  --result_path "./result"
+```
+
+### Check experiment result
+
+The results will be saved in `./result/svd` where you can check figures, logs and model weights
+
+```bash
+$ ls
+log.log
+map.png
+model.pt
+recall.png
+validation_loss.pkl
+loss.png
+metric.pkl
+ndcg.png
+training_loss.pkl
+weight.pt
+```
+
 ## Why made this repository?
 - There are lots of algorithms in recommender system starting from item-based recommendation, matrix factorization to deep-learning based recommendation.
 - To understand better, this repository provides implementation of various recommender algorithms using pytorch or custom learning methods.
@@ -38,18 +87,26 @@ $ poetry install
 - By comparing metric (ndcg, mAP etc..) between different dataset and algorithm, figure out which algorithm is suitable for specific situation.
 
 ## Architectures
-This repository offers code to preprocess raw data, learn models and evaluate trained models.
 
-* [preprocess code](https://github.com/bohyunshin/recommender/tree/master/recommender/preprocess)
-* [data loader preparation code](https://github.com/bohyunshin/recommender/tree/master/recommender/data_loader)
-* [model implementation code](https://github.com/bohyunshin/recommender/tree/master/recommender/model)
-* [evaluation code](https://github.com/bohyunshin/recommender/blob/master/recommender/tools/evaluation.py)
+```mermaid
+flowchart LR
+    A[Download data] --> B[Load data]
+    B --> C[Preprocess data]
+    C --> D[Prepare model data]
+    D --> E[Training]
+    E --> F[Summarize results]
+```
 
-Model training pipelines are unified as a python script, i.e. `recommender/train.py` or `recommender/train_csr.py`, depending on the type of input data.
+|Step|Code|Description|
+|----|----|-----------|
+|Download data|`scripts/download`|Download selected dataset from public url|
+|Load data|`recommender/load_data`|Load downloaded dataset with pandas data type|
+|Preprocess data|`recommender/preprocess`|Preprocess dataset|
+|Prepare model data|`recommender/prepare_model_data`|Convert dataset which will be fed to models|
+|Training|`recommender/model`|Train various recommender algorithms|
+|Summarize results|`recommender/libs/plot`|Make metric plots, loss curve|
 
-Therefore, if you want to run model, take a look at the input data type and run the corresponding python script with appropriate arguments.
-
-## Current algorithm implementation list
+## Algorithms currently implemented
 
 |Dataset category|Algorithm|Input data type|Path|Loss|
 |----------------|---|---|---|---|
@@ -65,19 +122,21 @@ Therefore, if you want to run model, take a look at the input data type and run 
 ## How to contribute
 Although any kinds of PRs are warmly welcomed, please refer to following rules.
 
+* After opening PRs, all the integration tests should be passed.
 * Basic tests in `tests/` directory should be added.
 * Depending on input data type (pytorch dataset or csr matrix), you should integrate your implementation to `recommender/train.py` or `recommender/train_csr.py`.
-* When adding new models, please attach followings in `PR` and `README.md`
-  * Experiment results using `recommender/train.py` or `recommender/train_csr.py` with your arguments.
-  * Example command to reproduce model training result should be added.
-  * Logging file when executing model training python script.
-  * Training / validation loss for each epoch.
+* When adding new models, please include followings in `PR`.
+  * Experiment results including metric plot, metric value, loss plot after running `recommender/train.py` or `recommender/train_csr.py` with your arguments.
+  * Example command to reproduce model training result.
+  * Full logs when executing model training python script.
 
-## Current dataset pipeline list
+## Dataset currently supported
 
-|Category|Name|
-|----------------|---|
-|explicit/implicit|movielens|
+For more details about how to download dataset in local, please refer `scripts/download/README.md`.
+
+|Name            |type    |
+|----------------|--------|
+|movielens 1m    |explicit|
 
 ## Experiment results
 
