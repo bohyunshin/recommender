@@ -12,8 +12,8 @@ import importlib
 
 from recommender.prepare_model_data.prepare_model_data_torch import PrepareModelDataTorch
 from recommender.loss.criterion import Criterion
-from recommender.libs.logger import setup_logger
-from recommender.libs.parse_args import parse_args
+from libs.utils.logger import setup_logger
+from libs.utils.parse_args import parse_args
 from recommender.libs.plot.plot import plot_metric_at_k
 from recommender.libs.constant.model.module_path import MODEL_PATH
 from recommender.libs.constant.torch.device import DEVICE

@@ -4,7 +4,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../recommender"))
 
-from recommender.libs.csr import dataframe_to_csr, mapping_index
+from libs.utils.csr import dataframe_to_csr, mapping_index
 
 
 def test_dataframe_to_csr():
