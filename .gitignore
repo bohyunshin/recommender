@@ -35,6 +35,7 @@ tests/*.pkl
 
 # result files including log, pt, plot image
 result/
+tests/module/result
 
 # code cov
 .coverage
