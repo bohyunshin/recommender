@@ -7,7 +7,7 @@ from numpy.typing import NDArray
 from scipy.sparse import csr_matrix
 
 from recommender.model.fit_model_base import FitModelBase
-from libs.utils.csr import slice_csr_matrix
+from recommender.libs.utils.csr import slice_csr_matrix
 
 
 class Model(FitModelBase):

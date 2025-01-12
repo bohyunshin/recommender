@@ -3,7 +3,7 @@ from typing import Dict
 import pandas as pd
 import numpy as np
 
-from load_data.load_data_base import LoadDataBase
+from recommender.load_data.load_data_base import LoadDataBase
 from recommender.libs.constant.data.movielens import (
     MovieLens1mPath,
     RATINGS_COLUMNS,

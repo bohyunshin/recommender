@@ -36,11 +36,11 @@ def main(args: ArgumentParser.parse_args):
             logging.info(f"selected movielens data type: {args.movielens_data_type}")
 
         # load raw data
-        load_data_module = importlib.import_module(f"load_data.load_data_{args.dataset}").LoadData
+        load_data_module = importlib.import_module(f"recommender.load_data.load_data_{args.dataset}").LoadData
         data = load_data_module().load(test=args.test)
 
         # preprocess data
-        preprocess_module = importlib.import_module(f"preprocess.preprocess_{args.dataset}").Preprocessor
+        preprocess_module = importlib.import_module(f"recommender.preprocess.preprocess_{args.dataset}").Preprocessor
         preprocessed_data = preprocess_module().preprocess(data)
         NUM_USERS = preprocessed_data.get("num_users")
         NUM_ITEMS = preprocessed_data.get("num_items")

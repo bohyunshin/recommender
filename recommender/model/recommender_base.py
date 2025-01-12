@@ -7,7 +7,7 @@ from numpy.typing import NDArray
 import torch
 import torch.nn as nn
 
-from libs.utils.evaluation import ranking_metrics_at_k
+from recommender.libs.utils.evaluation import ranking_metrics_at_k
 from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary
 from recommender.libs.utils.utils import safe_divide
 from recommender.libs.constant.inference.evaluation import Metric
