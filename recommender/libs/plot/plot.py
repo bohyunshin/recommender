@@ -104,7 +104,15 @@ def compare_metrics_between_models_at_k(
         result_path: str,
         models: List[str],
         num_epochs: int,
-):
+) -> None:
+    """
+    Plot metrics at every epochs among selected models.
+
+    Args:
+        result_path (str): Path where metrics.pkl is saved.
+        models (List[str]): List of selected models.
+        num_epochs (int): Selected number of epochs while training.
+    """
     pred_metrics = [
         Metric.MAP.value,
         Metric.NDCG.value,
