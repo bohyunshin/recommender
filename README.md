@@ -92,24 +92,9 @@ weight.pt
 flowchart LR
     A[Download data] --> B[Load data]
     B --> C[Preprocess data]
-
-    subgraph Step1
-    A
-    desc1a[Desc 1]
-    desc1b[Desc 2]
-    end
-
-    subgraph Step2
-    B
-    desc2a[Desc 1]
-    desc2b[Desc 2]
-    end
-
-    subgraph Step3
-    C
-    desc3a[Desc 1]
-    desc3b[Desc 2]
-    end
+    C --> D[Prepare model data]
+    D --> E[Training]
+    E --> F[Summarize results]
 ```
 
 Therefore, if you want to run model, take a look at the input data type and run the corresponding python script with appropriate arguments.
