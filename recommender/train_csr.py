@@ -9,8 +9,8 @@ os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import torch
 
 from recommender.prepare_model_data.prepare_model_data_csr import PrepareModelDataCsr
-from libs.utils.logger import setup_logger
-from libs.utils.parse_args import parse_args
+from recommender.libs.utils.logger import setup_logger
+from recommender.libs.utils.parse_args import parse_args
 from recommender.libs.plot.plot import plot_metric_at_k
 from recommender.libs.constant.model.module_path import MODEL_PATH
 from recommender.libs.constant.inference.recommend import TOP_K_VALUES

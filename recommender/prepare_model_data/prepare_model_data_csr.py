@@ -4,7 +4,7 @@ import pandas as pd
 import torch
 
 from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
-from libs.utils.csr import dataframe_to_csr
+from recommender.libs.utils.csr import dataframe_to_csr
 from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS
 
 
