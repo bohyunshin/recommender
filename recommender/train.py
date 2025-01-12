@@ -3,6 +3,7 @@ import traceback
 from argparse import ArgumentParser
 import logging
 import copy
+import pickle
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 import torch
@@ -11,16 +12,18 @@ import importlib
 
 from recommender.prepare_model_data.prepare_model_data_torch import PrepareModelDataTorch
 from recommender.loss.criterion import Criterion
-from recommender.libs.logger import setup_logger
-from recommender.libs.parse_args import parse_args
+from recommender.libs.utils.logger import setup_logger
+from recommender.libs.utils.parse_args import parse_args
+from recommender.libs.plot.plot import plot_metric_at_k
 from recommender.libs.constant.model.module_path import MODEL_PATH
 from recommender.libs.constant.torch.device import DEVICE
 from recommender.libs.constant.inference.recommend import TOP_K_VALUES
+from recommender.libs.constant.save.save import FileName
 
 
 def main(args: ArgumentParser.parse_args):
     os.makedirs(args.result_path, exist_ok=True)
-    setup_logger(os.path.join(args.result_path, "log.log"))
+    setup_logger(os.path.join(args.result_path, FileName.LOG.value))
     try:
         logging.info(f"selected dataset: {args.dataset}")
         logging.info(f"selected model: {args.model}")
@@ -37,11 +40,11 @@ def main(args: ArgumentParser.parse_args):
         logging.info(f"device info: {DEVICE}")
 
         # load raw data
-        load_data_module = importlib.import_module(f"load_data.load_data_{args.dataset}").LoadData
+        load_data_module = importlib.import_module(f"recommender.load_data.load_data_{args.dataset}").LoadData
         data = load_data_module().load(test=args.test)
 
         # preprocess data
-        preprocess_module = importlib.import_module(f"preprocess.preprocess_{args.dataset}").Preprocessor
+        preprocess_module = importlib.import_module(f"recommender.preprocess.preprocess_{args.dataset}").Preprocessor
         preprocessed_data = preprocess_module().preprocess(data)
         NUM_USERS = preprocessed_data.get("num_users")
         NUM_ITEMS = preprocessed_data.get("num_items")
@@ -115,6 +118,7 @@ def main(args: ArgumentParser.parse_args):
                 tr_loss += loss.item()
 
             tr_loss = round(tr_loss / len(train_dataloader), 6)
+            model.tr_loss.append(tr_loss)
 
             # validation
             model.eval()
@@ -144,6 +148,7 @@ def main(args: ArgumentParser.parse_args):
 
                     val_loss += loss.item()
                 val_loss = round(val_loss / len(validation_dataloader), 6)
+                model.val_loss.append(val_loss)
 
             logging.info(f"Train Loss: {tr_loss}")
             logging.info(f"Validation Loss: {val_loss}")
@@ -153,7 +158,7 @@ def main(args: ArgumentParser.parse_args):
                 best_loss = val_loss
                 best_model_weights = copy.deepcopy(model.state_dict())
                 patience = args.patience
-                torch.save(model.state_dict(), os.path.join(args.result_path, "model.pt"))
+                torch.save(model.state_dict(), os.path.join(args.result_path, FileName.WEIGHT_PT.value))
                 logging.info(f"Best validation: {best_loss}, Previous validation loss: {prev_best_loss}")
             else:
                 patience -= 1
@@ -173,11 +178,35 @@ def main(args: ArgumentParser.parse_args):
             # logging calculated metrics for current epoch
             model.collect_metrics()
 
+        # save metrics at every epoch
+        pickle.dump(
+            model.metric_at_k_total_epochs,
+            open(os.path.join(args.result_path, FileName.METRIC.value), "wb")
+        )
+
+        # save loss
+        pickle.dump(
+            model.tr_loss,
+            open(os.path.join(args.result_path, FileName.TRAINING_LOSS.value), "wb")
+        )
+        pickle.dump(
+            model.val_loss,
+            open(os.path.join(args.result_path, FileName.VALIDATION_LOSS.value), "wb")
+        )
+
+        # plot metrics
+        plot_metric_at_k(
+            metric=model.metric_at_k_total_epochs,
+            tr_loss=model.tr_loss,
+            val_loss=model.val_loss,
+            parent_save_path=args.result_path,
+        )
+
         # Load the best model weights
         model.load_state_dict(best_model_weights)
         logging.info("Load weight with best validation loss")
 
-        torch.save(model.state_dict(), os.path.join(args.result_path, "model.pt"))
+        torch.save(model.state_dict(), os.path.join(args.result_path, FileName.WEIGHT_PT.value))
         logging.info("Save final model")
     except Exception:
         logging.error(traceback.format_exc())

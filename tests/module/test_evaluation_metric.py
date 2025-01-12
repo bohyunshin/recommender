@@ -1,6 +1,6 @@
 import numpy as np
 
-from recommender.libs.evaluation import ranking_metrics_at_k
+from recommender.libs.utils.evaluation import ranking_metrics_at_k
 
 
 def test_map_ndcg():
