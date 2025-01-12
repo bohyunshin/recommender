@@ -97,9 +97,16 @@ flowchart LR
     E --> F[Summarize results]
 ```
 
-Therefore, if you want to run model, take a look at the input data type and run the corresponding python script with appropriate arguments.
+|Step|Code|Description|
+|----|----|-----------|
+|Download data|`scripts/download`|Download selected dataset from public url|
+|Load data|`scripts/load_data`|Load downloaded dataset with pandas data type|
+|Preprocess data|`recommender/preprocess`|Preprocess dataset|
+|Prepare model data|`recommender/prepare_model_data`|Convert dataset which will be fed to models|
+|Training|`recommender/model`|Train various recommender algorithms|
+|Summarize results|`recommender/libs/plot`|Make metric plots, loss curve|
 
-## Current algorithm implementation list
+## Algorithms currently implemented
 
 |Dataset category|Algorithm|Input data type|Path|Loss|
 |----------------|---|---|---|---|
@@ -115,13 +122,13 @@ Therefore, if you want to run model, take a look at the input data type and run 
 ## How to contribute
 Although any kinds of PRs are warmly welcomed, please refer to following rules.
 
+* After opening PRs, all the integration tests should be passed.
 * Basic tests in `tests/` directory should be added.
 * Depending on input data type (pytorch dataset or csr matrix), you should integrate your implementation to `recommender/train.py` or `recommender/train_csr.py`.
-* When adding new models, please attach followings in `PR` and `README.md`
-  * Experiment results using `recommender/train.py` or `recommender/train_csr.py` with your arguments.
-  * Example command to reproduce model training result should be added.
-  * Logging file when executing model training python script.
-  * Training / validation loss for each epoch.
+* When adding new models, please include followings in `PR`.
+  * Experiment results including metric plot, metric value, loss plot after running `recommender/train.py` or `recommender/train_csr.py` with your arguments.
+  * Example command to reproduce model training result.
+  * Full logs when executing model training python script.
 
 ## Dataset currently supported
 
