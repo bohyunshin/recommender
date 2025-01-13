@@ -92,12 +92,13 @@ def main(args: ArgumentParser.parse_args):
             model.train()
             tr_loss = 0.0
             for data in train_dataloader:
+                data = [tensor.to(DEVICE) for tensor in data]
                 # (user_id, item_id) or (user_id, pos_item_id, neg_item_id)
                 inputs = data[:-1]
                 # rating value or dummy value
                 y_train = data[-1]
                 optimizer.zero_grad()
-                y_pred = model(*(tensor.to(DEVICE) for tensor in inputs))
+                y_pred = model(*inputs)
                 loss = criterion.calculate_loss(
                     y_pred=y_pred,
                     y=y_train.to(DEVICE),
@@ -121,12 +122,13 @@ def main(args: ArgumentParser.parse_args):
             with torch.no_grad():
                 val_loss = 0.0
                 for data in validation_dataloader:
+                    data = [tensor.to(DEVICE) for tensor in data]
                     # (user_id, item_id) or (user_id, pos_item_id, neg_item_id)
                     inputs = data[:-1]
                     # rating value or dummy value
                     y_val = data[-1]
                     optimizer.zero_grad()
-                    y_pred = model(*(tensor.to(DEVICE) for tensor in inputs))
+                    y_pred = model(*inputs)
                     loss = criterion.calculate_loss(
                         y_pred=y_pred,
                         y=y_val.to(DEVICE),
