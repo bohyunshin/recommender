@@ -207,8 +207,8 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         Returns (Tuple[DataLoader, DataLoader]):
             Train / validation torch data_loader in order.
         """
-        seed = torch.Generator(device=DEVICE.type).manual_seed(self.random_state)
-        logging.info(f"Torch dataloader device: {DEVICE.type}")
+        seed = torch.Generator(device=DEVICE).manual_seed(self.random_state)
+        logging.info(f"Torch dataloader device: {DEVICE}")
         self.train_dataset = train_dataset
         self.validation_dataset = val_dataset
         train_dataloader = DataLoader(
