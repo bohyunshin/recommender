@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 import torch
 import torch.nn as nn
@@ -28,7 +28,7 @@ class Criterion:
             self,
             y_pred: Optional[torch.Tensor],
             y: Optional[torch.Tensor],
-            params: Optional[torch.nn.parameter],
+            params: Optional[List[nn.parameter.Parameter]],
             regularization: Optional[int],
             user_idx: Optional[torch.Tensor],
             item_idx: Optional[torch.Tensor],
