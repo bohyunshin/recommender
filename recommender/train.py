@@ -78,7 +78,7 @@ def main(args: ArgumentParser.parse_args):
             mu=prepare_model_data.mu, # for svd_bias model
             user_meta=prepare_model_data.user_meta, # for two_tower model
             item_meta=prepare_model_data.item_meta, # for two_tower model
-        )
+        ).to(DEVICE)
 
         criterion = Criterion(args.model)
         optimizer = optim.SGD(model.parameters(), lr=args.lr)
