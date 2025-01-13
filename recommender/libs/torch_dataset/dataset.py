@@ -21,5 +21,5 @@ class Data(Dataset):
     def __len__(self) -> int:
         return self.X.shape[0]
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
-        return self.X[idx], self.y[idx]
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        return self.X[idx, 0], self.X[idx, 1], self.y[idx]  # user, item, rating

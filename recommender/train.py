@@ -92,26 +92,22 @@ def main(args: ArgumentParser.parse_args):
             model.train()
             tr_loss = 0.0
             for data in train_dataloader:
-                loss_kwargs = {
-                    "regularization": args.regularization,
-                    "params": [param for param in model.parameters()]
-                }
-                if args.implicit == True:
-                    inputs = data[:-1]
-                    y_train = data[-1]
-                else:
-                    X_train, y_train = data
-                    users, items = X_train[:, 0], X_train[:, 1]
-                    inputs = (users, items)
-                    loss_kwargs["user_idx"] = users
-                    loss_kwargs["item_idx"] = items
-                    loss_kwargs["num_users"] = NUM_USERS
-                    loss_kwargs["num_items"] = NUM_ITEMS
+                # (user_id, item_id) or (user_id, pos_item_id, neg_item_id)
+                inputs = data[:-1]
+                # rating value or dummy value
+                y_train = data[-1]
                 optimizer.zero_grad()
-                y_pred = model(*inputs)
-                loss_kwargs["y_pred"] = y_pred
-                loss_kwargs["y"] = y_train
-                loss = criterion.calculate_loss(**loss_kwargs)
+                y_pred = model(*(tensor.to(DEVICE) for tensor in inputs))
+                loss = criterion.calculate_loss(
+                    y_pred=y_pred,
+                    y=y_train.to(DEVICE),
+                    params=[param for param in model.parameters()],
+                    regularization=args.regularization,
+                    user_idx=inputs[0],  # used in svd, svd_bias
+                    item_idx=inputs[1],  # used in svd, svd_bias
+                    num_users=NUM_USERS,  # used in svd, svd_bias
+                    num_items=NUM_ITEMS,  # used in svd, svd_bias
+                )
                 loss.backward()
                 optimizer.step()
 
@@ -125,26 +121,22 @@ def main(args: ArgumentParser.parse_args):
             with torch.no_grad():
                 val_loss = 0.0
                 for data in validation_dataloader:
-                    loss_kwargs = {
-                        "regularization": args.regularization,
-                        "params": [param for param in model.parameters()]
-                    }
-                    if args.implicit == True:
-                        inputs = data[:-1]
-                        y_val = data[-1]
-                    else:
-                        X_val, y_val = data
-                        users, items = X_val[:, 0], X_val[:, 1]
-                        inputs = (users, items)
-                        loss_kwargs["user_idx"] = users
-                        loss_kwargs["item_idx"] = items
-                        loss_kwargs["num_users"] = NUM_USERS
-                        loss_kwargs["num_items"] = NUM_ITEMS
-
-                    y_pred = model(*inputs)
-                    loss_kwargs["y_pred"] = y_pred
-                    loss_kwargs["y"] = y_val
-                    loss = criterion.calculate_loss(**loss_kwargs)
+                    # (user_id, item_id) or (user_id, pos_item_id, neg_item_id)
+                    inputs = data[:-1]
+                    # rating value or dummy value
+                    y_val = data[-1]
+                    optimizer.zero_grad()
+                    y_pred = model(*(tensor.to(DEVICE) for tensor in inputs))
+                    loss = criterion.calculate_loss(
+                        y_pred=y_pred,
+                        y=y_val.to(DEVICE),
+                        params=[param for param in model.parameters()],
+                        regularization=args.regularization,
+                        user_idx=inputs[0],  # used in svd, svd_bias
+                        item_idx=inputs[1],  # used in svd, svd_bias
+                        num_users=NUM_USERS,  # used in svd, svd_bias
+                        num_items=NUM_ITEMS,  # used in svd, svd_bias
+                    )
 
                     val_loss += loss.item()
                 val_loss = round(val_loss / len(validation_dataloader), 6)
