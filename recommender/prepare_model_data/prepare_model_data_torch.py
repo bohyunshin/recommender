@@ -15,6 +15,11 @@ from recommender.libs.constant.torch.device import DEVICE
 from recommender.libs.constant.torch.dataset import DATASET_PATH
 from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS
 
+# in case cuda, following error occurs.
+# RuntimeError: Expected a 'cpu' device type for generator but found 'cuda'
+# it seems that when setting `_base_seed`, device setting in `torch.empty()` does not work.
+torch.set_default_device(DEVICE)
+
 
 class PrepareModelDataTorch(PrepareModelDataBase):
     def __init__(
