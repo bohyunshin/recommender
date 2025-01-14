@@ -221,14 +221,12 @@ class PrepareModelDataTorch(PrepareModelDataBase):
             batch_size=self.batch_size,
             shuffle=True,
             generator=seed,
-            pin_memory=True,
         )
         validation_dataloader = DataLoader(
             dataset=val_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             generator=seed,
-            pin_memory = True,
         )
         self.mu = train_dataset.y.mean() if self.model in ["svd", "svd_bias"] else None
 
