@@ -35,8 +35,6 @@ def main(args: ArgumentParser.parse_args):
         logging.info(f"train ratio: {args.train_ratio}")
         logging.info(f"number of negative samples: {args.num_neg}")
         logging.info(f"patience for watching validation loss: {args.patience}")
-        if args.movielens_data_type != None:
-            logging.info(f"selected movielens data type: {args.movielens_data_type}")
         logging.info(f"device info: {DEVICE}")
 
         # load raw data

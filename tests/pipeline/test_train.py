@@ -23,7 +23,6 @@ def run_model(
     args.patience = 5
     args.result_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"../result/{model}")
     args.num_sim_user_top_N = 45
-    args.movielens_data_type = "ml-1m"
     args.test = True
 
     main(args)

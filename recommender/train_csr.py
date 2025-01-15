@@ -32,8 +32,6 @@ def main(args: ArgumentParser.parse_args):
             logging.info(f"number of factors for user / item embedding: {args.num_factors}")
             logging.info(f"patience for watching validation loss: {args.patience}")
         logging.info(f"train ratio: {args.train_ratio}")
-        if args.movielens_data_type != None:
-            logging.info(f"selected movielens data type: {args.movielens_data_type}")
 
         # load raw data
         load_data_module = importlib.import_module(f"recommender.load_data.load_data_{args.dataset}").LoadData
