@@ -24,7 +24,7 @@ def main(args: ArgumentParser.parse_args):
     try:
         logging.info(f"selected dataset: {args.dataset}")
         logging.info(f"selected model: {args.model}")
-        if args.model in ["als"]:
+        if args.model == ModelName.ALS.value:
             logging.info(f"batch size: {args.batch_size}")
             logging.info(f"learning rate: {args.lr}")
             logging.info(f"regularization: {args.regularization}")
@@ -32,8 +32,9 @@ def main(args: ArgumentParser.parse_args):
             logging.info(f"number of factors for user / item embedding: {args.num_factors}")
             logging.info(f"patience for watching validation loss: {args.patience}")
         logging.info(f"train ratio: {args.train_ratio}")
-        if args.movielens_data_type != None:
-            logging.info(f"selected movielens data type: {args.movielens_data_type}")
+        if args.model == ModelName.USER_BASED.value:
+            args.epochs = 1  # for user_based model, iterations no more than 2 is not needed
+            logging.info(f"num_sim_user_top_N: {args.num_sim_user_top_N}")
 
         # load raw data
         load_data_module = importlib.import_module(f"recommender.load_data.load_data_{args.dataset}").LoadData
@@ -79,6 +80,7 @@ def main(args: ArgumentParser.parse_args):
 
         # train model
         best_loss = float("inf")
+        early_stopping = False
         for epoch in range(args.epochs):
             logging.info(f"####### Epoch {epoch} #######")
             model.fit(user_items=csr_train, val_user_items=csr_val)
@@ -95,7 +97,7 @@ def main(args: ArgumentParser.parse_args):
                     logging.info(f"Validation loss did not decrease. Patience {patience} left.")
                     if patience == 0:
                         logging.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
-                        break
+                        early_stopping = True
             else:
                 pickle.dump(model, open(os.path.join(args.result_path, FileName.MODEL_PKL.value), "wb"))
 
@@ -108,8 +110,11 @@ def main(args: ArgumentParser.parse_args):
                 user_items=csr_train,
             )
 
-        # logging calculated metrics for current epoch
-        model.collect_metrics()
+            # logging calculated metrics for current epoch
+            model.collect_metrics()
+
+            if early_stopping is True:
+                break
 
         if args.model != ModelName.USER_BASED.value:
             # save metrics at every epoch

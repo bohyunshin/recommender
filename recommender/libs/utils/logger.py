@@ -20,7 +20,7 @@ def setup_logger(log_file: str):
         },
         "root": {
             "handlers": ["file_handler"],
-            "level": "DEBUG",
+            "level": "INFO",
         },
     }
 

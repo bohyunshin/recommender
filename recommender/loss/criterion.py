@@ -1,7 +1,10 @@
+from typing import Optional, List
+
 import torch
 import torch.nn as nn
 
 from recommender.loss.custom import bpr_loss, svd_loss
+from recommender.libs.constant.model.name import ModelName
 
 
 class Criterion:
@@ -14,43 +17,61 @@ class Criterion:
         """
         self.model = model
         # TODO: fix `if-else` statement to better program.
-        if model in ["svd", "svd_bias"]:
+        if model in [ModelName.SVD.value, ModelName.SVD_BIAS.value]:
            self.criterion = svd_loss
-        elif model == "bpr":
+        elif model == ModelName.BPR.value:
             self.criterion = bpr_loss
-        elif model in ["gmf", "mlp", "two_tower"]:
+        elif model in [ModelName.GMF.value, ModelName.MLP.value, ModelName.TWO_TOWER.value]:
             self.criterion = nn.BCELoss()
 
     def calculate_loss(
             self,
-            **kwargs
+            y_pred: Optional[torch.Tensor],
+            y: Optional[torch.Tensor],
+            params: Optional[List[nn.parameter.Parameter]],
+            regularization: Optional[int],
+            user_idx: Optional[torch.Tensor],
+            item_idx: Optional[torch.Tensor],
+            num_users: Optional[int],
+            num_items: Optional[int],
         ) -> torch.Tensor:
         """
         Calculates loss for given model using defined loss function.
-        Because arguments for each loss function are different, `**kwargs` is used as function argument.
+        Because arguments for each loss function are different, Optional type is used.
 
-        TODO: gets arguments not from kwargs, but from optional argument
-        y_pred: Optional[torch.Tensor] = None,
-        y: Optional[torch.Tensor] = None,
-        params: Optional[torch.nn.parameter] = None,
-        regularization: Optional[int] = None,
-        user_idx: Optional[torch.Tensor] = None,
-        item_idx: Optional[torch.Tensor] = None,
-        num_users: Optional[int] = None,
-        num_items: Optional[int] = None,
+        Args:
+            y_pred (Optional[torch.Tensor]): Prediction value. Could be logit or probability.
+            y (Optional[torch.Tensor]): True y value. If implicit data, dummy value is used here.
+            params (Optional[torch.nn.parameter]): Model parameters from torch model.
+            regularization (Optional[int]): Regularization parameter balancing between main loss and penalty.
+            user_idx (Optional[torch.Tensor]): User index in current batch.
+            item_idx (Optional[torch.Tensor]): Item index in current batch.
+            num_users (Optional[int]): Number of total users.
+            num_items (Optional[int]): Number of total items.
+
+        Returns (torch.Tensor):
+            Calculated loss.
         """
-        y_pred = kwargs.get("y_pred").squeeze()
-        y = kwargs.get("y")
-        params = kwargs.get("params")
-        regularization = kwargs.get("regularization")
-        user_idx = kwargs.get("user_idx")
-        item_idx = kwargs.get("item_idx")
-        num_users = kwargs.get("num_users")
-        num_items = kwargs.get("num_items")
         # TODO: fix `if-else` statement to better program.
-        if self.model in ["svd", "svd_bias"]:
-            return self.criterion(y_pred, y.squeeze(), params, regularization, user_idx, item_idx, num_users, num_items)
-        elif self.model in ["gmf", "mlp", "two_tower"]:
-            return self.criterion(y_pred, y.squeeze())
-        elif self.model == "bpr":
-            return self.criterion(y_pred, params, regularization)
+        if self.model in [ModelName.SVD.value, ModelName.SVD_BIAS.value]:
+            return self.criterion(
+                pred=y_pred.squeeze(),
+                true=y.squeeze(),
+                params=params,
+                regularization=regularization,
+                user_idx=user_idx,
+                item_idx=item_idx,
+                num_users=num_users,
+                num_items=num_items,
+            )
+        elif self.model in [ModelName.GMF.value, ModelName.MLP.value, ModelName.TWO_TOWER.value]:
+            return self.criterion(
+                input=y_pred.squeeze(),
+                target=y.squeeze(),
+            )
+        elif self.model == ModelName.BPR.value:
+            return self.criterion(
+                pred=y_pred,
+                params=params,
+                regularization=regularization,
+            )

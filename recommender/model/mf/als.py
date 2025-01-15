@@ -90,8 +90,6 @@ class Model(FitModelBase):
 
         self._PtP = None
         self._QtQ = None
-        self.tr_loss = []
-        self.val_loss = []
 
         # alternate updating user and item factors
         # update user factors

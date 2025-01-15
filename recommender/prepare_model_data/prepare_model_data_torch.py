@@ -15,6 +15,11 @@ from recommender.libs.constant.torch.device import DEVICE
 from recommender.libs.constant.torch.dataset import DATASET_PATH
 from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS
 
+# in case cuda, following error occurs.
+# RuntimeError: Expected a 'cpu' device type for generator but found 'cuda'
+# it seems that when setting `_base_seed`, device setting in `torch.empty()` does not work.
+torch.set_default_device(DEVICE)
+
 
 class PrepareModelDataTorch(PrepareModelDataBase):
     def __init__(
@@ -207,20 +212,21 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         Returns (Tuple[DataLoader, DataLoader]):
             Train / validation torch data_loader in order.
         """
-        seed = torch.Generator(device=DEVICE.type).manual_seed(self.random_state)
+        seed = torch.Generator(device=DEVICE)
+        logging.info(f"Torch dataloader device: {DEVICE}")
         self.train_dataset = train_dataset
         self.validation_dataset = val_dataset
         train_dataloader = DataLoader(
             dataset=train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
-            generator=seed
+            generator=seed,
         )
         validation_dataloader = DataLoader(
             dataset=val_dataset,
             batch_size=self.batch_size,
             shuffle=True,
-            generator=seed
+            generator=seed,
         )
         self.mu = train_dataset.y.mean() if self.model in ["svd", "svd_bias"] else None
 
