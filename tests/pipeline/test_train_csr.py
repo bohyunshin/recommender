@@ -17,7 +17,7 @@ def run_csr_model(
     args.batch_size = 32
     args.regularization = 1e-4
     args.lr = 1e-2
-    args.epochs = 50
+    args.epochs = 10
     args.num_factors = 16
     args.train_ratio = 0.8
     args.random_state = 42
