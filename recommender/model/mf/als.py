@@ -50,9 +50,6 @@ class Model(FitModelBase):
         self.user_factors = None
         self.item_factors = None
 
-        self.tr_loss = []
-        self.val_loss = []
-
     def fit(
             self,
             user_items: csr_matrix,
