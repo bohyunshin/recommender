@@ -55,7 +55,7 @@ class Criterion:
         # TODO: fix `if-else` statement to better program.
         if self.model in [ModelName.SVD.value, ModelName.SVD_BIAS.value]:
             return self.criterion(
-                pred=y_pred,
+                pred=y_pred.squeeze(),
                 true=y.squeeze(),
                 params=params,
                 regularization=regularization,
@@ -66,7 +66,7 @@ class Criterion:
             )
         elif self.model in [ModelName.GMF.value, ModelName.MLP.value, ModelName.TWO_TOWER.value]:
             return self.criterion(
-                input=y_pred,
+                input=y_pred.squeeze(),
                 target=y.squeeze(),
             )
         elif self.model == ModelName.BPR.value:
