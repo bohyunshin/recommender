@@ -20,7 +20,7 @@ class Model(FitModelBase):
             regularization: float,
             random_state: int,
             alpha: Optional[float] = 0.1,
-            dtype: Optional[np.dtypes] = np.float32,
+            dtype: np.dtypes = np.float32,
             **kwargs
     ):
         """
