@@ -77,6 +77,7 @@ def main(args: ArgumentParser.parse_args):
 
         # train model
         best_loss = float("inf")
+        early_stopping = False
         for epoch in range(args.epochs):
             logging.info(f"####### Epoch {epoch} #######")
             model.fit(user_items=csr_train, val_user_items=csr_val)
@@ -93,7 +94,7 @@ def main(args: ArgumentParser.parse_args):
                     logging.info(f"Validation loss did not decrease. Patience {patience} left.")
                     if patience == 0:
                         logging.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
-                        break
+                        early_stopping = True
             else:
                 pickle.dump(model, open(os.path.join(args.result_path, FileName.MODEL_PKL.value), "wb"))
 
@@ -106,8 +107,11 @@ def main(args: ArgumentParser.parse_args):
                 user_items=csr_train,
             )
 
-        # logging calculated metrics for current epoch
-        model.collect_metrics()
+            # logging calculated metrics for current epoch
+            model.collect_metrics()
+
+            if early_stopping is True:
+                break
 
         if args.model != ModelName.USER_BASED.value:
             # save metrics at every epoch

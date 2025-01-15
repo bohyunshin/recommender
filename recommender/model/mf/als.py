@@ -50,6 +50,9 @@ class Model(FitModelBase):
         self.user_factors = None
         self.item_factors = None
 
+        self.tr_loss = []
+        self.val_loss = []
+
     def fit(
             self,
             user_items: csr_matrix,
@@ -90,8 +93,6 @@ class Model(FitModelBase):
 
         self._PtP = None
         self._QtQ = None
-        self.tr_loss = []
-        self.val_loss = []
 
         # alternate updating user and item factors
         # update user factors

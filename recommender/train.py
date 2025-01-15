@@ -83,6 +83,7 @@ def main(args: ArgumentParser.parse_args):
 
         # train model
         best_loss = float("inf")
+        early_stopping = False
         for epoch in range(args.epochs):
             logging.info(f"####### Epoch {epoch} #######")
 
@@ -157,7 +158,7 @@ def main(args: ArgumentParser.parse_args):
                 logging.info(f"Validation loss did not decrease. Patience {patience} left.")
                 if patience == 0:
                     logging.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
-                    break
+                    early_stopping = True
 
             # calculate metrics for all users
             model.recommend_all(
@@ -169,6 +170,9 @@ def main(args: ArgumentParser.parse_args):
 
             # logging calculated metrics for current epoch
             model.collect_metrics()
+
+            if early_stopping is True:
+                break
 
         # save metrics at every epoch
         pickle.dump(
