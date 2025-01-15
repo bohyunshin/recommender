@@ -7,7 +7,7 @@ def parse_args():
     parser.add_argument("--model", type=str, required=True, choices=["svd", "svd_bias", "als", "bpr", "user_based", "gmf", "mlp", "two_tower"])
     parser.add_argument("--implicit", action="store_true")
     parser.add_argument("--num_neg", type=int, default=1)
-    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--lr", type=float, default=1e-2)
     parser.add_argument("--regularization", type=float, default=1e-4)
     parser.add_argument("--epochs", type=int, default=10)
