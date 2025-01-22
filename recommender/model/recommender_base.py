@@ -174,12 +174,11 @@ class RecommenderBase(ABC):
 
             for k in top_k_values:
                 pred_liked_item_id = top_k_id[i][:k].detach().cpu().numpy()
-                if len(val_liked_item_id) >= k:
-                    metric = ranking_metrics_at_k(val_liked_item_id, pred_liked_item_id)
-                    self.metric_at_k[k][Metric.MAP.value] += metric[Metric.AP.value]
-                    self.metric_at_k[k][Metric.NDCG.value] += metric[Metric.NDCG.value]
-                    self.metric_at_k[k][Metric.RECALL.value] += metric[Metric.RECALL.value]
-                    self.metric_at_k[k][Metric.COUNT.value] += 1
+                metric = ranking_metrics_at_k(val_liked_item_id, pred_liked_item_id)
+                self.metric_at_k[k][Metric.MAP.value] += metric[Metric.AP.value]
+                self.metric_at_k[k][Metric.NDCG.value] += metric[Metric.NDCG.value]
+                self.metric_at_k[k][Metric.RECALL.value] += metric[Metric.RECALL.value]
+                self.metric_at_k[k][Metric.COUNT.value] += 1
 
     def collect_metrics(self):
         maps = []
