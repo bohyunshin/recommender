@@ -25,3 +25,13 @@ def test_map_ndcg():
     expected_map = (1 + 1 + 1) / K
     np.testing.assert_almost_equal(metric["ndcg"], expected_ndcg)
     np.testing.assert_almost_equal(metric["ap"], expected_map)
+
+
+def test_map_increasing_as_k_larger():
+    reco_items = np.array([0, 1, 2, 5, 6, 7, 3, 100, 4])
+    liked_items = np.array([2, 3, 4, 100, 10])
+    map = -1e10
+    for k in range(len(reco_items)):
+        metric = ranking_metrics_at_k(liked_items, reco_items[:k+1])
+        assert metric["ap"] >= map
+        map = metric["ap"]
