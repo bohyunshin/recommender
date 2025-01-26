@@ -58,8 +58,9 @@ class TorchModelBase(nn.Module, RecommenderBase):
             Batch_size x num_items score matrix.
         """
         # user_id and item_id are torch.Tensor in torch based model
+        num_batch_users = kwargs.get("num_batch_users")
         user_id = user_id.repeat_interleave(self.num_items)
-        item_id = item_id.tile(self.num_users)
+        item_id = item_id.tile(num_batch_users)
         with torch.no_grad():
             user_item_score = self.forward(user_id, item_id)
         return user_item_score.reshape(-1, self.num_items)

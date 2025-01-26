@@ -92,8 +92,6 @@ class RecommenderBase(ABC):
         }
         max_k = max(top_k_values)
         start = 0
-        # total item embeddings
-        # item_embeds = self.embed_item(self.item_ids)
 
         # store true diner id visited by user in validation dataset
         self.train_liked = convert_tensor_to_user_item_summary(X_train, torch.Tensor)
@@ -101,13 +99,13 @@ class RecommenderBase(ABC):
 
         while start < self.num_users:
             batch_users = self.user_ids[start: start + RECOMMEND_BATCH_SIZE]
-            # user_embeds = self.embed_user(batch_users)
+            num_batch_users = len(batch_users)
             scores = self.predict(
                 user_id=batch_users,
                 item_id=self.item_ids,
                 user_items=kwargs.get("user_items"),
+                num_batch_users=num_batch_users,
             )
-            # scores = torch.mm(user_embeds, item_embeds.t())
 
             # TODO: change for loop to more efficient program
             # filter diner id already liked by user in train dataset
@@ -176,12 +174,11 @@ class RecommenderBase(ABC):
 
             for k in top_k_values:
                 pred_liked_item_id = top_k_id[i][:k].detach().cpu().numpy()
-                if len(val_liked_item_id) >= k:
-                    metric = ranking_metrics_at_k(val_liked_item_id, pred_liked_item_id)
-                    self.metric_at_k[k][Metric.MAP.value] += metric[Metric.AP.value]
-                    self.metric_at_k[k][Metric.NDCG.value] += metric[Metric.NDCG.value]
-                    self.metric_at_k[k][Metric.RECALL.value] += metric[Metric.RECALL.value]
-                    self.metric_at_k[k][Metric.COUNT.value] += 1
+                metric = ranking_metrics_at_k(val_liked_item_id, pred_liked_item_id)
+                self.metric_at_k[k][Metric.MAP.value] += metric[Metric.AP.value]
+                self.metric_at_k[k][Metric.NDCG.value] += metric[Metric.NDCG.value]
+                self.metric_at_k[k][Metric.RECALL.value] += metric[Metric.RECALL.value]
+                self.metric_at_k[k][Metric.COUNT.value] += 1
 
     def collect_metrics(self):
         maps = []
