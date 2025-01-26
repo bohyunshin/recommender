@@ -4,6 +4,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from recommender.libs.constant.inference.evaluation import Metric
+from recommender.libs.utils.utils import safe_divide
 
 
 def ranking_metrics_at_k(
@@ -62,9 +63,9 @@ def ranking_metrics_at_k(
             hit += 1
             ap += hit / (i + 1)
             ndcg += cg[i] / idcg
-    ap /= len(liked_items)
+    ap = safe_divide(ap, len(liked_items))
 
     # Calculate recall
-    recall = hit / len(liked_items)
+    recall = safe_divide(hit, len(liked_items))
 
     return {Metric.AP.value: ap, Metric.NDCG.value: ndcg, Metric.RECALL.value: recall}
