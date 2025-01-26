@@ -33,18 +33,20 @@ def ranking_metrics_at_k(
 
     NDCG = \dfrac{DCG}{IDCG}
     where DCG = \sum_{i=1}^{K} \dfrac{1}{\log2{i+1}} * r(i) and
-    IDCG = \sum_{i=1}^{K} \dfrac{1}{\log2{i+1}}.
-    Here, r(i) is indicator variable 1 if ith item is hitted else 0.
+    IDCG = \sum_{i=1}^{M} \dfrac{1}{\log2{i+1}}.
+    Here, r(i) is indicator variable 1 if ith item is hitted else 0,
+    K is number of recommended items, and M is number of items that users liked.
 
     Maximum value of NDCG is IDCG by their definitions, therefore, 0 <= NDCG <= 1.
 
-    Note that NDCG does NOT gurantee increasing value as K is getting larger because denominator, which is IDCG
-    is getting larger as K is getting larger.
+    Note that NDCG does NOT gurantee increasing value as K is getting larger.
 
-    liked_items:
-        item ids selected by one user in test dataset.
-    reco_items:
-        item ids recommended for one user.
+    Args:
+        liked_items (NDArray): Item ids selected by one user in test dataset.
+        reco_items (NDArray): Item ids recommended for one user.
+
+    Returns (Dict[str, float]):
+        Calculated metric for one user which is recall, map and ndcg.
     """
     # number of recommended items
     K = len(reco_items)
