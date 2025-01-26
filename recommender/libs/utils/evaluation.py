@@ -51,7 +51,7 @@ def ranking_metrics_at_k(
 
     ap = 0
     cg = (1.0 / np.log2(np.arange(2, K + 2)))
-    idcg = cg.sum()
+    idcg = cg[:len(liked_items)].sum()
     ndcg = 0
     hit = 0
 
