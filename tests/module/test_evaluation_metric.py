@@ -33,10 +33,10 @@ def test_map_ndcg():
     K = len(reco_items)
     metric = ranking_metrics_at_k(liked_items, reco_items)
     dcg = 1.0 / np.log2(np.arange(2, K + 2))
-    idcg = np.sum(dcg)
+    idcg = np.sum(dcg[:5])
 
     expected_ndcg = (dcg[3] + dcg[4]) / idcg
-    expected_map = (1 / 4 + 2 / 5) / K
+    expected_map = (1 / 4 + 2 / 5) / len(liked_items)
 
     np.testing.assert_almost_equal(metric["ndcg"], expected_ndcg)
     np.testing.assert_almost_equal(metric["ap"], expected_map)
@@ -45,7 +45,7 @@ def test_map_ndcg():
     reco_items = np.array([100, 10, 50, 2, 3])
     metric = ranking_metrics_at_k(liked_items, reco_items)
     expected_ndcg = (dcg[0] + dcg[1] + dcg[2]) / idcg
-    expected_map = (1 + 1 + 1) / K
+    expected_map = (1 + 1 + 1) / len(liked_items)
     np.testing.assert_almost_equal(metric["ndcg"], expected_ndcg)
     np.testing.assert_almost_equal(metric["ap"], expected_map)
 
