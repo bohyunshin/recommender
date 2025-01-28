@@ -13,6 +13,7 @@ def run_csr_model(
     args.dataset = dataset
     args.model = model
     args.implicit = True
+    args.loss = "not_defined"
     args.num_neg = 1
     args.batch_size = 32
     args.regularization = 1e-4

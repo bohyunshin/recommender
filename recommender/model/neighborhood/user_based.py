@@ -18,6 +18,7 @@ class Model(FitModelBase):
             num_users: int,
             num_items: int,
             num_sim_user_top_N: int,
+            loss_name: str,
             num_factors: int = 10,
             **kwargs
         ):
@@ -37,6 +38,7 @@ class Model(FitModelBase):
             num_users=num_users,
             num_items=num_items,
             num_factors=num_factors,
+            loss_name=loss_name,
         )
         self.num_sim_user_top_N = num_sim_user_top_N
 

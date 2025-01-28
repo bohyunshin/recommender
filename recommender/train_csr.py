@@ -72,6 +72,7 @@ def main(args: ArgumentParser.parse_args):
             num_users=NUM_USERS,  # common model parameter
             num_items=NUM_ITEMS,  # common model parameter
             num_factors=args.num_factors,  # common model parameter
+            loss_name=args.loss, # als parameter
             regularization=args.regularization,  # als parameter
             iterations=args.epochs,  # als parameter
             random_state=args.random_state,  # als parameter
@@ -86,9 +87,28 @@ def main(args: ArgumentParser.parse_args):
             model.fit(user_items=csr_train, val_user_items=csr_val)
 
             if args.model != ModelName.USER_BASED.value:  # no loss defined in user_based model
-                if best_loss > model.current_val_loss:
+                # calculate training / validation loss
+                tr_loss = model.calculate_loss(
+                    user_items=csr_train,
+                    user_factors=model.user_factors,
+                    item_factors=model.item_factors,
+                    regularization=args.regularization,
+                )
+                model.tr_loss.append(tr_loss)
+                logging.info(f"training loss: {tr_loss}")
+
+                val_loss = model.calculate_loss(
+                    user_items=csr_val,
+                    user_factors=model.user_factors,
+                    item_factors=model.item_factors,
+                    regularization=args.regularization,
+                )
+                model.val_loss.append(val_loss)
+                logging.info(f"validation loss: {val_loss}")
+
+                if best_loss > val_loss:
                     prev_best_loss = best_loss
-                    best_loss = model.current_val_loss
+                    best_loss = val_loss
                     patience = args.patience
                     pickle.dump(model, open(os.path.join(args.result_path, FileName.MODEL_PKL.value), "wb"))
                     logging.info(f"Best validation: {best_loss}, Previous validation loss: {prev_best_loss}")
@@ -99,7 +119,9 @@ def main(args: ArgumentParser.parse_args):
                         logging.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
                         early_stopping = True
             else:
+                # when user_based model, do not have to iterate training
                 pickle.dump(model, open(os.path.join(args.result_path, FileName.MODEL_PKL.value), "wb"))
+                break
 
             # calculate metrics for all users
             model.recommend_all(

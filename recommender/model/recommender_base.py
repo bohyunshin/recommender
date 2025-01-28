@@ -2,12 +2,13 @@ from abc import ABC, abstractmethod
 from typing import List, Union, Optional
 import logging
 
+from scipy.sparse import csr_matrix
 import numpy as np
 from numpy.typing import NDArray
 import torch
 import torch.nn as nn
 
-from recommender.loss.custom import bpr_loss, svd_loss
+from recommender.loss.custom import bpr_loss, svd_loss, als_loss
 from recommender.libs.utils.evaluation import ranking_metrics_at_k
 from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary
 from recommender.libs.utils.utils import safe_divide
@@ -73,19 +74,26 @@ class RecommenderBase(ABC):
             self.loss = bpr_loss
         elif self.loss_name == LossName.BCE.value:
             self.loss = nn.BCEWithLogitsLoss()
+        elif self.loss_name == LossName.ALS.value:
+            self.loss = als_loss
+        elif self.loss_name == LossName.NOT_DEFINED.value:
+            pass
         else:
             raise
 
     def calculate_loss(
             self,
-            y_pred: Optional[torch.Tensor],
-            y: Optional[torch.Tensor],
-            params: Optional[List[nn.parameter.Parameter]],
-            regularization: Optional[int],
-            user_idx: Optional[torch.Tensor],
-            item_idx: Optional[torch.Tensor],
-            num_users: Optional[int],
-            num_items: Optional[int],
+            y_pred: Optional[torch.Tensor] = None,
+            y: Optional[torch.Tensor] = None,
+            params: Optional[List[nn.parameter.Parameter]] = None,
+            regularization: Optional[int] = None,
+            user_idx: Optional[torch.Tensor] = None,
+            item_idx: Optional[torch.Tensor] = None,
+            num_users: Optional[int] = None,
+            num_items: Optional[int] = None,
+            user_items: Optional[csr_matrix] = None,
+            user_factors: Optional[NDArray] = None,
+            item_factors: Optional[NDArray] = None,
         ) -> torch.Tensor:
         """
         Calculates loss for given model using defined loss function.
@@ -127,6 +135,17 @@ class RecommenderBase(ABC):
                 params=params,
                 regularization=regularization,
             )
+        elif self.loss_name == LossName.ALS.value:
+            return self.loss(
+                user_items=user_items,
+                user_factors=user_factors,
+                item_factors=item_factors,
+                regularization=regularization,
+            )
+        elif self.loss_name == LossName.NOT_DEFINED.value:
+            return torch.tensor(0.)
+        else:
+            raise
 
     def recommend_all(
             self,

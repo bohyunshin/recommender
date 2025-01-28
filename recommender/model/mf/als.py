@@ -17,6 +17,7 @@ class Model(FitModelBase):
             num_users: int,
             num_items: int,
             num_factors: int,
+            loss_name: str,
             regularization: float,
             random_state: int,
             alpha: Optional[float] = 0.1,
@@ -40,6 +41,7 @@ class Model(FitModelBase):
             num_users=num_users,
             num_items=num_items,
             num_factors=num_factors,
+            loss_name=loss_name,
         )
         self.factors = num_factors
         self.regularization = regularization
@@ -102,16 +104,16 @@ class Model(FitModelBase):
         for i in range(N):
             self.update_item_factors(i, self.user_factors, Cui.T.tocsr())
 
-        # calculate training / validation loss
-        tr_loss = self.calculate_loss(user_items)
-        self.tr_loss.append(tr_loss)
-        logging.info(f"training loss: {tr_loss}")
-
-        if val_user_items is not None:
-            val_loss = self.calculate_loss(val_user_items)
-            self.current_val_loss = val_loss
-            self.val_loss.append(val_loss)
-            logging.info(f"validation loss: {val_loss}")
+        # # calculate training / validation loss
+        # tr_loss = self.calculate_loss(user_items)
+        # self.tr_loss.append(tr_loss)
+        # logging.info(f"training loss: {tr_loss}")
+        #
+        # if val_user_items is not None:
+        #     val_loss = self.calculate_loss(val_user_items)
+        #     self.current_val_loss = val_loss
+        #     self.val_loss.append(val_loss)
+        #     logging.info(f"validation loss: {val_loss}")
 
     def update_user_factors(
             self,
@@ -212,47 +214,47 @@ class Model(FitModelBase):
         scores = np.dot(self.user_factors[user_id], self.item_factors[item_id].T)
         return torch.tensor(scores)
 
-    def calculate_loss(
-            self,
-            user_items: csr_matrix,
-        ) -> float:
-        """
-        Calculates training/validation loss in each iteration.
-
-        We calculate loss in each iteration to check if parameters are converged or not.
-        Depending on the user_items argument, it calculates training or validation loss.
-
-        It is strongly recommended that it should be checked whether validation loss drops
-        and becomes stable
-
-        Args:
-            user_items (csr_matrix): Training or validation user x item matrix.
-
-        Returns (float):
-            Calculated loss value.
-        """
-        loss = 0
-        M,N = user_items.shape
-        Q = self.item_factors
-        total_confidence = 0
-        for u in range(M):
-            c_u = user_items[u].todense()
-            total_confidence += c_u.sum()
-            r_u = self.binarize(c_u)
-            p_u = self.user_factors[u]
-            r_u_hat = Q.dot(p_u)
-
-            temp = np.multiply(c_u, np.power(r_u - r_u_hat, 2))
-            loss += temp.sum()
-
-            loss += self.regularization * np.power(p_u, 2).sum()
-
-        for i in range(N):
-            q_i = self.item_factors[i]
-            loss += self.regularization * np.power(q_i, 2).sum()
-
-        # todo: why divide loss? (from implicit github repo)
-        return loss / (total_confidence + user_items.shape[0] * user_items.shape[1] - user_items.nnz)
+    # def calculate_loss(
+    #         self,
+    #         user_items: csr_matrix,
+    #     ) -> float:
+    #     """
+    #     Calculates training/validation loss in each iteration.
+    #
+    #     We calculate loss in each iteration to check if parameters are converged or not.
+    #     Depending on the user_items argument, it calculates training or validation loss.
+    #
+    #     It is strongly recommended that it should be checked whether validation loss drops
+    #     and becomes stable
+    #
+    #     Args:
+    #         user_items (csr_matrix): Training or validation user x item matrix.
+    #
+    #     Returns (float):
+    #         Calculated loss value.
+    #     """
+    #     loss = 0
+    #     M,N = user_items.shape
+    #     Q = self.item_factors
+    #     total_confidence = 0
+    #     for u in range(M):
+    #         c_u = user_items[u].todense()
+    #         total_confidence += c_u.sum()
+    #         r_u = self.binarize(c_u)
+    #         p_u = self.user_factors[u]
+    #         r_u_hat = Q.dot(p_u)
+    #
+    #         temp = np.multiply(c_u, np.power(r_u - r_u_hat, 2))
+    #         loss += temp.sum()
+    #
+    #         loss += self.regularization * np.power(p_u, 2).sum()
+    #
+    #     for i in range(N):
+    #         q_i = self.item_factors[i]
+    #         loss += self.regularization * np.power(q_i, 2).sum()
+    #
+    #     # todo: why divide loss? (from implicit github repo)
+    #     return loss / (total_confidence + user_items.shape[0] * user_items.shape[1] - user_items.nnz)
 
     def QtQ(self) -> NDArray:
         """
@@ -275,24 +277,6 @@ class Model(FitModelBase):
         """
         P = self.user_factors
         return P.T.dot(P)
-
-    def binarize(
-            self,
-            c: NDArray,
-        ):
-        """
-        Binarizes input NDArray making dataset as implicit.
-        In implicit dataset, even if an user interacted with an item greater than one time,
-        the user is regarded as interacting with an item one time.
-        This model assumption inherently has disadvantage, therefore fixes it with `alpha` parameter.
-
-        Args:
-             c (NDArray): NDArray to be binarized.
-
-        Returns (NDArray):
-            Binarized NDArray.
-        """
-        return np.where(c >= 1, 1, 0)
 
     def linear_equation(
             self,

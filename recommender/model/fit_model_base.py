@@ -15,6 +15,7 @@ class FitModelBase(RecommenderBase):
             num_users: int,
             num_items: int,
             num_factors: int,
+            loss_name: str,
             **kwargs
         ):
         """
@@ -26,6 +27,7 @@ class FitModelBase(RecommenderBase):
             num_users=num_users,
             num_items=num_items,
             num_factors=num_factors,
+            loss_name=loss_name,
             **kwargs
         )
 
@@ -48,23 +50,23 @@ class FitModelBase(RecommenderBase):
         raise NotImplementedError
 
     # @abstractmethod
-    def calculate_loss(
-            self,
-            user_items: csr_matrix
-        ) -> float:
-        """
-        Calculates training/validation loss in each iteration.
-
-        We calculate loss in each iteration to check if parameters are converged or not.
-        Depending on the user_items argument, it calculates training or validation loss.
-
-        It is strongly recommended that it should be checked whether validation loss drops
-        and becomes stable
-
-        Args:
-            user_items (csr_matrix): Training or validation user x item matrix.
-
-        Returns (float):
-            Calculated loss value.
-        """
-        raise NotImplementedError
+    # def calculate_loss(
+    #         self,
+    #         user_items: csr_matrix
+    #     ) -> float:
+    #     """
+    #     Calculates training/validation loss in each iteration.
+    #
+    #     We calculate loss in each iteration to check if parameters are converged or not.
+    #     Depending on the user_items argument, it calculates training or validation loss.
+    #
+    #     It is strongly recommended that it should be checked whether validation loss drops
+    #     and becomes stable
+    #
+    #     Args:
+    #         user_items (csr_matrix): Training or validation user x item matrix.
+    #
+    #     Returns (float):
+    #         Calculated loss value.
+    #     """
+    #     raise NotImplementedError
