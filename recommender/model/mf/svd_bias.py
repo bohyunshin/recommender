@@ -49,6 +49,7 @@ class Model(TorchModelBase):
             self,
             user_idx: torch.Tensor,
             item_idx: torch.Tensor,
+            **kwargs,
         ) -> torch.Tensor:
         """
         Forward pass of SVD model.

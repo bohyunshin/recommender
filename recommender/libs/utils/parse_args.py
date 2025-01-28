@@ -2,14 +2,16 @@ import argparse
 
 from recommender.libs.constant.model.name import IMPLEMENTED_MODELS
 from recommender.libs.constant.data.name import INTEGRATED_DATASET
+from recommender.libs.constant.loss.name import IMPLEMENTED_LOSS
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, required=True, choices=INTEGRATED_DATASET)
     parser.add_argument("--model", type=str, required=True, choices=IMPLEMENTED_MODELS)
+    parser.add_argument("--loss", type=str, required=True, choices=IMPLEMENTED_LOSS)
     parser.add_argument("--implicit", action="store_true")
-    parser.add_argument("--num_neg", type=int, default=1)
+    parser.add_argument("--num_neg", type=int, default=None)
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--lr", type=float, default=1e-2)
     parser.add_argument("--regularization", type=float, default=1e-4)

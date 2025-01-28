@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List, Union, Optional
 import logging
 
 import numpy as np
@@ -7,6 +7,7 @@ from numpy.typing import NDArray
 import torch
 import torch.nn as nn
 
+from recommender.loss.custom import bpr_loss, svd_loss
 from recommender.libs.utils.evaluation import ranking_metrics_at_k
 from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary
 from recommender.libs.utils.utils import safe_divide
@@ -22,6 +23,7 @@ class RecommenderBase(ABC):
             num_users: int,
             num_items: int,
             num_factors: int,
+            loss_name: str,
             **kwargs,
         ):
         """
@@ -44,6 +46,8 @@ class RecommenderBase(ABC):
         self.num_users = num_users
         self.num_items = num_items
 
+        self.loss_name = loss_name
+
         # store metric value at each epoch
         self.metric_at_k_total_epochs = {
             k: {
@@ -57,6 +61,71 @@ class RecommenderBase(ABC):
 
         self.tr_loss = []
         self.val_loss = []
+
+        self.set_loss_func()
+
+    def set_loss_func(self):
+        # TODO: fix `if-else` statement to better program.
+        if self.loss_name == "MSE":
+            self.loss = svd_loss
+        elif self.loss_name == "BPR":
+            self.loss = bpr_loss
+        elif self.loss_name == "BCE":
+            self.loss = nn.BCELoss()
+        else:
+            raise
+
+    def calculate_loss(
+            self,
+            y_pred: Optional[torch.Tensor],
+            y: Optional[torch.Tensor],
+            params: Optional[List[nn.parameter.Parameter]],
+            regularization: Optional[int],
+            user_idx: Optional[torch.Tensor],
+            item_idx: Optional[torch.Tensor],
+            num_users: Optional[int],
+            num_items: Optional[int],
+        ) -> torch.Tensor:
+        """
+        Calculates loss for given model using defined loss function.
+        Because arguments for each loss function are different, Optional type is used.
+
+        Args:
+            y_pred (Optional[torch.Tensor]): Prediction value. Could be logit or probability.
+            y (Optional[torch.Tensor]): True y value. If implicit data, dummy value is used here.
+            params (Optional[torch.nn.parameter]): Model parameters from torch model.
+            regularization (Optional[int]): Regularization parameter balancing between main loss and penalty.
+            user_idx (Optional[torch.Tensor]): User index in current batch.
+            item_idx (Optional[torch.Tensor]): Item index in current batch.
+            num_users (Optional[int]): Number of total users.
+            num_items (Optional[int]): Number of total items.
+
+        Returns (torch.Tensor):
+            Calculated loss.
+        """
+        # TODO: fix `if-else` statement to better program.
+        if self.loss_name == "MSE":
+            return self.loss(
+                pred=y_pred.squeeze(),
+                true=y.squeeze(),
+                params=params,
+                regularization=regularization,
+                user_idx=user_idx,
+                item_idx=item_idx,
+                num_users=num_users,
+                num_items=num_items,
+            )
+        elif self.loss_name == "BCE":
+            return self.loss(
+                input=y_pred.squeeze(),
+                target=y.squeeze(),
+            )
+        elif self.loss_name == "BPR":
+            return self.loss(
+                pred=y_pred,
+                params=params,
+                regularization=regularization,
+            )
 
     def recommend_all(
             self,

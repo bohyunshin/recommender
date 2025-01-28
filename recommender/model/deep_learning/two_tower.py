@@ -52,6 +52,7 @@ class Model(TorchModelBase):
             self,
             user_idx: torch.Tensor,
             item_idx: torch.Tensor,
+            **kwargs,
         ) -> torch.Tensor:
         """
         Calculates associated probability between user_idx and item_idx using two-tower architecture.
