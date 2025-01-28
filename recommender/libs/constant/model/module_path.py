@@ -2,7 +2,6 @@ MODEL_PATH = {
     # torch based models
     "svd": "recommender.model.mf.svd",
     "svd_bias": "recommender.model.mf.svd_bias",
-    "bpr": "recommender.model.bpr",
     "gmf": "recommender.model.deep_learning.gmf",
     "mlp": "recommender.model.deep_learning.mlp",
     "two_tower": "recommender.model.deep_learning.two_tower",
