@@ -93,10 +93,11 @@ def plot_metric(
         title = f"{metric_name} at every epoch"
     ax = plt.gca()
     ax.xaxis.set_major_locator(MultipleLocator(5))
+    plt.figure(figsize=(7, 7))
     plt.ylabel(metric_name)
     plt.title(title)
     plt.savefig(save_path)
-    plt.show()
+    plt.show(block=False)
     plt.close()
 
 
