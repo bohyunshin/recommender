@@ -110,7 +110,7 @@ def main(args: ArgumentParser.parse_args):
                         num_ng=args.num_neg,
                         is_triplet=is_triplet,
                         num_item=NUM_ITEMS,
-                        strategy=args.neg_sampling_strategy,
+                        strategy=args.neg_sample_strategy,
                     )
                     ng_sample.ng()
                     ng_res = ng_sample.format_dataset()
@@ -159,7 +159,7 @@ def main(args: ArgumentParser.parse_args):
                             num_ng=args.num_neg,
                             is_triplet=is_triplet,
                             num_item=NUM_ITEMS,
-                            strategy=args.neg_sampling_strategy,
+                            strategy=args.neg_sample_strategy,
                         )
                         ng_sample.ng()
                         ng_res = ng_sample.format_dataset()
