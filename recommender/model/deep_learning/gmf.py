@@ -56,7 +56,7 @@ class Model(TorchModelBase):
         [Forward step]
         1. Dot products between user and item embeddings
         2. Pass dot products values to linear layer
-        3. Finally, pass sigmoid function.
+        3. Finally, pass sigmoid function which is done in BCEWithLogitsLoss.
 
         Args:
             user_idx (torch.Tensor): User index.
@@ -67,4 +67,4 @@ class Model(TorchModelBase):
         """
         x = self.embed_user(user_idx) * self.embed_item(item_idx)
         x = self.h(x)
-        return F.sigmoid(x)
+        return x

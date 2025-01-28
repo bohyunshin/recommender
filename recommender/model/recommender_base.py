@@ -72,7 +72,7 @@ class RecommenderBase(ABC):
         elif self.loss_name == LossName.BPR.value:
             self.loss = bpr_loss
         elif self.loss_name == LossName.BCE.value:
-            self.loss = nn.BCELoss()
+            self.loss = nn.BCEWithLogitsLoss()
         else:
             raise
 
