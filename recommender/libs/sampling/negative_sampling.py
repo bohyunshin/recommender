@@ -95,11 +95,11 @@ class NegativeSampling(object):
                 # positive sample
                 user_ids.append(user_id)
                 item_ids.append(pos_item_id)
-                y.append(1)
+                y.append(1.)
                 # negative sample
                 user_ids.append(user_id)
                 item_ids.append(neg_item_id)
-                y.append(0)
+                y.append(0.)
             return {
                 "user_idx": torch.tensor(user_ids),
                 "item_idx": torch.tensor(item_ids),

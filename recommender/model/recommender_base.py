@@ -13,6 +13,7 @@ from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_s
 from recommender.libs.utils.utils import safe_divide
 from recommender.libs.constant.inference.evaluation import Metric
 from recommender.libs.constant.inference.recommend import RECOMMEND_BATCH_SIZE, TOP_K_VALUES
+from recommender.libs.constant.loss.name import LossName
 
 
 class RecommenderBase(ABC):
@@ -66,11 +67,11 @@ class RecommenderBase(ABC):
 
     def set_loss_func(self):
         # TODO: fix `if-else` statement to better program.
-        if self.loss_name == "MSE":
+        if self.loss_name == LossName.MSE.value:
             self.loss = svd_loss
-        elif self.loss_name == "BPR":
+        elif self.loss_name == LossName.BPR.value:
             self.loss = bpr_loss
-        elif self.loss_name == "BCE":
+        elif self.loss_name == LossName.BCE.value:
             self.loss = nn.BCELoss()
         else:
             raise
@@ -104,7 +105,7 @@ class RecommenderBase(ABC):
             Calculated loss.
         """
         # TODO: fix `if-else` statement to better program.
-        if self.loss_name == "MSE":
+        if self.loss_name == LossName.MSE.value:
             return self.loss(
                 pred=y_pred.squeeze(),
                 true=y.squeeze(),
@@ -115,12 +116,12 @@ class RecommenderBase(ABC):
                 num_users=num_users,
                 num_items=num_items,
             )
-        elif self.loss_name == "BCE":
+        elif self.loss_name == LossName.BCE.value:
             return self.loss(
                 input=y_pred.squeeze(),
                 target=y.squeeze(),
             )
-        elif self.loss_name == "BPR":
+        elif self.loss_name == LossName.BPR.value:
             return self.loss(
                 pred=y_pred,
                 params=params,

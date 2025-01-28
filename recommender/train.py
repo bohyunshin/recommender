@@ -12,6 +12,7 @@ import importlib
 
 from recommender.prepare_model_data.prepare_model_data_torch import PrepareModelDataTorch
 from recommender.loss.criterion import Criterion
+from recommender.libs.validate.config import validate_config
 from recommender.libs.sampling.negative_sampling import NegativeSampling
 from recommender.libs.utils.logger import setup_logger
 from recommender.libs.utils.parse_args import parse_args
@@ -24,6 +25,7 @@ from recommender.libs.constant.loss.name import LossName
 
 
 def main(args: ArgumentParser.parse_args):
+    validate_config(args)
     os.makedirs(args.result_path, exist_ok=True)
     setup_logger(os.path.join(args.result_path, FileName.LOG.value))
     try:
@@ -80,10 +82,10 @@ def main(args: ArgumentParser.parse_args):
             mu=prepare_model_data.mu, # for svd_bias model
             user_meta=prepare_model_data.user_meta, # for two_tower model
             item_meta=prepare_model_data.item_meta, # for two_tower model
-            loss_name="MSE"
+            loss_name=args.loss,
         ).to(DEVICE)
 
-        criterion = Criterion(args.model)
+        # criterion = Criterion(args.model)
         optimizer = optim.SGD(model.parameters(), lr=args.lr)
 
         # train model
@@ -108,7 +110,7 @@ def main(args: ArgumentParser.parse_args):
                         num_ng=args.num_neg,
                         is_triplet=is_triplet,
                         num_item=NUM_ITEMS,
-                        strategy=["in_batch"]
+                        strategy=args.neg_sampling_strategy,
                     )
                     ng_sample.ng()
                     ng_res = ng_sample.format_dataset()
@@ -157,7 +159,7 @@ def main(args: ArgumentParser.parse_args):
                             num_ng=args.num_neg,
                             is_triplet=is_triplet,
                             num_item=NUM_ITEMS,
-                            strategy=["in_batch"]
+                            strategy=args.neg_sampling_strategy,
                         )
                         ng_sample.ng()
                         ng_res = ng_sample.format_dataset()

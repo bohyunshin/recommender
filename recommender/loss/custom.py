@@ -1,6 +1,8 @@
 import torch
 import torch.nn.functional as F
 
+from recommender.libs.utils.norm import parameter_l_k_norm
+
 
 def bpr_loss(
         pred: torch.Tensor,
@@ -19,10 +21,8 @@ def bpr_loss(
         BPR loss with penalty term.
     """
     logprob = F.logsigmoid(pred).sum()
-    penalty = torch.tensor(0., requires_grad=True)
-    for param in params:
-        penalty = penalty + param.data.norm(dim=1).pow(2).sum() * regularization
-    return -logprob + penalty
+    penalty = parameter_l_k_norm(params=params, k=2)
+    return -logprob + penalty * regularization
 
 
 def svd_loss(
