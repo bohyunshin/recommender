@@ -28,7 +28,7 @@ class NegativeSampling(object):
             neg_item_id_candidate = torch.tensor(
                 [
                     t for t in self.batch_item_id
-                    if t != pos_item_id
+                    if t != pos_item_id and self.user_item_summ[user_id.item()].get(t.item()) is None
                 ]
             )
             self._sample(
@@ -39,7 +39,12 @@ class NegativeSampling(object):
 
     def random_from_total_pool_ng(self):
         for user_id, pos_item_id in zip(self.batch_user_id, self.batch_item_id):
-            neg_item_id_candidate = torch.arange(self.num_item)
+            neg_item_id_candidate = torch.tensor(
+                [
+                    t for t in range(self.num_item)
+                    if self.user_item_summ[user_id.item()].get(t) is None
+                ]
+            )
             self._sample(
                 user_id=user_id,
                 pos_item_id=pos_item_id,
@@ -52,6 +57,10 @@ class NegativeSampling(object):
             pos_item_id: torch.Tensor,
             neg_item_id_candidate: torch.Tensor
         ):
+        if len(neg_item_id_candidate) <= self.num_ng:
+            for neg_item_id in neg_item_id_candidate:
+                self.ng_samples.append((user_id, pos_item_id, neg_item_id))
+            return
         num_ng = 0
         sampled = []
         while num_ng != self.num_ng:
