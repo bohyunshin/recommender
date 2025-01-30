@@ -112,15 +112,15 @@ flowchart LR
 
 ## Implemented models
 
-| Models        | Input data type | Path                                           | Possible loss function |
-|---------------|-----------------|------------------------------------------------|------------------------|
-| User based CF | csr matrix      | `recommender/model/neighborhood/user_based.py` | NA                     |
-| SVD           | pytorch dataset | `recommender/model/mf/svd.py`                  | `MSE`, `BCE`, `BPR`    |
-| SVD with bias | pytorch dataset | `recommender/model/mf/svd_bias.py`             | `MSE`, `BCE`, `BPR`    |
-| ALS           | csr matrix      | `recommender/model/mf/als.py`                  | `ALS`                  |
-| GMF           | pytorch dataset | `recommender/model/deep_learning/gmf.py`       | `MSE`, `BCE`, `BPR`    |
-| MLP           | pytorch dataset | `recommender/model/deep_learning/mlp.py`       | `MSE`, `BCE`, `BPR`    |
-| TWO-TOWER     | pytorch dataset | `recommender/model/deep_learning/two_tower.py` | `MSE`, `BCE`, `BPR`    |
+| Models           | Input data type   | Path                                           | Possible loss function  |
+|------------------|-------------------|------------------------------------------------|-------------------------|
+| `User based CF`  | `csr matrix`      | `recommender/model/neighborhood/user_based.py` | `NA`                    |
+| `SVD`            | `pytorch dataset` | `recommender/model/mf/svd.py`                  | `MSE`, `BCE`, `BPR`     |
+| `SVD with bias`  | `pytorch dataset` | `recommender/model/mf/svd_bias.py`             | `MSE`, `BCE`, `BPR`     |
+| `ALS`            | `csr matrix`      | `recommender/model/mf/als.py`                  | `ALS`                   |
+| `GMF`            | `pytorch dataset` | `recommender/model/deep_learning/gmf.py`       | `MSE`, `BCE`, `BPR`     |
+| `MLP`            | `pytorch dataset` | `recommender/model/deep_learning/mlp.py`       | `MSE`, `BCE`, `BPR`     |
+| `TWO-TOWER`      | `pytorch dataset` | `recommender/model/deep_learning/two_tower.py` | `MSE`, `BCE`, `BPR`     |
 
 Refer to following parameter description when running `recommender/train.py` or `recommender/train_csr.py`.
 You can check below parameters in [this code](https://github.com/bohyunshin/recommender/blob/master/recommender/libs/utils/parse_args.py). 
@@ -145,7 +145,7 @@ You can check below parameters in [this code](https://github.com/bohyunshin/reco
 | `patience`            | tolerance count when validation loss does not drop                        | 5        |
 | `result_path`         | absolute directory to store training result                               | required |
 | `num_sim_user_top_N`  | number of users who are the most similar in top N (used in user_based CF) | 45       |
-| `test`                | when set true, use part of dataset when training for quick pytest         | False    |
+| `is_test`             | when set true, use part of dataset when training for quick pytest         | False    |
 </details>
 
 ## Supported dataset
