@@ -1,15 +1,16 @@
 from typing import Dict
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-from recommender.load_data.load_data_base import LoadDataBase
 from recommender.libs.constant.data.movielens import (
-    MovieLens1mPath,
+    ITEMS_COLUMNS,
     RATINGS_COLUMNS,
     USERS_COLUMNS,
-    ITEMS_COLUMNS
+    MovieLens1mPath,
 )
+from recommender.load_data.load_data_base import LoadDataBase
+
 
 class LoadData(LoadDataBase):
     def __init__(self, **kwargs):
@@ -36,7 +37,7 @@ class LoadData(LoadDataBase):
             sep="::",
             names=RATINGS_COLUMNS,
             engine="python",
-            encoding="ISO-8859-1"
+            encoding="ISO-8859-1",
         )
 
         # for quick pytest
@@ -49,7 +50,7 @@ class LoadData(LoadDataBase):
             sep="::",
             names=ITEMS_COLUMNS,
             engine="python",
-            encoding="ISO-8859-1"
+            encoding="ISO-8859-1",
         ).sort_values(by="movie_id")
 
         users = pd.read_csv(
@@ -57,11 +58,7 @@ class LoadData(LoadDataBase):
             sep="::",
             names=USERS_COLUMNS,
             engine="python",
-            encoding="ISO-8859-1"
+            encoding="ISO-8859-1",
         ).sort_values(by="user_id")
 
-        return {
-            "ratings": ratings,
-            "users": users,
-            "items": items
-        }
+        return {"ratings": ratings, "users": users, "items": items}

@@ -5,15 +5,15 @@ import torch
 
 class NegativeSampling(object):
     def __init__(
-            self,
-            batch_user_id: torch.Tensor,
-            batch_item_id: torch.Tensor,
-            user_item_summ: Dict[int, Dict[int, bool]],
-            num_ng: int,
-            is_triplet: bool,
-            num_item: int,
-            strategy: List[str],
-        ):
+        self,
+        batch_user_id: torch.Tensor,
+        batch_item_id: torch.Tensor,
+        user_item_summ: Dict[int, Dict[int, bool]],
+        num_ng: int,
+        is_triplet: bool,
+        num_item: int,
+        strategy: List[str],
+    ):
         """
         Run negative sampling in every batch.
         Currently, in-batch sampling, random sampling from total pool are supported.
@@ -62,9 +62,11 @@ class NegativeSampling(object):
         for user_id, pos_item_id in zip(self.batch_user_id, self.batch_item_id):
             neg_item_id_candidate = torch.tensor(
                 [
-                    t for t in self.batch_item_id
+                    t
+                    for t in self.batch_item_id
                     # exclude item_id that user_id already liked and pos_item_id
-                    if t != pos_item_id and self.user_item_summ[user_id.item()].get(t.item()) is None
+                    if t != pos_item_id
+                    and self.user_item_summ[user_id.item()].get(t.item()) is None
                 ]
             )
             self._sample(
@@ -93,8 +95,10 @@ class NegativeSampling(object):
         for user_id, pos_item_id in zip(self.batch_user_id, self.batch_item_id):
             neg_item_id_candidate = torch.tensor(
                 [
-                    t for t in range(self.num_item)
-                    if self.user_item_summ[user_id.item()].get(t) is None # exclude item_id that user_id already liked
+                    t
+                    for t in range(self.num_item)
+                    if self.user_item_summ[user_id.item()].get(t)
+                    is None  # exclude item_id that user_id already liked
                 ]
             )
             self._sample(
@@ -104,11 +108,11 @@ class NegativeSampling(object):
             )
 
     def _sample(
-            self,
-            user_id: torch.Tensor,
-            pos_item_id: torch.Tensor,
-            neg_item_id_candidate: torch.Tensor
-        ) -> None:
+        self,
+        user_id: torch.Tensor,
+        pos_item_id: torch.Tensor,
+        neg_item_id_candidate: torch.Tensor,
+    ) -> None:
         """
         Sample item_id from `neg_item_id_candidate` for current (user_id, pos_item_id) pair.
 
@@ -165,7 +169,7 @@ class NegativeSampling(object):
                 "user_idx": torch.tensor(user_ids),
                 "pos_item_idx": torch.tensor(pos_item_ids),
                 "neg_item_idx": torch.tensor(neg_item_ids),
-                "y": torch.zeros(size=(len(user_ids),)), # dummy y value
+                "y": torch.zeros(size=(len(user_ids),)),  # dummy y value
             }
         else:
             user_ids = []
@@ -175,11 +179,11 @@ class NegativeSampling(object):
                 # positive sample
                 user_ids.append(user_id)
                 item_ids.append(pos_item_id)
-                y.append(1.)
+                y.append(1.0)
                 # negative sample
                 user_ids.append(user_id)
                 item_ids.append(neg_item_id)
-                y.append(0.)
+                y.append(0.0)
             return {
                 "user_idx": torch.tensor(user_ids),
                 "item_idx": torch.tensor(item_ids),

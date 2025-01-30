@@ -9,7 +9,9 @@ class Preprocessor(PreoprocessorBase):
     def __init__(self):
         super().__init__()
 
-    def preprocess(self, data: Dict[str, pd.DataFrame]) -> Dict[str, Union[pd.DataFrame, Dict[int, int]]]:
+    def preprocess(
+        self, data: Dict[str, pd.DataFrame]
+    ) -> Dict[str, Union[pd.DataFrame, Dict[int, int]]]:
         """
         When preprocessing movielens dataset, only mapping logic is included.
 

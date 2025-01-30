@@ -1,27 +1,27 @@
-from typing import Dict, Tuple, List, Any, Union
 import logging
+from typing import Any, Dict, List, Tuple, Union
 
-import torch
 import numpy as np
+import torch
 from numpy.typing import NDArray
 from scipy.sparse import csr_matrix
 
-from recommender.model.fit_model_base import FitModelBase
 from recommender.libs.utils.csr import slice_csr_matrix
+from recommender.model.fit_model_base import FitModelBase
 
 
 class Model(FitModelBase):
     def __init__(
-            self,
-            user_ids: torch.Tensor,
-            item_ids: torch.Tensor,
-            num_users: int,
-            num_items: int,
-            num_sim_user_top_N: int,
-            loss_name: str,
-            num_factors: int = 10,
-            **kwargs
-        ):
+        self,
+        user_ids: torch.Tensor,
+        item_ids: torch.Tensor,
+        num_users: int,
+        num_items: int,
+        num_sim_user_top_N: int,
+        loss_name: str,
+        num_factors: int = 10,
+        **kwargs,
+    ):
         """
         User based collaborative filtering model.
         In this model, user gets recommendation based on likes of user's closest users.
@@ -43,10 +43,10 @@ class Model(FitModelBase):
         self.num_sim_user_top_N = num_sim_user_top_N
 
     def fit(
-            self,
-            user_items: csr_matrix,
-            val_user_items: csr_matrix,
-        ) -> None:
+        self,
+        user_items: csr_matrix,
+        val_user_items: csr_matrix,
+    ) -> None:
         """
         Fit user based model.
 
@@ -65,10 +65,10 @@ class Model(FitModelBase):
         logging.info("Predicting users' unseen item rating")
 
     def calculate_user_sim(
-            self,
-            user_ids: NDArray,
-            csr: csr_matrix,
-        ) -> Dict[Tuple[Any, Any], float]:
+        self,
+        user_ids: NDArray,
+        csr: csr_matrix,
+    ) -> Dict[Tuple[Any, Any], float]:
         """
         Calculate cosine similarity between every user based on items liked by both of users.
 
@@ -82,25 +82,27 @@ class Model(FitModelBase):
         res = {}
         for i in range(len(user_ids)):
             x = user_ids[i].item()
-            for y in user_ids[i + 1:]:
+            for y in user_ids[i + 1 :]:
                 y = y.item()
-                items_liked_by_x = csr.indices[csr.indptr[x]:csr.indptr[x+1]]
-                items_liked_by_y = csr.indices[csr.indptr[y]:csr.indptr[y+1]]
+                items_liked_by_x = csr.indices[csr.indptr[x] : csr.indptr[x + 1]]
+                items_liked_by_y = csr.indices[csr.indptr[y] : csr.indptr[y + 1]]
                 items_liked_by_x_y = list(set(items_liked_by_x) & set(items_liked_by_y))
 
                 if len(items_liked_by_x_y) == 0:
                     res[(x, y)] = 0
                 else:
-                    res[(x, y)] = self._calculate_user_sim(x, y, items_liked_by_x_y, csr)
+                    res[(x, y)] = self._calculate_user_sim(
+                        x, y, items_liked_by_x_y, csr
+                    )
         return res
 
     def _calculate_user_sim(
-            self,
-            x: int,
-            y: int,
-            items_liked_by_x_y: List[int],
-            csr: csr_matrix,
-        ) -> float:
+        self,
+        x: int,
+        y: int,
+        items_liked_by_x_y: List[int],
+        csr: csr_matrix,
+    ) -> float:
         """
         Inner function calculating cosine similarity.
 
@@ -117,25 +119,25 @@ class Model(FitModelBase):
         r_y = 0
         r_xy = 0
 
-        for r in csr.data[csr.indptr[x]:csr.indptr[x+1]]:
-            r_x += r ** 2
+        for r in csr.data[csr.indptr[x] : csr.indptr[x + 1]]:
+            r_x += r**2
         r_x = r_x ** (0.5)
 
-        for r in csr.data[csr.indptr[y]:csr.indptr[y+1]]:
-            r_y += r ** 2
+        for r in csr.data[csr.indptr[y] : csr.indptr[y + 1]]:
+            r_y += r**2
         r_y = r_y ** (0.5)
 
         for i in items_liked_by_x_y:
-            r_xi = slice_csr_matrix(csr,x,i)
-            r_yi = slice_csr_matrix(csr,y,i)
+            r_xi = slice_csr_matrix(csr, x, i)
+            r_yi = slice_csr_matrix(csr, y, i)
             r_xy += r_xi * r_yi
 
         return r_xy / (r_x * r_y)
 
     def get_top_N_sim_user(
-            self,
-            user_sim: Dict[Tuple[Any, Any], float],
-        ) -> Dict[int, List[Tuple[int, int]]]:
+        self,
+        user_sim: Dict[Tuple[Any, Any], float],
+    ) -> Dict[int, List[Tuple[int, int]]]:
         """
         Get closest N users for each user.
 
@@ -158,14 +160,16 @@ class Model(FitModelBase):
                 res[y].append((x, sim))
         final_res = {}
         for u, rank in res.items():
-            final_res[u] = sorted(rank, key=lambda x: x[1], reverse=True)[:self.num_sim_user_top_N]
+            final_res[u] = sorted(rank, key=lambda x: x[1], reverse=True)[
+                : self.num_sim_user_top_N
+            ]
         return final_res
 
     def predict(
-            self,
-            user_id: Union[NDArray, torch.Tensor],
-            item_id: Union[NDArray, torch.Tensor],
-            **kwargs,
+        self,
+        user_id: Union[NDArray, torch.Tensor],
+        item_id: Union[NDArray, torch.Tensor],
+        **kwargs,
     ) -> torch.Tensor:
         """
         For batch users, calculates prediction score for all of item ids.
@@ -190,8 +194,10 @@ class Model(FitModelBase):
         csr = kwargs.get("user_items")
         user_item_rating = np.zeros((len(user_id), len(item_id)))
         for u in user_id:
-            rating_by_u = csr.data[csr.indptr[u]:csr.indptr[u+1]]
-            mean_r[u] = 0 if len(rating_by_u) == 0 else sum(rating_by_u) / len(rating_by_u)
+            rating_by_u = csr.data[csr.indptr[u] : csr.indptr[u + 1]]
+            mean_r[u] = (
+                0 if len(rating_by_u) == 0 else sum(rating_by_u) / len(rating_by_u)
+            )
 
         for idx, u in enumerate(user_id):
             if res.get(u) is None:

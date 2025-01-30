@@ -1,16 +1,14 @@
-from typing import Tuple, Dict
 from collections import defaultdict
+from typing import Dict, Tuple
 
-import pandas as pd
 import numpy as np
-from numpy.typing import NDArray, ArrayLike
+import pandas as pd
+from numpy.typing import ArrayLike, NDArray
 from scipy.sparse import csr_matrix
 
 
 def dataframe_to_csr(
-        df: pd.DataFrame,
-        shape: Tuple[int, int],
-        implicit: bool
+    df: pd.DataFrame, shape: Tuple[int, int], implicit: bool
 ) -> csr_matrix:
     """
     Converts a pandas dataframe to a csr matrix.
@@ -70,9 +68,7 @@ def dataframe_to_csr(
 
 
 def implicit_to_csr(
-        arr: NDArray,
-        shape: Tuple[int, int],
-        dct: bool = False
+    arr: NDArray, shape: Tuple[int, int], dct: bool = False
 ) -> csr_matrix:
     """
     Converts user-item interaction data to user-item interaction csr matrix.
@@ -135,11 +131,7 @@ def mapping_index(ids: NDArray) -> Dict[int, int]:
     return id2idx
 
 
-def slice_csr_matrix(
-        csr: csr_matrix,
-        row: int,
-        col: int
-) -> int:
+def slice_csr_matrix(csr: csr_matrix, row: int, col: int) -> int:
     """
     Returns csr[row, col] value not using slicing operation in csr matrix.
     When dimension of csr_matrix is too large, slicing such as csr_matrix[row, col]
@@ -153,9 +145,9 @@ def slice_csr_matrix(
     Returns (int):
         Sliced value.
     """
-    indices = csr.indices[csr.indptr[row]:csr.indptr[row + 1]]
-    data = csr.data[csr.indptr[row]:csr.indptr[row + 1]]
-    for i,d in zip(indices, data):
+    indices = csr.indices[csr.indptr[row] : csr.indptr[row + 1]]
+    data = csr.data[csr.indptr[row] : csr.indptr[row + 1]]
+    for i, d in zip(indices, data):
         if i == col:
             return d
     return 0

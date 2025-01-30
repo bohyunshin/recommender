@@ -1,23 +1,24 @@
-from typing import Dict, Any, List, Optional
 import os
 import pickle
+from typing import Any, Dict, List, Optional
 
-import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MultipleLocator
+import pandas as pd
 import seaborn as sns
+from matplotlib.ticker import MultipleLocator
+
 sns.set_style("darkgrid")
 
-from recommender.libs.constant.inference.recommend import TOP_K_VALUES
 from recommender.libs.constant.inference.evaluation import Metric
+from recommender.libs.constant.inference.recommend import TOP_K_VALUES
 from recommender.libs.constant.save.save import FileName
 
 
 def plot_metric_at_k(
-        metric: Dict[int, Dict[str, Any]],
-        tr_loss: List[float],
-        val_loss: List[float],
-        parent_save_path: str,
+    metric: Dict[int, Dict[str, Any]],
+    tr_loss: List[float],
+    val_loss: List[float],
+    parent_save_path: str,
 ) -> None:
     """
     Draw metrics line plot @k at each epoch after training.
@@ -43,7 +44,7 @@ def plot_metric_at_k(
         for k in TOP_K_VALUES:
             tmp = pd.DataFrame(
                 {
-                    "@k": [f"@{k}"]*len(epochs),
+                    "@k": [f"@{k}"] * len(epochs),
                     "value": metric[k][metric_name],
                     "epochs": epochs,
                 }
@@ -59,7 +60,7 @@ def plot_metric_at_k(
     tr_loss_df = pd.DataFrame(
         {
             "value": tr_loss + val_loss,
-            "loss_type": ["training"]*len(tr_loss) + ["validation"]*len(val_loss),
+            "loss_type": ["training"] * len(tr_loss) + ["validation"] * len(val_loss),
             "epochs": epochs * 2,
         }
     )
@@ -70,11 +71,12 @@ def plot_metric_at_k(
         hue="loss_type",
     )
 
+
 def plot_metric(
-        df: pd.DataFrame,
-        metric_name: str,
-        save_path: str,
-        hue: Optional[str],
+    df: pd.DataFrame,
+    metric_name: str,
+    save_path: str,
+    hue: Optional[str],
 ) -> None:
     """
     Draw line plot given dataframe.
@@ -101,9 +103,9 @@ def plot_metric(
 
 
 def compare_metrics_between_models_at_k(
-        result_path: str,
-        models: List[str],
-        num_epochs: int,
+    result_path: str,
+    models: List[str],
+    num_epochs: int,
 ) -> None:
     """
     Plot metrics at every epochs among selected models.
@@ -123,9 +125,7 @@ def compare_metrics_between_models_at_k(
     os.makedirs(dir_name, exist_ok=True)
     for model in models:
         metrics_result_path = os.path.join(result_path, model, FileName.METRIC.value)
-        metrics_at_k[model] = pickle.load(
-            open(metrics_result_path, "rb")
-        )
+        metrics_at_k[model] = pickle.load(open(metrics_result_path, "rb"))
 
     for k in TOP_K_VALUES:
         for metric in pred_metrics:
@@ -135,8 +135,8 @@ def compare_metrics_between_models_at_k(
             for model in models:
                 metric_values = metrics_at_k[model][k][metric]
                 remain_epochs = num_epochs - len(metric_values)
-                values += metric_values + [metric_values[-1]]*remain_epochs
-                model_names += [model]*num_epochs
+                values += metric_values + [metric_values[-1]] * remain_epochs
+                model_names += [model] * num_epochs
                 epochs += [i for i in range(num_epochs)]
             tmp = pd.DataFrame(
                 {
@@ -155,6 +155,7 @@ def compare_metrics_between_models_at_k(
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--result_path", type=str, required=True)
     parser.add_argument("--models", type=str, required=True, nargs="+")

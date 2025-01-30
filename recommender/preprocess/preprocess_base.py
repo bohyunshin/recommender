@@ -3,6 +3,7 @@ from typing import Dict, Union
 
 import pandas as pd
 
+
 class PreoprocessorBase(ABC):
     def __init__(self, **kwargs):
         """
@@ -11,7 +12,9 @@ class PreoprocessorBase(ABC):
         pass
 
     @abstractmethod
-    def preprocess(self, data: Dict[str, pd.DataFrame]) -> Dict[str, Union[pd.DataFrame, Dict[int, int]]]:
+    def preprocess(
+        self, data: Dict[str, pd.DataFrame]
+    ) -> Dict[str, Union[pd.DataFrame, Dict[int, int]]]:
         """
         Abstract method for preprocssing data.
         In preprocessing step, various preprocess logic could be included depending on dataset.
@@ -26,7 +29,9 @@ class PreoprocessorBase(ABC):
         """
         raise NotImplementedError
 
-    def mapping(self, data: Dict[str, pd.DataFrame]) -> Dict[str, Union[pd.DataFrame, Dict[int, int]]]:
+    def mapping(
+        self, data: Dict[str, pd.DataFrame]
+    ) -> Dict[str, Union[pd.DataFrame, Dict[int, int]]]:
         """
         Map original user_id and item_id into ascending integer.
 
@@ -41,16 +46,26 @@ class PreoprocessorBase(ABC):
         users = data.get("users")
         items = data.get("items")
 
-        user_ids = list(set(ratings["user_id"].tolist()) & set(users["user_id"].tolist()))
-        item_ids = list(set(ratings["movie_id"].tolist()) & set(items["movie_id"].tolist()))
+        user_ids = list(
+            set(ratings["user_id"].tolist()) & set(users["user_id"].tolist())
+        )
+        item_ids = list(
+            set(ratings["movie_id"].tolist()) & set(items["movie_id"].tolist())
+        )
 
-        ratings = ratings[lambda x: (x["user_id"].isin(user_ids)) & (x["movie_id"].isin(item_ids))]
+        ratings = ratings[
+            lambda x: (x["user_id"].isin(user_ids)) & (x["movie_id"].isin(item_ids))
+        ]
         users = users[lambda x: x["user_id"].isin(user_ids)]
         items = items[lambda x: x["movie_id"].isin(item_ids)]
 
         # mapping dictionary user_id, movie_id to ascending id
-        user_id2idx = {id_: idx for (idx, id_) in enumerate(sorted(users["user_id"].unique()))}
-        item_id2idx = {id_: idx for (idx, id_) in enumerate(sorted(items["movie_id"].unique()))}
+        user_id2idx = {
+            id_: idx for (idx, id_) in enumerate(sorted(users["user_id"].unique()))
+        }
+        item_id2idx = {
+            id_: idx for (idx, id_) in enumerate(sorted(items["movie_id"].unique()))
+        }
 
         # id in users and movies should be same ascending order with mapping dictionary
         assert users["user_id"].tolist() == sorted(list(user_id2idx.keys()))

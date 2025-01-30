@@ -1,12 +1,11 @@
-from typing import Dict, Union, List
 from collections import defaultdict
+from typing import Dict, List, Union
 
 import torch
 
 
 def convert_tensor_to_user_item_summary(
-        ts: torch.Tensor,
-        structure: Union[dict, list]
+    ts: torch.Tensor, structure: Union[dict, list]
 ) -> Dict[int, Union[List[int], Dict[int, int]]]:
     """
     Convert 2 dimensional tensor to dict or list.
@@ -29,7 +28,7 @@ def convert_tensor_to_user_item_summary(
         res = defaultdict(list)
     else:
         res = defaultdict(structure)
-    for (user_id, item_id) in ts:
+    for user_id, item_id in ts:
         user_id = user_id.item()
         item_id = item_id.item()
         if structure == dict:

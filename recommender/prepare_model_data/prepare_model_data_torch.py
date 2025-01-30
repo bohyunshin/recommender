@@ -1,20 +1,20 @@
-from typing import Tuple, Dict, Union, Any
-import time
 import importlib
 import logging
+import time
+from typing import Any, Dict, Tuple, Union
 
 import pandas as pd
 import torch
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 
-from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
-from recommender.libs.torch_dataset.dataset import Data
-from recommender.libs.utils.utils import mapping_dict
-from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary
-from recommender.libs.constant.torch.device import DEVICE
-from recommender.libs.constant.torch.dataset import DATASET_PATH
 from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS
+from recommender.libs.constant.torch.dataset import DATASET_PATH
+from recommender.libs.constant.torch.device import DEVICE
+from recommender.libs.torch_dataset.dataset import Data
+from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary
+from recommender.libs.utils.utils import mapping_dict
+from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
 
 # in case cuda, following error occurs.
 # RuntimeError: Expected a 'cpu' device type for generator but found 'cuda'
@@ -24,19 +24,19 @@ torch.set_default_device(DEVICE)
 
 class PrepareModelDataTorch(PrepareModelDataBase):
     def __init__(
-            self,
-            model: str,
-            num_users: int,
-            num_items: int,
-            train_ratio: float,
-            num_negative_samples: int,
-            implicit: bool,
-            random_state: int,
-            batch_size: int,
-            user_meta: pd.DataFrame,
-            item_meta: pd.DataFrame,
-            **kwargs,
-        ):
+        self,
+        model: str,
+        num_users: int,
+        num_items: int,
+        train_ratio: float,
+        num_negative_samples: int,
+        implicit: bool,
+        random_state: int,
+        batch_size: int,
+        user_meta: pd.DataFrame,
+        item_meta: pd.DataFrame,
+        **kwargs,
+    ):
         """
         Prepare train / validation torch data_loader.
         """
@@ -47,7 +47,7 @@ class PrepareModelDataTorch(PrepareModelDataBase):
             train_ratio=train_ratio,
             implicit=implicit,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
         self.num_negative_samples = num_negative_samples
         self.batch_size = batch_size
@@ -55,9 +55,8 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         self.item_meta = self.get_item_meta(items=item_meta)
 
     def get_train_validation_data(
-            self,
-            data: Dict[str, Union[pd.DataFrame, Dict[int, int]]]
-        ) -> Tuple[Any, Any]:
+        self, data: Dict[str, Union[pd.DataFrame, Dict[int, int]]]
+    ) -> Tuple[Any, Any]:
         """
         Getting pandas dataframe, make train / validation torch data_loader.
 
@@ -96,9 +95,9 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         return train_dataloader, validation_dataloader
 
     def get_X_y_train_validation(
-            self,
-            data: Dict[str, Union[pd.DataFrame, Dict[int, int]]],
-        ) -> Dict[str, torch.Tensor]:
+        self,
+        data: Dict[str, Union[pd.DataFrame, Dict[int, int]]],
+    ) -> Dict[str, torch.Tensor]:
         """
         Generates one-hot encoded metadata and returns (X, y) tensor.
         X includes interaction information with user_id and movie_id.
@@ -118,7 +117,11 @@ class PrepareModelDataTorch(PrepareModelDataBase):
 
         # filter user_id whose number of reviews is lower than MIN_REVIEWS
         user2item_count = ratings["user_id"].value_counts().to_dict()
-        user_id_min_reviews = [user_id for user_id, item_count in user2item_count.items() if item_count >= MIN_REVIEWS]
+        user_id_min_reviews = [
+            user_id
+            for user_id, item_count in user2item_count.items()
+            if item_count >= MIN_REVIEWS
+        ]
         ratings = ratings[lambda x: x["user_id"].isin(user_id_min_reviews)]
 
         # get one-hot encoded metadata
@@ -153,12 +156,12 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         return self.X_y
 
     def get_torch_dataset(
-            self,
-            X_train: torch.Tensor,
-            y_train: torch.Tensor,
-            X_val: torch.Tensor,
-            y_val: torch.Tensor,
-        ) -> Dict[str, Dataset]:
+        self,
+        X_train: torch.Tensor,
+        y_train: torch.Tensor,
+        X_val: torch.Tensor,
+        y_val: torch.Tensor,
+    ) -> Dict[str, Dataset]:
         """
         Make torch dataset to be used for torch data_loader.
 
@@ -190,10 +193,10 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         return torch_dataset
 
     def get_torch_data_loader(
-            self,
-            train_dataset: Dataset,
-            val_dataset: Dataset,
-        ) -> Tuple[DataLoader, DataLoader]:
+        self,
+        train_dataset: Dataset,
+        val_dataset: Dataset,
+    ) -> Tuple[DataLoader, DataLoader]:
         """
         Make train / validation torch data_loader.
 
@@ -225,9 +228,9 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         return train_dataloader, validation_dataloader
 
     def get_user_meta(
-            self,
-            users: pd.DataFrame,
-        ) -> torch.Tensor:
+        self,
+        users: pd.DataFrame,
+    ) -> torch.Tensor:
         """
         Convert user meta dataframe into one-hot encoded tensor.
 
@@ -249,9 +252,9 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         return user_meta
 
     def get_item_meta(
-            self,
-            items: pd.DataFrame,
-        ) -> torch.Tensor:
+        self,
+        items: pd.DataFrame,
+    ) -> torch.Tensor:
         """
         Convert item meta dataframe into one-hot encoded tensor.
 
@@ -263,7 +266,7 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         """
         genres = items["genres"].map(lambda x: x.split("|")).tolist()
         unique_genres = set()
-        for genre in genres: # genre: ["Animation", "Action"]
+        for genre in genres:  # genre: ["Animation", "Action"]
             for g in genre:
                 unique_genres.add(g)
         unique_genres = sorted(list(unique_genres))
@@ -275,6 +278,8 @@ class PrepareModelDataTorch(PrepareModelDataBase):
             genre_vector_for_one_movie = torch.tensor([0] * num_classes)
             for g in genre:
                 g_encoded = mapping_genres[g]
-                genre_vector_for_one_movie = genre_vector_for_one_movie + F.one_hot(torch.tensor([g_encoded]), num_classes=num_classes)
+                genre_vector_for_one_movie = genre_vector_for_one_movie + F.one_hot(
+                    torch.tensor([g_encoded]), num_classes=num_classes
+                )
             movie_meta = torch.concat((movie_meta, genre_vector_for_one_movie), dim=0)
         return movie_meta

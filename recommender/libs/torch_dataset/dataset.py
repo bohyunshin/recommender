@@ -5,12 +5,7 @@ from torch.utils.data import Dataset
 
 
 class Data(Dataset):
-    def __init__(
-            self,
-            X: torch.Tensor,
-            y: torch.Tensor,
-            **kwargs
-        ):
+    def __init__(self, X: torch.Tensor, y: torch.Tensor, **kwargs):
         """
         Basic pytorch dataset class used in dataloader.
         This class does nothing special, just samples positive samples and y labels.

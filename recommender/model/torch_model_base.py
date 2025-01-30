@@ -1,8 +1,7 @@
 from typing import Union
 
-from numpy.typing import NDArray
-
 import torch
+from numpy.typing import NDArray
 from torch import nn
 
 from recommender.model.recommender_base import RecommenderBase
@@ -10,15 +9,15 @@ from recommender.model.recommender_base import RecommenderBase
 
 class TorchModelBase(nn.Module, RecommenderBase):
     def __init__(
-            self,
-            user_ids: torch.Tensor,
-            item_ids: torch.Tensor,
-            num_users: int,
-            num_items: int,
-            num_factors: int,
-            loss_name: str,
-            **kwargs
-        ):
+        self,
+        user_ids: torch.Tensor,
+        item_ids: torch.Tensor,
+        num_users: int,
+        num_items: int,
+        num_factors: int,
+        loss_name: str,
+        **kwargs,
+    ):
         """
         Abstract base class for torch based models.
 
@@ -40,11 +39,11 @@ class TorchModelBase(nn.Module, RecommenderBase):
         )
 
     def predict(
-            self,
-            user_id: Union[NDArray, torch.Tensor],
-            item_id: Union[NDArray, torch.Tensor],
-            **kwargs,
-        ) -> torch.Tensor:
+        self,
+        user_id: Union[NDArray, torch.Tensor],
+        item_id: Union[NDArray, torch.Tensor],
+        **kwargs,
+    ) -> torch.Tensor:
         """
         For batch users, calculates prediction score for all of item ids.
         In inference pipeline, `kwargs["item_idx"]` will be all of item ids.
@@ -68,10 +67,12 @@ class TorchModelBase(nn.Module, RecommenderBase):
         return user_item_score.reshape(-1, self.num_items)
 
     def triplet(
-            self,
-            user_idx: torch.Tensor,
-            pos_item_idx: torch.Tensor,
-            neg_item_idx: torch.Tensor,
-            **kwargs,
-        ):
-        return self.forward(user_idx, pos_item_idx) - self.forward(user_idx, neg_item_idx)
+        self,
+        user_idx: torch.Tensor,
+        pos_item_idx: torch.Tensor,
+        neg_item_idx: torch.Tensor,
+        **kwargs,
+    ):
+        return self.forward(user_idx, pos_item_idx) - self.forward(
+            user_idx, neg_item_idx
+        )

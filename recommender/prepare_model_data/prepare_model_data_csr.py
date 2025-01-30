@@ -1,25 +1,25 @@
-from typing import Tuple, Dict, Union, Any
+from typing import Any, Dict, Tuple, Union
 
 import pandas as pd
 import torch
 
-from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
-from recommender.libs.utils.csr import dataframe_to_csr
 from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS
+from recommender.libs.utils.csr import dataframe_to_csr
+from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
 
 
 class PrepareModelDataCsr(PrepareModelDataBase):
     def __init__(
-            self,
-            model: str,
-            num_users: int,
-            num_items: int,
-            train_ratio: float,
-            num_negative_samples: int,
-            implicit: bool,
-            random_state: int,
-            **kwargs,
-        ):
+        self,
+        model: str,
+        num_users: int,
+        num_items: int,
+        train_ratio: float,
+        num_negative_samples: int,
+        implicit: bool,
+        random_state: int,
+        **kwargs,
+    ):
         super().__init__(
             model=model,
             num_users=num_users,
@@ -28,13 +28,12 @@ class PrepareModelDataCsr(PrepareModelDataBase):
             num_negative_samples=num_negative_samples,
             implicit=implicit,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
 
     def get_train_validation_data(
-            self,
-            data: Dict[str, Union[pd.DataFrame, Dict[int, int]]]
-        ) -> Tuple[Any, Any]:
+        self, data: Dict[str, Union[pd.DataFrame, Dict[int, int]]]
+    ) -> Tuple[Any, Any]:
         """
         Split rating data into train / validation dataset, in csr_matrix format.
 
@@ -46,7 +45,11 @@ class PrepareModelDataCsr(PrepareModelDataBase):
 
         # filter user_id whose number of reviews is lower than MIN_REVIEWS
         user2item_count = ratings["user_id"].value_counts().to_dict()
-        user_id_min_reviews = [user_id for user_id, item_count in user2item_count.items() if item_count >= MIN_REVIEWS]
+        user_id_min_reviews = [
+            user_id
+            for user_id, item_count in user2item_count.items()
+            if item_count >= MIN_REVIEWS
+        ]
         ratings = ratings[lambda x: x["user_id"].isin(user_id_min_reviews)]
 
         # split train / validation

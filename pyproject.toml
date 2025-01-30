@@ -19,6 +19,40 @@ requests = "^2.32.3"
 matplotlib = "3.9.2"
 seaborn = ">=0.13.2"
 
+[tool.poetry.group.dev.dependencies]
+flake8 = "^6.1.0"
+pylint = "^3.0.3"
+black = "^24.1.1"
+isort = "^5.13.2"
+mypy = "^1.8.0"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+# Exclude some directories
+exclude = '''
+(
+  /(
+      \.git
+    | \.venv
+    | migrations
+  )/
+)
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+
+[tool.pylint.messages_control]
+disable = [
+    "C0103",  # invalid-name
+    "C0112",  # empty-docstring
+    "C0116",  # missing-function-docstring - for trivial properties/methods
+    "C0114",  # missing-module-docstring
+]
 
 [build-system]
 requires = ["poetry-core"]

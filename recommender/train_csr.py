@@ -1,21 +1,22 @@
+import importlib
+import logging
 import os
+import pickle
 import traceback
 from argparse import ArgumentParser
-import logging
-import pickle
-import importlib
+
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 import torch
 
-from recommender.prepare_model_data.prepare_model_data_csr import PrepareModelDataCsr
+from recommender.libs.constant.inference.recommend import TOP_K_VALUES
+from recommender.libs.constant.model.module_path import MODEL_PATH
+from recommender.libs.constant.model.name import ModelName
+from recommender.libs.constant.save.save import FileName
+from recommender.libs.plot.plot import plot_metric_at_k
 from recommender.libs.utils.logger import setup_logger
 from recommender.libs.utils.parse_args import parse_args
-from recommender.libs.plot.plot import plot_metric_at_k
-from recommender.libs.constant.model.module_path import MODEL_PATH
-from recommender.libs.constant.inference.recommend import TOP_K_VALUES
-from recommender.libs.constant.save.save import FileName
-from recommender.libs.constant.model.name import ModelName
+from recommender.prepare_model_data.prepare_model_data_csr import PrepareModelDataCsr
 
 
 def main(args: ArgumentParser.parse_args):
@@ -29,19 +30,27 @@ def main(args: ArgumentParser.parse_args):
             logging.info(f"learning rate: {args.lr}")
             logging.info(f"regularization: {args.regularization}")
             logging.info(f"epochs: {args.epochs}")
-            logging.info(f"number of factors for user / item embedding: {args.num_factors}")
+            logging.info(
+                f"number of factors for user / item embedding: {args.num_factors}"
+            )
             logging.info(f"patience for watching validation loss: {args.patience}")
         logging.info(f"train ratio: {args.train_ratio}")
         if args.model == ModelName.USER_BASED.value:
-            args.epochs = 1  # for user_based model, iterations no more than 2 is not needed
+            args.epochs = (
+                1  # for user_based model, iterations no more than 2 is not needed
+            )
             logging.info(f"num_sim_user_top_N: {args.num_sim_user_top_N}")
 
         # load raw data
-        load_data_module = importlib.import_module(f"recommender.load_data.load_data_{args.dataset}").LoadData
+        load_data_module = importlib.import_module(
+            f"recommender.load_data.load_data_{args.dataset}"
+        ).LoadData
         data = load_data_module().load(test=args.test)
 
         # preprocess data
-        preprocess_module = importlib.import_module(f"recommender.preprocess.preprocess_{args.dataset}").Preprocessor
+        preprocess_module = importlib.import_module(
+            f"recommender.preprocess.preprocess_{args.dataset}"
+        ).Preprocessor
         preprocessed_data = preprocess_module().preprocess(data)
         NUM_USERS = preprocessed_data.get("num_users")
         NUM_ITEMS = preprocessed_data.get("num_items")
@@ -59,7 +68,9 @@ def main(args: ArgumentParser.parse_args):
             user_meta=data.get("users"),
             item_meta=data.get("items"),
         )
-        csr_train, csr_val = prepare_model_data.get_train_validation_data(data=preprocessed_data)
+        csr_train, csr_val = prepare_model_data.get_train_validation_data(
+            data=preprocessed_data
+        )
 
         # setup models
         model_path = MODEL_PATH.get(args.model)
@@ -67,12 +78,16 @@ def main(args: ArgumentParser.parse_args):
             raise
         model_module = importlib.import_module(model_path).Model
         model = model_module(
-            user_ids=torch.tensor(list(preprocessed_data.get("user_id2idx").values())),  # common model parameter
-            item_ids=torch.tensor(list(preprocessed_data.get("item_id2idx").values())),  # common model parameter
+            user_ids=torch.tensor(
+                list(preprocessed_data.get("user_id2idx").values())
+            ),  # common model parameter
+            item_ids=torch.tensor(
+                list(preprocessed_data.get("item_id2idx").values())
+            ),  # common model parameter
             num_users=NUM_USERS,  # common model parameter
             num_items=NUM_ITEMS,  # common model parameter
             num_factors=args.num_factors,  # common model parameter
-            loss_name=args.loss, # als parameter
+            loss_name=args.loss,  # als parameter
             regularization=args.regularization,  # als parameter
             iterations=args.epochs,  # als parameter
             random_state=args.random_state,  # als parameter
@@ -86,7 +101,9 @@ def main(args: ArgumentParser.parse_args):
             logging.info(f"####### Epoch {epoch} #######")
             model.fit(user_items=csr_train, val_user_items=csr_val)
 
-            if args.model != ModelName.USER_BASED.value:  # no loss defined in user_based model
+            if (
+                args.model != ModelName.USER_BASED.value
+            ):  # no loss defined in user_based model
                 # calculate training / validation loss
                 tr_loss = model.calculate_loss(
                     user_items=csr_train,
@@ -110,17 +127,34 @@ def main(args: ArgumentParser.parse_args):
                     prev_best_loss = best_loss
                     best_loss = val_loss
                     patience = args.patience
-                    pickle.dump(model, open(os.path.join(args.result_path, FileName.MODEL_PKL.value), "wb"))
-                    logging.info(f"Best validation: {best_loss}, Previous validation loss: {prev_best_loss}")
+                    pickle.dump(
+                        model,
+                        open(
+                            os.path.join(args.result_path, FileName.MODEL_PKL.value),
+                            "wb",
+                        ),
+                    )
+                    logging.info(
+                        f"Best validation: {best_loss}, Previous validation loss: {prev_best_loss}"
+                    )
                 else:
                     patience -= 1
-                    logging.info(f"Validation loss did not decrease. Patience {patience} left.")
+                    logging.info(
+                        f"Validation loss did not decrease. Patience {patience} left."
+                    )
                     if patience == 0:
-                        logging.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
+                        logging.info(
+                            f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss"
+                        )
                         early_stopping = True
             else:
                 # when user_based model, do not have to iterate training
-                pickle.dump(model, open(os.path.join(args.result_path, FileName.MODEL_PKL.value), "wb"))
+                pickle.dump(
+                    model,
+                    open(
+                        os.path.join(args.result_path, FileName.MODEL_PKL.value), "wb"
+                    ),
+                )
                 break
 
             # calculate metrics for all users
@@ -142,17 +176,21 @@ def main(args: ArgumentParser.parse_args):
             # save metrics at every epoch
             pickle.dump(
                 model.metric_at_k_total_epochs,
-                open(os.path.join(args.result_path, FileName.METRIC.value), "wb")
+                open(os.path.join(args.result_path, FileName.METRIC.value), "wb"),
             )
 
             # save loss
             pickle.dump(
                 model.tr_loss,
-                open(os.path.join(args.result_path, FileName.TRAINING_LOSS.value), "wb")
+                open(
+                    os.path.join(args.result_path, FileName.TRAINING_LOSS.value), "wb"
+                ),
             )
             pickle.dump(
                 model.val_loss,
-                open(os.path.join(args.result_path, FileName.VALIDATION_LOSS.value), "wb")
+                open(
+                    os.path.join(args.result_path, FileName.VALIDATION_LOSS.value), "wb"
+                ),
             )
 
             # plot metrics
