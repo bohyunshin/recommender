@@ -173,6 +173,17 @@ Be careful of possible models in each loss type when choosing appropriate loss. 
 Loss function could affect models' performance. Figure out which loss is best suited for your dataset !
 
 
+## Project code lint
+
+We use ruff lint for project code consistency. Run following command if ruff lint check passes.
+
+```shell
+$ make lint
+```
+
+You should update code corresponding to ruff's guide, otherwise ci test won't pass.
+
+
 ## How to contribute
 Although any kinds of PRs are warmly welcomed, please refer to following rules.
 
