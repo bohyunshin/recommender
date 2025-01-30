@@ -101,34 +101,33 @@ flowchart LR
     E --> F[Summarize results]
 ```
 
-|Step|Code|Description|
-|----|----|-----------|
-|Download data|`scripts/download`|Download selected dataset from public url|
-|Load data|`recommender/load_data`|Load downloaded dataset with pandas data type|
-|Preprocess data|`recommender/preprocess`|Preprocess dataset|
-|Prepare model data|`recommender/prepare_model_data`|Convert dataset which will be fed to models|
-|Training|`recommender/model`|Train various recommender algorithms|
-|Summarize results|`recommender/libs/plot`|Make metric plots, loss curve|
+| Step               | Code                             | Description                                   |
+|--------------------|----------------------------------|-----------------------------------------------|
+| Download data      | `scripts/download`               | Download selected dataset from public url     |
+| Load data          | `recommender/load_data`          | Load downloaded dataset with pandas data type |
+| Preprocess data    | `recommender/preprocess`         | Preprocess dataset                            |
+| Prepare model data | `recommender/prepare_model_data` | Convert dataset which will be fed to models   |
+| Training           | `recommender/model`              | Train various recommender algorithms          |
+| Summarize results  | `recommender/libs/plot`          | Make metric plots, loss curve                 |
 
 ## Implemented models
 
-|Dataset category|Algorithm|Input data type|Path|Loss|
-|----------------|---|---|---|---|
-|explicit|User based CF|csr matrix|`recommender/model/neighborhood/user_based.py`|NA|
-|explicit|SVD|pytorch dataset|`recommender/model/mf/svd.py`|$L = \sum_{(u,i) \in \mathcal{K}} (r_{ui} - p_u^T q_i)^2 $|
-|explicit|SVD with bias|pytorch dataset|`recommender/model/mf/svd.py`|$L = \sum_{(u,i) \in \mathcal{K}} (r_{ui} - p_u^T q_i - b_u - b_i - \mu)^2 + \lambda (\| p_u \|^2 + \| q_i \|^2 + \| b_u \|^2 + \| b_i \|^2) $|
-|implicit|ALS|csr matrix|`recommender/model/mf/als.py`|$L = \sum_{u,i} c_{ui}(r_{ui} - p_u^T q_i)^2 - \lambda (\| p_u \|^2 + \| q_i \|^2)$|
-|implicit|BPR|pytorch dataset|`recommender/model/bpr.py`|$L = \sum_{(u,i,j) \in D_S} \log \ \sigma(\hat{x}_{uij}) - \lambda (\| p_u \|^2 + \| q_i \|^2)$|
-|implicit|GMF|pytorch dataset|`recommender/model/deep_learning/gmf.py`|$L = \sum_{u,i} ( b_{ui} \log \  \sigma (h^T (p_u \odot q_i)) + (1-b_{ui}) \log \  ( 1-\sigma (h^T (p_u \odot q_i)) ) )$|
-|implicit|MLP|pytorch dataset|`recommender/model/deep_learning/mlp.py`|$L = \sum_{u,i} ( b_{ui} \log \  \sigma (h^T Z(p_u, q_i)) + (1-b_{ui}) \log \  ( 1-\sigma (h^T Z(p_u, q_i)) ) )$|
-|implicit|TWO-TOWER|pytorch dataset|`recommender/model/deep_learning/two_tower.py`|$L = \sum_{u,i} ( b_{ui} \log \  \sigma (h^T concat(Z_u(p_u, m_u), Z_i(q_i, m_i)) ) + (1-b_{ui}) \log \  (1-\sigma (h^T concat(Z_u(p_u, m_u), Z_i(q_i, m_i)) ) )  )$|
+| Models        | Input data type | Path                                           | Possible loss function |
+|---------------|-----------------|------------------------------------------------|------------------------|
+| User based CF | csr matrix      | `recommender/model/neighborhood/user_based.py` | NA                     |
+| SVD           | pytorch dataset | `recommender/model/mf/svd.py`                  | `MSE`, `BCE`, `BPR`    |
+| SVD with bias | pytorch dataset | `recommender/model/mf/svd_bias.py`             | `MSE`, `BCE`, `BPR`    |
+| ALS           | csr matrix      | `recommender/model/mf/als.py`                  | `ALS`                  |
+| GMF           | pytorch dataset | `recommender/model/deep_learning/gmf.py`       | `MSE`, `BCE`, `BPR`    |
+| MLP           | pytorch dataset | `recommender/model/deep_learning/mlp.py`       | `MSE`, `BCE`, `BPR`    |
+| TWO-TOWER     | pytorch dataset | `recommender/model/deep_learning/two_tower.py` | `MSE`, `BCE`, `BPR`    |
 
 Refer to following parameter description when running `recommender/train.py` or `recommender/train_csr.py`.
 You can check below parameters in [this code](https://github.com/bohyunshin/recommender/blob/master/recommender/libs/utils/parse_args.py). 
 
 <details><summary>Parameter explanations</summary>
 
-| Parameter name        | Explanation                                                               | default  |
+| Parameter name        | Explanation                                                               | Default  |
 |-----------------------|---------------------------------------------------------------------------|----------|
 | `dataset`             | integrated dataset name                                                   | required |
 | `model`               | implemented model name                                                    | required |
@@ -153,22 +152,25 @@ You can check below parameters in [this code](https://github.com/bohyunshin/reco
 
 For more details about how to download dataset in local, please refer `scripts/download/README.md`.
 
-| Name            | description                                               |
-|-----------------|-----------------------------------------------------------|
-| `movielens 1m`  | movie rating dataset with user metadata and item metadata |
+| Name            | Description                                               | Related link                                        |
+|-----------------|-----------------------------------------------------------|-----------------------------------------------------|
+| `movielens 1m`  | movie rating dataset with user metadata and item metadata | [url](https://grouplens.org/datasets/movielens/1m/) |
 
 
 ## Supported loss
 
 You can choose which loss to use when training models. Here is a list of loss that we are currently supporting.
 
-| Name                        | type                      |
-|-----------------------------|---------------------------|
-| `Mean Squared Loss`         | regression / explicit     |
-| `Binary Cross Entropy Loss` | classification / implicit |
-| `Triplet Loss (BPR)`        | triplet / implicit        |
+| Name                        | Type                      | Possible models                              |
+|-----------------------------|---------------------------|----------------------------------------------|
+| `Mean Squared Loss`         | regression / explicit     | `svd`, `svd_bias`                            |
+| `Binary Cross Entropy Loss` | classification / implicit | `svd`, `svd_bias`, `gmf`, `mlp`, `two_tower` |
+| `Triplet Loss (BPR)`        | triplet / implicit        | `svd`, `svd_bias`, `gmf`, `mlp`, `two_tower` |
+| `ALS Loss`                  | implicit                  | `als`                                        |
 
-Figure out which loss is best suited for specific dataset !
+Be careful of possible models in each loss type when choosing appropriate loss. For example, you cannot use `MSE` loss function with `gmf` model.
+
+Loss function could affect models' performance. Figure out which loss is best suited for your dataset !
 
 
 ## How to contribute
