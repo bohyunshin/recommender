@@ -33,7 +33,10 @@ $ poetry install
 
 ## Quick start
 
+You can select model that you want to train and set appropriate loss function.
+
 Let's run singular value decomposition on movielens 1m dataset using our pipeline.
+
 
 ### Download dataset
 
@@ -55,16 +58,17 @@ Because svd is torch based model, run `recommender/train.py`.
 $ python3 recommender/train.py \
   --dataset movielens \
   --model svd \
+  --loss mse \
   --epochs 30 \
   --num_factors 16 \
   --train_ratio 0.8 \
   --random_state 42 \
-  --result_path "./result"
+  --result_path "./result/std"
 ```
 
 ### Check experiment result
 
-The results will be saved in `./result/svd` where you can check figures, logs and model weights
+The results will be saved in `./result/svd` where you can check figures, logs and model weights.
 
 ```bash
 $ ls
@@ -106,7 +110,7 @@ flowchart LR
 |Training|`recommender/model`|Train various recommender algorithms|
 |Summarize results|`recommender/libs/plot`|Make metric plots, loss curve|
 
-## Algorithms currently implemented
+## Implemented models
 
 |Dataset category|Algorithm|Input data type|Path|Loss|
 |----------------|---|---|---|---|
@@ -119,6 +123,54 @@ flowchart LR
 |implicit|MLP|pytorch dataset|`recommender/model/deep_learning/mlp.py`|$L = \sum_{u,i} ( b_{ui} \log \  \sigma (h^T Z(p_u, q_i)) + (1-b_{ui}) \log \  ( 1-\sigma (h^T Z(p_u, q_i)) ) )$|
 |implicit|TWO-TOWER|pytorch dataset|`recommender/model/deep_learning/two_tower.py`|$L = \sum_{u,i} ( b_{ui} \log \  \sigma (h^T concat(Z_u(p_u, m_u), Z_i(q_i, m_i)) ) + (1-b_{ui}) \log \  (1-\sigma (h^T concat(Z_u(p_u, m_u), Z_i(q_i, m_i)) ) )  )$|
 
+Refer to following parameter description when running `recommender/train.py` or `recommender/train_csr.py`.
+You can check below parameters in [this code](https://github.com/bohyunshin/recommender/blob/master/recommender/libs/utils/parse_args.py). 
+
+<details><summary>Parameter explanations</summary>
+
+| Parameter name        | Explanation                                                               | default  |
+|-----------------------|---------------------------------------------------------------------------|----------|
+| `dataset`             | integrated dataset name                                                   | required |
+| `model`               | implemented model name                                                    | required |
+| `loss`                | implemented loss name                                                     | required |
+| `implicit`            | whether implicit dataset type or not                                      | False    |
+| `num_neg`             | number of negative samples                                                | None     |
+| `neg_sample_strategy` | negative sampling strategy                                                | None     |
+| `batch_size`          | number of data in one batch                                               | 128      |
+| `lr`                  | learning rate controlling speed of gradient descent                       | 1e-2     |
+| `regularization`      | hyper parameter controlling balance between original loss and penalty     | 1e-4     |
+| `epochs`              | number of training epochs                                                 | 10       |
+| `num_factors`         | dimension of user embedding and item embedding                            | 128      |
+| `train_ratio`         | ratio of training dataset                                                 | 0.8      |
+| `random_state`        | random seed for reproducibility                                           | 42       |
+| `patience`            | tolerance count when validation loss does not drop                        | 5        |
+| `result_path`         | absolute directory to store training result                               | required |
+| `num_sim_user_top_N`  | number of users who are the most similar in top N (used in user_based CF) | 45       |
+| `test`                | when set true, use part of dataset when training for quick pytest         | False    |
+</details>
+
+## Supported dataset
+
+For more details about how to download dataset in local, please refer `scripts/download/README.md`.
+
+| Name            | description                                               |
+|-----------------|-----------------------------------------------------------|
+| `movielens 1m`  | movie rating dataset with user metadata and item metadata |
+
+
+## Supported loss
+
+You can choose which loss to use when training models. Here is a list of loss that we are currently supporting.
+
+| Name                        | type                      |
+|-----------------------------|---------------------------|
+| `Mean Squared Loss`         | regression / explicit     |
+| `Binary Cross Entropy Loss` | classification / implicit |
+| `Triplet Loss (BPR)`        | triplet / implicit        |
+
+Figure out which loss is best suited for specific dataset !
+
+
 ## How to contribute
 Although any kinds of PRs are warmly welcomed, please refer to following rules.
 
@@ -129,37 +181,4 @@ Although any kinds of PRs are warmly welcomed, please refer to following rules.
   * Experiment results including metric plot, metric value, loss plot after running `recommender/train.py` or `recommender/train_csr.py` with your arguments.
   * Example command to reproduce model training result.
   * Full logs when executing model training python script.
-
-## Dataset currently supported
-
-For more details about how to download dataset in local, please refer `scripts/download/README.md`.
-
-|Name            |type    |
-|----------------|--------|
-|movielens 1m    |explicit|
-
-## Experiment results
-
-To reproduce following experiment results, please refer to `Code to reproduce` column in following summary table.
-
-### movielens 1m dataset result
-
-|Dataset category|Algorithm|mAP@10|mAP@20|mAP@50|NDCG@10|NDCG@20|NDCG@50|Code to reproduce|
-|----------------|---------|------|------|------|-------|-------|-------|-----------------|
-|explicit|SVD|0.0532|0.0385|0.0281|0.1052|0.0959|0.094|<details><summary>cmd</summary><pre lang="bash">python3 recommender/train.py \ &#13;  --dataset movielens \ &#13;  --model svd \ &#13;  --batch_size 128 \ &#13;  --lr 0.01 \ &#13;  --regularization 0.0001 \ &#13;  --epochs 50 \ &#13;  --num_factors 16 \ &#13;  --train_ratio 0.8 \ &#13;  --patience 5 \ &#13;  --random_state 42 \ &#13;  --result_path "./result/svd"</pre></details>|
-|explicit|SVD with bias|0.0245|0.0185|0.015|0.0598|0.0585|0.0661|<details><summary>cmd</summary><pre lang="bash">python3 recommender/train.py \ &#13;  --dataset movielens \ &#13;  --model svd_bias \ &#13;  --batch_size 128 \ &#13;  --lr 0.01 \ &#13;  --regularization 0.0001 \ &#13;  --epochs 50 \ &#13;  --num_factors 16 \ &#13;  --train_ratio 0.8 \ &#13;  --patience 5 \ &#13;  --random_state 42 \ &#13;  --result_path "./result/svd_bias"</pre></details>|
-|implicit|ALS|0.2509|0.2083|0.1856|0.3789|0.3616|0.3783|<details><summary>cmd</summary><pre lang="bash">python3 recommender/train_csr.py \ &#13;  --dataset movielens \ &#13;  --model als \ &#13;  --batch_size 128 \ &#13;  --regularization 0.0001 \ &#13;  --implicit \ &#13;  --epochs 50 \ &#13;  --num_factors 16 \ &#13;  --train_ratio 0.8 \ &#13;  --patience 5 \ &#13;  --random_state 42 \ &#13;  --result_path "./result/als"</pre></details>|
-|implicit|BPR|0.2163|0.1737|0.1457|0.3265|0.3054|0.3131|<details><summary>cmd</summary><pre lang="bash">python3 recommender/train.py \ &#13;  --dataset movielens \ &#13;  --model bpr \ &#13;  --batch_size 128 \ &#13;  --lr 0.01 \ &#13;  --regularization 0.0001 \ &#13;  --implicit \ &#13;  --num_neg 1 \ &#13;  --epochs 50 \ &#13;  --num_factors 16 \ &#13;  --train_ratio 0.8 \ &#13;  --patience 5 \ &#13;  --random_state 42 \ &#13;  --result_path "./result/bpr"</pre></details>|
-|implicit|GMF|0.003|0.0021|0.0017|0.0094|0.0099|0.0126|<details><summary>cmd</summary><pre lang="bash">python3 recommender/train.py \ &#13;  --dataset movielens \ &#13;  --model gmf \ &#13;  --batch_size 128 \ &#13;  --lr 0.01 \ &#13;  --implicit \ &#13;  --num_neg 1 \ &#13;  --epochs 50 \ &#13;  --num_factors 16 \ &#13;  --train_ratio 0.8 \ &#13;  --patience 5 \ &#13;  --random_state 42 \ &#13;  --result_path "./result/gmf"</pre></details>|
-|implicit|MLP|0.1639|0.1303|0.11|0.2673|0.253|0.2643|<details><summary>cmd</summary><pre lang="bash">python3 recommender/train.py \ &#13;  --dataset movielens \ &#13;  --model mlp \ &#13;  --batch_size 128 \ &#13;  --lr 0.01 \ &#13;  --implicit \ &#13;  --num_neg 1 \ &#13;  --epochs 50 \ &#13;  --num_factors 16 \ &#13;  --train_ratio 0.8 \ &#13;  --patience 5 \ &#13;  --random_state 42 \ &#13;  --result_path "./result/mlp"</pre></details>|
-|implicit|TWO-TOWER|0.118|0.0908|0.072|0.2039|0.1916|0.1933|<details><summary>cmd</summary><pre lang="bash">python3 recommender/train.py \ &#13;  --dataset movielens \ &#13;  --model two_tower \ &#13;  --batch_size 128 \ &#13;  --lr 0.01 \ &#13;  --implicit \ &#13;  --num_neg 1 \ &#13;  --epochs 50 \ &#13;  --num_factors 16 \ &#13;  --train_ratio 0.8 \ &#13;  --patience 5 \ &#13;  --random_state 42 \ &#13;  --result_path "./result/two_tower"</pre></details>|
-
-The results that ALS has highest performance on test dataset are pretty interesting, indicating that neural network is not always the best solution.
-
-### movielens 10m dataset result
-TBD
-
-### Note
-* Experiment of user-based CF using movielens are not performed yet because of excessive time required.
-* Implementation of cython (or etc..) is required to improve training time.
 
