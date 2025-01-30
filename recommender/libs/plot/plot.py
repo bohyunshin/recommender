@@ -95,8 +95,8 @@ def plot_metric(
     ax.xaxis.set_major_locator(MultipleLocator(5))
     plt.ylabel(metric_name)
     plt.title(title)
-    plt.savefig(save_path)
     plt.show()
+    plt.savefig(save_path)
     plt.close()
 
 

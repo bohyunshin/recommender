@@ -55,3 +55,21 @@ def safe_divide(numerator, denominator):
         return numerator / denominator
     except ZeroDivisionError:
         return 0
+
+
+def binarize(
+        c: NDArray,
+    ):
+    """
+    Binarizes input NDArray making dataset as implicit.
+    In implicit dataset, even if an user interacted with an item greater than one time,
+    the user is regarded as interacting with an item one time.
+    This model assumption inherently has disadvantage, therefore fixes it with `alpha` parameter.
+
+    Args:
+         c (NDArray): NDArray to be binarized.
+
+    Returns (NDArray):
+        Binarized NDArray.
+    """
+    return np.where(c >= 1, 1, 0)

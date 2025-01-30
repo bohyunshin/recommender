@@ -52,6 +52,7 @@ class Model(TorchModelBase):
             self,
             user_idx: torch.Tensor,
             item_idx: torch.Tensor,
+            **kwargs,
         ) -> torch.Tensor:
         """
         Calculates associated probability between user_idx and item_idx using two-tower architecture.
@@ -63,7 +64,7 @@ class Model(TorchModelBase):
           - Note that user/item towers are separately defined, therefore,
           concatenated vectors are trained on separate layers.
         3. Dot products between user and item embeddings from separate two-tower layers.
-        4. Finally pass to sigmoid layer.
+        4. Finally pass to sigmoid layer which is done in BCEWithLogitsLoss.
 
 
         Args:
@@ -80,7 +81,6 @@ class Model(TorchModelBase):
         item = self.item_layers(item)
 
         x = (user * item).sum(dim=1)
-        x = F.sigmoid(x)
         return x
 
     def create_sequential_layer(

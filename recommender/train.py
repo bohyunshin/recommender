@@ -12,6 +12,8 @@ import importlib
 
 from recommender.prepare_model_data.prepare_model_data_torch import PrepareModelDataTorch
 from recommender.loss.criterion import Criterion
+from recommender.libs.validate.config import validate_config
+from recommender.libs.sampling.negative_sampling import NegativeSampling
 from recommender.libs.utils.logger import setup_logger
 from recommender.libs.utils.parse_args import parse_args
 from recommender.libs.plot.plot import plot_metric_at_k
@@ -19,9 +21,11 @@ from recommender.libs.constant.model.module_path import MODEL_PATH
 from recommender.libs.constant.torch.device import DEVICE
 from recommender.libs.constant.inference.recommend import TOP_K_VALUES
 from recommender.libs.constant.save.save import FileName
+from recommender.libs.constant.loss.name import LossName
 
 
 def main(args: ArgumentParser.parse_args):
+    validate_config(args)
     os.makedirs(args.result_path, exist_ok=True)
     setup_logger(os.path.join(args.result_path, FileName.LOG.value))
     try:
@@ -36,6 +40,8 @@ def main(args: ArgumentParser.parse_args):
         logging.info(f"number of negative samples: {args.num_neg}")
         logging.info(f"patience for watching validation loss: {args.patience}")
         logging.info(f"device info: {DEVICE}")
+
+        is_triplet = True if args.loss == LossName.BPR.value else False
 
         # load raw data
         load_data_module = importlib.import_module(f"recommender.load_data.load_data_{args.dataset}").LoadData
@@ -76,9 +82,10 @@ def main(args: ArgumentParser.parse_args):
             mu=prepare_model_data.mu, # for svd_bias model
             user_meta=prepare_model_data.user_meta, # for two_tower model
             item_meta=prepare_model_data.item_meta, # for two_tower model
+            loss_name=args.loss,
         ).to(DEVICE)
 
-        criterion = Criterion(args.model)
+        # criterion = Criterion(args.model)
         optimizer = optim.SGD(model.parameters(), lr=args.lr)
 
         # train model
@@ -90,21 +97,40 @@ def main(args: ArgumentParser.parse_args):
             # training
             model.train()
             tr_loss = 0.0
-            for data in train_dataloader:
-                data = [tensor.to(DEVICE) for tensor in data]
-                # (user_id, item_id) or (user_id, pos_item_id, neg_item_id)
-                inputs = data[:-1]
-                # rating value or dummy value
-                y_train = data[-1]
+            for user_id, pos_item_id, y_train in train_dataloader:
+                inputs = {
+                    "user_idx": user_id,
+                    "item_idx": pos_item_id,
+                }
+                if args.num_neg is not None:
+                    ng_sample = NegativeSampling(
+                        batch_user_id=user_id,
+                        batch_item_id=pos_item_id,
+                        user_item_summ=prepare_model_data.user_item_summ_tr,
+                        num_ng=args.num_neg,
+                        is_triplet=is_triplet,
+                        num_item=NUM_ITEMS,
+                        strategy=args.neg_sample_strategy,
+                    )
+                    ng_sample.ng()
+                    ng_res = ng_sample.format_dataset()
+                    inputs = {
+                        **inputs,
+                        **ng_res,
+                    }
+                    y_train = ng_res.get("y")
                 optimizer.zero_grad()
-                y_pred = model(*inputs)
-                loss = criterion.calculate_loss(
+                if is_triplet:
+                    y_pred = model.triplet(**inputs)
+                else:
+                    y_pred = model(**inputs)
+                loss = model.calculate_loss(
                     y_pred=y_pred,
                     y=y_train.to(DEVICE),
                     params=[param for param in model.parameters()],
                     regularization=args.regularization,
-                    user_idx=inputs[0],  # used in svd, svd_bias
-                    item_idx=inputs[1],  # used in svd, svd_bias
+                    user_idx=user_id,  # used in svd, svd_bias
+                    item_idx=pos_item_id,  # used in svd, svd_bias
                     num_users=NUM_USERS,  # used in svd, svd_bias
                     num_items=NUM_ITEMS,  # used in svd, svd_bias
                 )
@@ -120,21 +146,40 @@ def main(args: ArgumentParser.parse_args):
             model.eval()
             with torch.no_grad():
                 val_loss = 0.0
-                for data in validation_dataloader:
-                    data = [tensor.to(DEVICE) for tensor in data]
-                    # (user_id, item_id) or (user_id, pos_item_id, neg_item_id)
-                    inputs = data[:-1]
-                    # rating value or dummy value
-                    y_val = data[-1]
+                for user_id, pos_item_id, y_val in validation_dataloader:
+                    inputs = {
+                        "user_idx": user_id,
+                        "item_idx": pos_item_id,
+                    }
+                    if args.num_neg is not None:
+                        ng_sample = NegativeSampling(
+                            batch_user_id=user_id,
+                            batch_item_id=pos_item_id,
+                            user_item_summ=prepare_model_data.user_item_summ_tr_val,
+                            num_ng=args.num_neg,
+                            is_triplet=is_triplet,
+                            num_item=NUM_ITEMS,
+                            strategy=args.neg_sample_strategy,
+                        )
+                        ng_sample.ng()
+                        ng_res = ng_sample.format_dataset()
+                        inputs = {
+                            **inputs,
+                            **ng_res,
+                        }
+                        y_val = ng_res.get("y")
                     optimizer.zero_grad()
-                    y_pred = model(*inputs)
-                    loss = criterion.calculate_loss(
+                    if is_triplet:
+                        y_pred = model.triplet(**inputs)
+                    else:
+                        y_pred = model(**inputs)
+                    loss = model.calculate_loss(
                         y_pred=y_pred,
                         y=y_val.to(DEVICE),
                         params=[param for param in model.parameters()],
                         regularization=args.regularization,
-                        user_idx=inputs[0],  # used in svd, svd_bias
-                        item_idx=inputs[1],  # used in svd, svd_bias
+                        user_idx=user_id,  # used in svd, svd_bias
+                        item_idx=pos_item_id,  # used in svd, svd_bias
                         num_users=NUM_USERS,  # used in svd, svd_bias
                         num_items=NUM_ITEMS,  # used in svd, svd_bias
                     )

@@ -13,6 +13,7 @@ class Model(TorchModelBase):
             num_users: int,
             num_items: int,
             num_factors: int,
+            loss_name: str,
             **kwargs
         ):
         """
@@ -32,6 +33,7 @@ class Model(TorchModelBase):
             num_users=num_users,
             num_items=num_items,
             num_factors=num_factors,
+            loss_name=loss_name,
             **kwargs
         )
 
@@ -45,6 +47,7 @@ class Model(TorchModelBase):
             self,
             user_idx: torch.Tensor,
             item_idx:torch.Tensor,
+            **kwargs,
         ) -> torch.Tensor:
         """
         Forward pass of SVD model.

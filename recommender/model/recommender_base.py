@@ -1,17 +1,20 @@
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List, Union, Optional
 import logging
 
+from scipy.sparse import csr_matrix
 import numpy as np
 from numpy.typing import NDArray
 import torch
 import torch.nn as nn
 
+from recommender.loss.custom import bpr_loss, svd_loss, als_loss
 from recommender.libs.utils.evaluation import ranking_metrics_at_k
 from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary
 from recommender.libs.utils.utils import safe_divide
 from recommender.libs.constant.inference.evaluation import Metric
 from recommender.libs.constant.inference.recommend import RECOMMEND_BATCH_SIZE, TOP_K_VALUES
+from recommender.libs.constant.loss.name import LossName
 
 
 class RecommenderBase(ABC):
@@ -22,6 +25,7 @@ class RecommenderBase(ABC):
             num_users: int,
             num_items: int,
             num_factors: int,
+            loss_name: str,
             **kwargs,
         ):
         """
@@ -44,6 +48,8 @@ class RecommenderBase(ABC):
         self.num_users = num_users
         self.num_items = num_items
 
+        self.loss_name = loss_name
+
         # store metric value at each epoch
         self.metric_at_k_total_epochs = {
             k: {
@@ -57,6 +63,89 @@ class RecommenderBase(ABC):
 
         self.tr_loss = []
         self.val_loss = []
+
+        self.set_loss_func()
+
+    def set_loss_func(self):
+        # TODO: fix `if-else` statement to better program.
+        if self.loss_name == LossName.MSE.value:
+            self.loss = svd_loss
+        elif self.loss_name == LossName.BPR.value:
+            self.loss = bpr_loss
+        elif self.loss_name == LossName.BCE.value:
+            self.loss = nn.BCEWithLogitsLoss()
+        elif self.loss_name == LossName.ALS.value:
+            self.loss = als_loss
+        elif self.loss_name == LossName.NOT_DEFINED.value:
+            pass
+        else:
+            raise
+
+    def calculate_loss(
+            self,
+            y_pred: Optional[torch.Tensor] = None,
+            y: Optional[torch.Tensor] = None,
+            params: Optional[List[nn.parameter.Parameter]] = None,
+            regularization: Optional[int] = None,
+            user_idx: Optional[torch.Tensor] = None,
+            item_idx: Optional[torch.Tensor] = None,
+            num_users: Optional[int] = None,
+            num_items: Optional[int] = None,
+            user_items: Optional[csr_matrix] = None,
+            user_factors: Optional[NDArray] = None,
+            item_factors: Optional[NDArray] = None,
+        ) -> torch.Tensor:
+        """
+        Calculates loss for given model using defined loss function.
+        Because arguments for each loss function are different, Optional type is used.
+
+        Args:
+            y_pred (Optional[torch.Tensor]): Prediction value. Could be logit or probability.
+            y (Optional[torch.Tensor]): True y value. If implicit data, dummy value is used here.
+            params (Optional[torch.nn.parameter]): Model parameters from torch model.
+            regularization (Optional[int]): Regularization parameter balancing between main loss and penalty.
+            user_idx (Optional[torch.Tensor]): User index in current batch.
+            item_idx (Optional[torch.Tensor]): Item index in current batch.
+            num_users (Optional[int]): Number of total users.
+            num_items (Optional[int]): Number of total items.
+
+        Returns (torch.Tensor):
+            Calculated loss.
+        """
+        # TODO: fix `if-else` statement to better program.
+        if self.loss_name == LossName.MSE.value:
+            return self.loss(
+                pred=y_pred.squeeze(),
+                true=y.squeeze(),
+                params=params,
+                regularization=regularization,
+                user_idx=user_idx,
+                item_idx=item_idx,
+                num_users=num_users,
+                num_items=num_items,
+            )
+        elif self.loss_name == LossName.BCE.value:
+            return self.loss(
+                input=y_pred.squeeze(),
+                target=y.squeeze(),
+            )
+        elif self.loss_name == LossName.BPR.value:
+            return self.loss(
+                pred=y_pred,
+                params=params,
+                regularization=regularization,
+            )
+        elif self.loss_name == LossName.ALS.value:
+            return self.loss(
+                user_items=user_items,
+                user_factors=user_factors,
+                item_factors=item_factors,
+                regularization=regularization,
+            )
+        elif self.loss_name == LossName.NOT_DEFINED.value:
+            return torch.tensor(0.)
+        else:
+            raise
 
     def recommend_all(
             self,

@@ -9,6 +9,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 
 from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
+from recommender.libs.torch_dataset.dataset import Data
 from recommender.libs.utils.utils import mapping_dict
 from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary
 from recommender.libs.constant.torch.device import DEVICE
@@ -94,61 +95,6 @@ class PrepareModelDataTorch(PrepareModelDataBase):
 
         return train_dataloader, validation_dataloader
 
-    def get_torch_dataset(
-            self,
-            X_train: torch.Tensor,
-            y_train: torch.Tensor,
-            X_val: torch.Tensor,
-            y_val: torch.Tensor,
-        ) -> Dict[str, Dataset]:
-        """
-        Make torch dataset to be used for torch data_loader.
-
-        Different torch dataset will be made depending on chosen model.
-        See recommender/libs/torch_dataset for more details.
-
-        Args:
-            X_train (torch.Tensor): Input tensors for train step. Usually, user_id and item_id.
-            y_train (torch.Tensor): Target tensors for train step. Usually, rating value.
-            X_val (torch.Tensor): Input tensors for validation step. Usually, user_id and item_id.
-            y_val (torch.Tensor): Target tensors for validation step. Usually, rating value.
-
-        Returns (Dataset):
-            Torch dataset.
-        """
-        tensors = {
-            "train": (X_train, y_train),
-            "val": (X_val, y_val),
-        }
-        torch_dataset = {}
-
-        for name, (X, y) in tensors.items():
-            user_items_summary = convert_tensor_to_user_item_summary(
-                ts=X,
-                structure=dict,
-            )
-
-            dataset_path = DATASET_PATH.get(self.model)
-            if dataset_path is None:
-                raise
-            dataset_module = importlib.import_module(dataset_path).Data
-            dataset = dataset_module(
-                X=X,
-                y=y,
-                user_items_dct=user_items_summary,
-                num_items=self.num_items,
-                num_neg=self.num_negative_samples,
-            )
-
-            if self.implicit == True:
-                start = time.time()
-                dataset.negative_sampling()
-                logging.info(f"token time for negative sampling: {time.time() - start}")
-
-            torch_dataset[name] = dataset
-
-        return torch_dataset
-
     def get_X_y_train_validation(
             self,
             data: Dict[str, Union[pd.DataFrame, Dict[int, int]]],
@@ -188,6 +134,15 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         X_val = torch.tensor(val[["user_id", "movie_id"]].values)
         y_val = torch.tensor(val["rating"].values, dtype=torch.float32)
 
+        self.user_item_summ_tr = convert_tensor_to_user_item_summary(
+            ts=X_train,
+            structure=dict,
+        )
+        self.user_item_summ_tr_val = convert_tensor_to_user_item_summary(
+            ts=torch.concat([X_train, X_val], dim=0),
+            structure=dict,
+        )
+
         self.X_y = {
             "X_train": X_train,
             "y_train": y_train,
@@ -196,6 +151,43 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         }
 
         return self.X_y
+
+    def get_torch_dataset(
+            self,
+            X_train: torch.Tensor,
+            y_train: torch.Tensor,
+            X_val: torch.Tensor,
+            y_val: torch.Tensor,
+        ) -> Dict[str, Dataset]:
+        """
+        Make torch dataset to be used for torch data_loader.
+
+        Different torch dataset will be made depending on chosen model.
+        See recommender/libs/torch_dataset for more details.
+
+        Args:
+            X_train (torch.Tensor): Input tensors for train step. Usually, user_id and item_id.
+            y_train (torch.Tensor): Target tensors for train step. Usually, rating value.
+            X_val (torch.Tensor): Input tensors for validation step. Usually, user_id and item_id.
+            y_val (torch.Tensor): Target tensors for validation step. Usually, rating value.
+
+        Returns (Dataset):
+            Torch dataset.
+        """
+        tensors = {
+            "train": (X_train, y_train),
+            "val": (X_val, y_val),
+        }
+        torch_dataset = {}
+
+        for name, (X, y) in tensors.items():
+            dataset = Data(
+                X=X,
+                y=y,
+            )
+            torch_dataset[name] = dataset
+
+        return torch_dataset
 
     def get_torch_data_loader(
             self,

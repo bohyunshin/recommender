@@ -1,5 +1,11 @@
+from scipy.sparse import csr_matrix
+import numpy as np
+from numpy.typing import NDArray
 import torch
 import torch.nn.functional as F
+
+from recommender.libs.utils.norm import parameter_l_k_norm
+from recommender.libs.utils.utils import binarize
 
 
 def bpr_loss(
@@ -19,10 +25,8 @@ def bpr_loss(
         BPR loss with penalty term.
     """
     logprob = F.logsigmoid(pred).sum()
-    penalty = torch.tensor(0., requires_grad=True)
-    for param in params:
-        penalty = penalty + param.data.norm(dim=1).pow(2).sum() * regularization
-    return -logprob + penalty
+    penalty = parameter_l_k_norm(params=params, k=2)
+    return -logprob + penalty * regularization
 
 
 def svd_loss(
@@ -97,3 +101,48 @@ def calculate_penalty(
             continue
         penalty = penalty + param.data.norm(dim=1).pow(2).sum() * regularization
     return penalty
+
+
+def als_loss(
+        user_items: csr_matrix,
+        user_factors: NDArray,
+        item_factors: NDArray,
+        regularization: float,
+    ) -> float:
+    """
+    Calculates training/validation loss in each iteration.
+
+    We calculate loss in each iteration to check if parameters are converged or not.
+    Depending on the user_items argument, it calculates training or validation loss.
+
+    It is strongly recommended that it should be checked whether validation loss drops
+    and becomes stable
+
+    Args:
+        user_items (csr_matrix): Training or validation user x item matrix.
+
+    Returns (float):
+        Calculated loss value.
+    """
+    loss = 0
+    M,N = user_items.shape
+    Q = item_factors
+    total_confidence = 0
+    for u in range(M):
+        c_u = user_items[u].todense()
+        total_confidence += c_u.sum()
+        r_u = binarize(c_u)
+        p_u = user_factors[u]
+        r_u_hat = Q.dot(p_u)
+
+        temp = np.multiply(c_u, np.power(r_u - r_u_hat, 2))
+        loss += temp.sum()
+
+        loss += regularization * np.power(p_u, 2).sum()
+
+    for i in range(N):
+        q_i = item_factors[i]
+        loss += regularization * np.power(q_i, 2).sum()
+
+    # todo: why divide loss? (from implicit github repo)
+    return loss / (total_confidence + user_items.shape[0] * user_items.shape[1] - user_items.nnz)

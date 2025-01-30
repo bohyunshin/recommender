@@ -63,6 +63,7 @@ class Model(TorchModelBase):
             self,
             user_idx: torch.Tensor,
             item_idx: torch.Tensor,
+            **kwargs,
         ) -> torch.Tensor:
         """
         Calculates associated probability between user_idx and item_idx using mlp architecture.
@@ -70,7 +71,7 @@ class Model(TorchModelBase):
         [Forward step]
         1. Concatenates user and item embeddings
         2. Pass linear layers.
-        3. Finally, pass sigmoid function.
+        3. Finally, pass sigmoid function which is done in BCEWithLogitsLoss.
 
         Args:
             user_idx (torch.Tensor): User index.
@@ -83,4 +84,4 @@ class Model(TorchModelBase):
         for layer in self.layers:
             x = layer(x)
         x = self.h(x)
-        return F.sigmoid(x)
+        return x

@@ -16,6 +16,7 @@ class TorchModelBase(nn.Module, RecommenderBase):
             num_users: int,
             num_items: int,
             num_factors: int,
+            loss_name: str,
             **kwargs
         ):
         """
@@ -35,6 +36,7 @@ class TorchModelBase(nn.Module, RecommenderBase):
             num_users=num_users,
             num_items=num_items,
             num_factors=num_factors,
+            loss_name=loss_name,
         )
 
     def predict(
@@ -64,3 +66,12 @@ class TorchModelBase(nn.Module, RecommenderBase):
         with torch.no_grad():
             user_item_score = self.forward(user_id, item_id)
         return user_item_score.reshape(-1, self.num_items)
+
+    def triplet(
+            self,
+            user_idx: torch.Tensor,
+            pos_item_idx: torch.Tensor,
+            neg_item_idx: torch.Tensor,
+            **kwargs,
+        ):
+        return self.forward(user_idx, pos_item_idx) - self.forward(user_idx, neg_item_idx)
