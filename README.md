@@ -183,6 +183,14 @@ $ make lint
 
 You should update code corresponding to ruff's guide, otherwise ci test won't pass.
 
+## How to run pytest
+
+Run following command.
+
+```shell
+$ make test
+```
+
 
 ## How to contribute
 Although any kinds of PRs are warmly welcomed, please refer to following rules.
