@@ -9,9 +9,14 @@ from recommender.libs.constant.sampling.negative_sampling import (
 
 
 def validate_config(args: ArgumentParser.parse_args):
-    # rating data only exists in movielens
     if args.loss == LossName.MSE.value:
+        # rating data only exists in movielens
         assert args.dataset == DatasetName.MOVIELENS.value
+        # mse loss function is possible in only svd based models
+        assert args.model in [ModelName.SVD.value, ModelName.SVD_BIAS.value]
+    # als loss is possible only for als
+    if args.loss == LossName.ALS.value:
+        assert args.model == ModelName.ALS.value
     # negative sampling config should be set when related model or loss
     if args.model in [
         ModelName.GMF.value,
