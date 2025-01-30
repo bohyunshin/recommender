@@ -1,9 +1,3 @@
 lint:
-	poetry run flake8 .
-# 	poetry run pylint --recursive=y .
-# 	poetry run black --check .
-# 	poetry run isort --check-only .
-
-lint-fix:
-	poetry run black .
-	poetry run isort .
+	poetry run ruff format .
+	poetry run ruff check .
