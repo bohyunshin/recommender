@@ -38,7 +38,9 @@ def main(args: ArgumentParser.parse_args):
         if args.num_neg is not None:
             logging.info(f"implicit dataset: {args.implicit}")
             logging.info(f"negative sampling strategy: {args.neg_sample_strategy}")
-            logging.info(f"number of negative samples: {args.num_neg * len(args.neg_sample_strategy)}")
+            logging.info(
+                f"number of negative samples: {args.num_neg * len(args.neg_sample_strategy)}"
+            )
         logging.info(f"batch size: {args.batch_size}")
         logging.info(f"learning rate: {args.lr}")
         logging.info(f"regularization: {args.regularization}")
