@@ -48,7 +48,7 @@ def download_movielens(
                     if dl_iteration % 10 == 0 and percent < 100:
                         print(f"Completed {percent:2f}%")
                     elif percent >= 99.9:
-                        print(f"Download completed. Now unzipping...")
+                        print("Download completed. Now unzipping...")
                 temp_f.write(chunk)
             with ZipFile(temp_f, "r") as zipf:
                 zipf.extractall(output_dir)

@@ -222,7 +222,7 @@ class Model(FitModelBase):
                     mean_r_u_ = mean_r[u_]
                     r_u__i = slice_csr_matrix(csr, u_, i)
                     summation += (r_u__i - mean_r_u_) * sim
-                if items_liked_by_neighbor == True:
+                if items_liked_by_neighbor:
                     user_item_rating[u][i] = r_u + summation / k
                     res[u].append((i, r_u + summation / k))
         return torch.tensor(user_item_rating)

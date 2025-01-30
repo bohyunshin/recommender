@@ -5,8 +5,6 @@ import pickle
 import traceback
 from argparse import ArgumentParser
 
-os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-
 import importlib
 
 import torch
@@ -25,6 +23,8 @@ from recommender.libs.validate.config import validate_config
 from recommender.prepare_model_data.prepare_model_data_torch import (
     PrepareModelDataTorch,
 )
+
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 
 def main(args: ArgumentParser.parse_args):

@@ -7,11 +7,11 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import MultipleLocator
 
-sns.set_style("darkgrid")
-
 from recommender.libs.constant.inference.evaluation import Metric
 from recommender.libs.constant.inference.recommend import TOP_K_VALUES
 from recommender.libs.constant.save.save import FileName
+
+sns.set_style("darkgrid")
 
 
 def plot_metric_at_k(

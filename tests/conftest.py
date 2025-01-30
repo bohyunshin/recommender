@@ -1,6 +1,5 @@
 import argparse
 import os
-from typing import List
 
 import pytest
 

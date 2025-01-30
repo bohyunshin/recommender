@@ -302,7 +302,7 @@ class RecommenderBase(ABC):
             ndcgs.append(str(ndcg))
             recalls.append(str(recall))
 
-        logging.info(f"top k results for direct prediction @1, @3, @7, @10 in order")
+        logging.info("top k results for direct prediction @1, @3, @7, @10 in order")
         logging.info(f"map result: {'|'.join(maps)}")
         logging.info(f"ndcg result: {'|'.join(ndcgs)}")
         logging.info(f"recall: {'|'.join(recalls)}")

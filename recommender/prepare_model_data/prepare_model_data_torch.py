@@ -1,6 +1,4 @@
-import importlib
 import logging
-import time
 from typing import Any, Dict, Tuple, Union
 
 import pandas as pd
@@ -9,7 +7,6 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 
 from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS
-from recommender.libs.constant.torch.dataset import DATASET_PATH
 from recommender.libs.constant.torch.device import DEVICE
 from recommender.libs.torch_dataset.dataset import Data
 from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary

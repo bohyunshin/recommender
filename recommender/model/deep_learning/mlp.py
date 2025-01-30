@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from recommender.model.torch_model_base import TorchModelBase
 
@@ -55,7 +54,7 @@ class Model(TorchModelBase):
         nn.init.xavier_normal_(self.embed_user.weight)
         nn.init.xavier_normal_(self.embed_item.weight)
         for layer in self.layers:
-            if getattr(layer, "weight", None) != None:
+            if getattr(layer, "weight", None) is not None:
                 nn.init.xavier_normal_(layer.weight)
         nn.init.xavier_normal_(self.h.weight)
 

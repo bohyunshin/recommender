@@ -31,7 +31,7 @@ def convert_tensor_to_user_item_summary(
     for user_id, item_id in ts:
         user_id = user_id.item()
         item_id = item_id.item()
-        if structure == dict:
+        if structure is dict:
             res[user_id][item_id] = 1
         elif structure in [list, torch.Tensor]:
             res[user_id].append(item_id)

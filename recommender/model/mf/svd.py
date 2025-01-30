@@ -5,7 +5,6 @@ from recommender.model.torch_model_base import TorchModelBase
 
 
 class Model(TorchModelBase):
-
     def __init__(
         self,
         user_ids: torch.Tensor,
