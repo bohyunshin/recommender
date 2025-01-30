@@ -50,7 +50,7 @@ def main(args: ArgumentParser.parse_args):
         load_data_module = importlib.import_module(
             f"recommender.load_data.load_data_{args.dataset}"
         ).LoadData
-        data = load_data_module().load(test=args.test)
+        data = load_data_module().load(is_test=args.is_test)
 
         # preprocess data
         preprocess_module = importlib.import_module(
