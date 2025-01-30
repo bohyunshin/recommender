@@ -1,28 +1,28 @@
 from typing import Optional, Union
-import logging
 
-import torch
 import numpy as np
+import torch
 from numpy.typing import NDArray
 from scipy.sparse import csr_matrix
 
 from recommender.libs.utils.utils import check_csr, check_random_state, nonzeros
 from recommender.model.fit_model_base import FitModelBase
 
+
 class Model(FitModelBase):
     def __init__(
-            self,
-            user_ids: torch.Tensor,
-            item_ids: torch.Tensor,
-            num_users: int,
-            num_items: int,
-            num_factors: int,
-            loss_name: str,
-            regularization: float,
-            random_state: int,
-            alpha: Optional[float] = 0.1,
-            dtype: np.dtypes = np.float32,
-            **kwargs
+        self,
+        user_ids: torch.Tensor,
+        item_ids: torch.Tensor,
+        num_users: int,
+        num_items: int,
+        num_factors: int,
+        loss_name: str,
+        regularization: float,
+        random_state: int,
+        alpha: Optional[float] = 0.1,
+        dtype: np.dtypes = np.float32,
+        **kwargs,
     ):
         """
         Alternating Least Squares algorithm to factorize user x item matrix into each of embedding matrix.
@@ -52,11 +52,7 @@ class Model(FitModelBase):
         self.user_factors = None
         self.item_factors = None
 
-    def fit(
-            self,
-            user_items: csr_matrix,
-            val_user_items: Optional[csr_matrix]
-        ) -> None:
+    def fit(self, user_items: csr_matrix, val_user_items: Optional[csr_matrix]) -> None:
         """
         Factorizes the user_items matrix with iterative process.
         While selected iterations, this method updates user and item factors using closed form
@@ -82,13 +78,17 @@ class Model(FitModelBase):
 
         Cui = check_csr(user_items)
         # Cui = self.transform_Cui(Cui)
-        M,N = Cui.shape # number of users and items
+        M, N = Cui.shape  # number of users and items
 
         # initialize parameters randomly
         if self.user_factors is None:
-            self.user_factors = random_state.rand(M, self.factors).astype(self.dtype) * 0.01 # M x K
+            self.user_factors = (
+                random_state.rand(M, self.factors).astype(self.dtype) * 0.01
+            )  # M x K
         if self.item_factors is None:
-            self.item_factors = random_state.rand(N, self.factors).astype(self.dtype) * 0.01 # N x K
+            self.item_factors = (
+                random_state.rand(N, self.factors).astype(self.dtype) * 0.01
+            )  # N x K
 
         self._PtP = None
         self._QtQ = None
@@ -116,11 +116,11 @@ class Model(FitModelBase):
         #     logging.info(f"validation loss: {val_loss}")
 
     def update_user_factors(
-            self,
-            u: int,
-            Q: NDArray,
-            Cui: csr_matrix,
-        ) -> None:
+        self,
+        u: int,
+        Q: NDArray,
+        Cui: csr_matrix,
+    ) -> None:
         """
         Update user embedding factors for user u using closed form optimization
 
@@ -129,12 +129,12 @@ class Model(FitModelBase):
             Q (NDArray): N x K item factors matrix.
             Cui (csr_matrix): M x N confidence sparse matrix
         """
-        N,K = Q.shape
+        N, K = Q.shape
 
         # A = QtW_uQ + regularization * I = QtQ + Qt(W_u-1)Q + regularization * I
         # b = QtW_ur_u
         # accumulate Qt(W_u-1)Q using outer product form
-        A = self._QtQ + np.eye(K)*self.regularization
+        A = self._QtQ + np.eye(K) * self.regularization
         b = np.zeros(K)
         for i, confidence in nonzeros(Cui, u):
             item_factor_i = Q[i]
@@ -144,19 +144,14 @@ class Model(FitModelBase):
             else:
                 confidence *= -1
 
-            A += np.outer(item_factor_i,item_factor_i) * (confidence - 1)
+            A += np.outer(item_factor_i, item_factor_i) * (confidence - 1)
 
         # solve linear equation
         p_u = self.linear_equation(A, b)
 
         self.user_factors[u] = p_u
 
-    def update_item_factors(
-            self,
-            i: int,
-            P: NDArray,
-            Ciu: csr_matrix
-        ) -> None:
+    def update_item_factors(self, i: int, P: NDArray, Ciu: csr_matrix) -> None:
         """
         Update item embedding factors for item i using closed form optimization
 
@@ -170,7 +165,7 @@ class Model(FitModelBase):
         # A = QtW_uQ + regularization * I = QtQ + Qt(W_u-1)Q + regularization * I
         # b = QtW_ur_u
         # accumulate Qt(W_u-1)Q using outer product form
-        A = self._PtP + np.eye(K)*self.regularization
+        A = self._PtP + np.eye(K) * self.regularization
         b = np.zeros(K)
         for j, confidence in nonzeros(Ciu, i):
             user_factor_j = P[j]
@@ -180,7 +175,7 @@ class Model(FitModelBase):
             else:
                 confidence *= -1
 
-            A += np.outer(user_factor_j,user_factor_j) * (confidence - 1)
+            A += np.outer(user_factor_j, user_factor_j) * (confidence - 1)
 
         # solve linear equation
         q_i = self.linear_equation(A, b)
@@ -188,11 +183,11 @@ class Model(FitModelBase):
         self.item_factors[i] = q_i
 
     def predict(
-            self,
-            user_id: Union[NDArray, torch.Tensor],
-            item_id: Union[NDArray, torch.Tensor],
-            **kwargs,
-        ) -> torch.Tensor:
+        self,
+        user_id: Union[NDArray, torch.Tensor],
+        item_id: Union[NDArray, torch.Tensor],
+        **kwargs,
+    ) -> torch.Tensor:
         """
         For batch users, calculates prediction score for all of item ids.
         In inference pipeline, `kwargs["item_idx"]` will be all of item ids.
@@ -279,10 +274,10 @@ class Model(FitModelBase):
         return P.T.dot(P)
 
     def linear_equation(
-            self,
-            A: NDArray,
-            b: NDArray,
-        ) -> NDArray:
+        self,
+        A: NDArray,
+        b: NDArray,
+    ) -> NDArray:
         """
         Solves linear equation Ax = b.
         When deriving closed forms of als, need to solve this linear equation.
@@ -297,9 +292,9 @@ class Model(FitModelBase):
         return np.linalg.solve(A, b)
 
     def transform_Cui(
-            self,
-            Cui: csr_matrix,
-        ) -> csr_matrix:
+        self,
+        Cui: csr_matrix,
+    ) -> csr_matrix:
         """
         Transforms Cui matrix using confidence parameter, `alpha`.
         If `alpha` equals 1, do not transform anything.

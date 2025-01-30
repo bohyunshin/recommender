@@ -7,5 +7,5 @@ MODEL_PATH = {
     "two_tower": "recommender.model.deep_learning.two_tower",
     # csr based models
     "als": "recommender.model.mf.als",
-    "user_based": "recommender.model.neighborhood.user_based"
+    "user_based": "recommender.model.neighborhood.user_based",
 }

@@ -5,15 +5,15 @@ from recommender.model.torch_model_base import TorchModelBase
 
 
 class Model(TorchModelBase):
-
-    def __init__(self,
-                 user_ids: torch.Tensor,
-                 item_ids: torch.Tensor,
-                 num_users: int,
-                 num_items: int,
-                 num_factors: int,
-                 **kwargs
-        ):
+    def __init__(
+        self,
+        user_ids: torch.Tensor,
+        item_ids: torch.Tensor,
+        num_users: int,
+        num_items: int,
+        num_factors: int,
+        **kwargs,
+    ):
         """
         SVD model decomposing user x item matrix which uses user, item bias term.
         This model is famous for the history that it was used in netflix competition.
@@ -31,7 +31,7 @@ class Model(TorchModelBase):
             num_users=num_users,
             num_items=num_items,
             num_factors=num_factors,
-            **kwargs
+            **kwargs,
         )
 
         self.embed_user = nn.Embedding(num_users, num_factors)
@@ -46,11 +46,11 @@ class Model(TorchModelBase):
         nn.init.xavier_normal_(self.item_bias.weight)
 
     def forward(
-            self,
-            user_idx: torch.Tensor,
-            item_idx: torch.Tensor,
-            **kwargs,
-        ) -> torch.Tensor:
+        self,
+        user_idx: torch.Tensor,
+        item_idx: torch.Tensor,
+        **kwargs,
+    ) -> torch.Tensor:
         """
         Forward pass of SVD model.
         After getting user and item embedding, dot product them to get prediction score.
@@ -64,9 +64,14 @@ class Model(TorchModelBase):
         Returns (torch.Tensor):
             Prediction score with batch_size dimension.
         """
-        embed_user = self.embed_user(user_idx) # batch_size * num_factors
-        embed_item = self.embed_item(item_idx) # batch_size * num_factors
-        user_bias = self.user_bias(user_idx) # batch_size * 1
-        item_bias = self.item_bias(item_idx) # batch_size * 1
-        output = (embed_user * embed_item).sum(axis=1) + user_bias.squeeze() + item_bias.squeeze() + self.mu # batch_size * 1
+        embed_user = self.embed_user(user_idx)  # batch_size * num_factors
+        embed_item = self.embed_item(item_idx)  # batch_size * num_factors
+        user_bias = self.user_bias(user_idx)  # batch_size * 1
+        item_bias = self.item_bias(item_idx)  # batch_size * 1
+        output = (
+            (embed_user * embed_item).sum(axis=1)
+            + user_bias.squeeze()
+            + item_bias.squeeze()
+            + self.mu
+        )  # batch_size * 1
         return output

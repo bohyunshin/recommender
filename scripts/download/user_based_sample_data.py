@@ -1,8 +1,10 @@
-import requests
 import os
 
+import requests
+
 TEXT_FILE_DIRECTORY = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "../../recommender/.data/user_based_sample"
+    os.path.dirname(os.path.abspath(__file__)),
+    "../../recommender/.data/user_based_sample",
 )
 TEXT_FILE_NAME = "sample.txt"
 

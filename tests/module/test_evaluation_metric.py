@@ -20,7 +20,7 @@ def test_ndcg_same_as_sklearn():
     liked_items = np.array([0, 3, 4])
     reco_items = np.array([0, 2, 1, 4, 3])
 
-    for k in range(1, num_items+1):
+    for k in range(1, num_items + 1):
         ndcg_sklearn = ndcg_score(true_relevance, scores, ignore_ties=True, k=k)
         ndcg_implemented = ranking_metrics_at_k(liked_items, reco_items[:k])["ndcg"]
         np.testing.assert_almost_equal(ndcg_sklearn, ndcg_implemented)
@@ -52,11 +52,11 @@ def test_map_ndcg():
 
 def test_map_increasing_as_k_larger():
     # reco_items = np.array([0, 1, 2, 5, 6, 7, 3, 100, 4])
-    reco_items = np.array([0]*10 + [2] + [0]*5 + [3] + [0]*5)
+    reco_items = np.array([0] * 10 + [2] + [0] * 5 + [3] + [0] * 5)
     liked_items = np.array([2, 3, 4, 100, 10])
     map = -1e10
     for k in range(len(reco_items)):
-        metric = ranking_metrics_at_k(liked_items, reco_items[:k+1])
+        metric = ranking_metrics_at_k(liked_items, reco_items[: k + 1])
         assert metric["ap"] >= map
         map = metric["ap"]
         print(metric["ndcg"])

@@ -1,18 +1,18 @@
-from scipy.sparse import csr_matrix
 import numpy as np
-from numpy.typing import NDArray
 import torch
 import torch.nn.functional as F
+from numpy.typing import NDArray
+from scipy.sparse import csr_matrix
 
 from recommender.libs.utils.norm import parameter_l_k_norm
 from recommender.libs.utils.utils import binarize
 
 
 def bpr_loss(
-        pred: torch.Tensor,
-        params: torch.nn.parameter,
-        regularization: float,
-    ) -> torch.Tensor:
+    pred: torch.Tensor,
+    params: torch.nn.parameter,
+    regularization: float,
+) -> torch.Tensor:
     """
     Calculates the Bayesian Personalized Ranking Loss with penalty term together.
 
@@ -30,15 +30,15 @@ def bpr_loss(
 
 
 def svd_loss(
-        pred: torch.Tensor,
-        true: torch.Tensor,
-        params: torch.nn.parameter,
-        regularization: float,
-        user_idx: torch.Tensor,
-        item_idx: torch.Tensor,
-        num_users: int,
-        num_items: int,
-    ) -> torch.Tensor:
+    pred: torch.Tensor,
+    true: torch.Tensor,
+    params: torch.nn.parameter,
+    regularization: float,
+    user_idx: torch.Tensor,
+    item_idx: torch.Tensor,
+    num_users: int,
+    num_items: int,
+) -> torch.Tensor:
     """
     Calculates the SVD loss with penalty term together.
     There are lots of SVD models. This loss focuses on SVD with user and item's bias term.
@@ -64,19 +64,19 @@ def svd_loss(
         user_idx=user_idx,
         item_idx=item_idx,
         num_users=num_users,
-        num_items=num_items
+        num_items=num_items,
     )
     return mse + penalty
 
 
 def calculate_penalty(
-        params: torch.nn.parameter,
-        regularization: float,
-        user_idx: torch.Tensor,
-        item_idx: torch.Tensor,
-        num_users: int,
-        num_items: int,
-    ) -> torch.Tensor:
+    params: torch.nn.parameter,
+    regularization: float,
+    user_idx: torch.Tensor,
+    item_idx: torch.Tensor,
+    num_users: int,
+    num_items: int,
+) -> torch.Tensor:
     """
     Calculates penalty in l2 norm.
 
@@ -91,7 +91,7 @@ def calculate_penalty(
     Returns (torch.Tensor):
         Penalty in l2 norm.
     """
-    penalty = torch.tensor(0., requires_grad=True)
+    penalty = torch.tensor(0.0, requires_grad=True)
     for param in params:
         if param.shape[0] == num_users:
             param = param[user_idx]
@@ -104,11 +104,11 @@ def calculate_penalty(
 
 
 def als_loss(
-        user_items: csr_matrix,
-        user_factors: NDArray,
-        item_factors: NDArray,
-        regularization: float,
-    ) -> float:
+    user_items: csr_matrix,
+    user_factors: NDArray,
+    item_factors: NDArray,
+    regularization: float,
+) -> float:
     """
     Calculates training/validation loss in each iteration.
 
@@ -125,7 +125,7 @@ def als_loss(
         Calculated loss value.
     """
     loss = 0
-    M,N = user_items.shape
+    M, N = user_items.shape
     Q = item_factors
     total_confidence = 0
     for u in range(M):
@@ -145,4 +145,6 @@ def als_loss(
         loss += regularization * np.power(q_i, 2).sum()
 
     # todo: why divide loss? (from implicit github repo)
-    return loss / (total_confidence + user_items.shape[0] * user_items.shape[1] - user_items.nnz)
+    return loss / (
+        total_confidence + user_items.shape[0] * user_items.shape[1] - user_items.nnz
+    )

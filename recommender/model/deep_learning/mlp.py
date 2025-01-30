@@ -1,20 +1,19 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from recommender.model.torch_model_base import TorchModelBase
 
 
 class Model(TorchModelBase):
     def __init__(
-            self,
-            user_ids: torch.Tensor,
-            item_ids: torch.Tensor,
-            num_users: int,
-            num_items: int,
-            num_factors: int,
-            **kwargs,
-        ):
+        self,
+        user_ids: torch.Tensor,
+        item_ids: torch.Tensor,
+        num_users: int,
+        num_items: int,
+        num_factors: int,
+        **kwargs,
+    ):
         """
         MLP neural network getting input as concatenation of user and item embeddings.
 
@@ -31,7 +30,7 @@ class Model(TorchModelBase):
             num_users=num_users,
             num_items=num_items,
             num_factors=num_factors,
-            **kwargs
+            **kwargs,
         )
 
         self.num_users = num_users
@@ -41,7 +40,7 @@ class Model(TorchModelBase):
         self.embed_user = nn.Embedding(num_users, num_factors)
         self.embed_item = nn.Embedding(num_items, num_factors)
 
-        num_factors = num_factors * 2 # concat user & item embedding
+        num_factors = num_factors * 2  # concat user & item embedding
         layers = []
         num_layers = 3
         for i in range(num_layers):
@@ -55,16 +54,16 @@ class Model(TorchModelBase):
         nn.init.xavier_normal_(self.embed_user.weight)
         nn.init.xavier_normal_(self.embed_item.weight)
         for layer in self.layers:
-            if getattr(layer, "weight", None) != None:
+            if getattr(layer, "weight", None) is not None:
                 nn.init.xavier_normal_(layer.weight)
         nn.init.xavier_normal_(self.h.weight)
 
     def forward(
-            self,
-            user_idx: torch.Tensor,
-            item_idx: torch.Tensor,
-            **kwargs,
-        ) -> torch.Tensor:
+        self,
+        user_idx: torch.Tensor,
+        item_idx: torch.Tensor,
+        **kwargs,
+    ) -> torch.Tensor:
         """
         Calculates associated probability between user_idx and item_idx using mlp architecture.
 

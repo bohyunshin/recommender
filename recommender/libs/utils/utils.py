@@ -1,13 +1,16 @@
-from numpy.typing import NDArray
-from scipy.sparse import csr_matrix
 import time
 import warnings
+
 import numpy as np
+from numpy.typing import NDArray
+from scipy.sparse import csr_matrix
+
 
 def nonzeros(m: csr_matrix, row: int):
     """returns the non zeroes of a row in csr_matrix"""
     for index in range(m.indptr[row], m.indptr[row + 1]):
         yield m.indices[index], m.data[index]
+
 
 def check_random_state(random_state: int):
     """Validate the random state.
@@ -28,8 +31,10 @@ def check_random_state(random_state: int):
     # on the numpy side if it doesn't work
     return np.random.RandomState(random_state)
 
+
 class ParameterWarning(Warning):
     pass
+
 
 def check_csr(user_items: csr_matrix):
     if not isinstance(user_items, csr_matrix):
@@ -46,7 +51,7 @@ def check_csr(user_items: csr_matrix):
 
 def mapping_dict(vals: NDArray):
     u = sorted(list(set(vals)))
-    mapping = {v:i for i,v in enumerate(u)}
+    mapping = {v: i for i, v in enumerate(u)}
     return mapping
 
 
@@ -58,8 +63,8 @@ def safe_divide(numerator, denominator):
 
 
 def binarize(
-        c: NDArray,
-    ):
+    c: NDArray,
+):
     """
     Binarizes input NDArray making dataset as implicit.
     In implicit dataset, even if an user interacted with an item greater than one time,

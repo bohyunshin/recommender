@@ -5,6 +5,7 @@ class MovieLens1mPath(Enum):
     """
     Enum for movielens 1m dataset path
     """
+
     ratings = "recommender/.data/movielens/ml-1m/ratings.dat"
     users = "recommender/.data/movielens/ml-1m/users.dat"
     items = "recommender/.data/movielens/ml-1m/movies.dat"

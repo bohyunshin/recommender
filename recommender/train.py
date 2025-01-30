@@ -1,27 +1,30 @@
+import copy
+import logging
 import os
+import pickle
 import traceback
 from argparse import ArgumentParser
-import logging
-import copy
-import pickle
-os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+
+import importlib
 
 import torch
 from torch import optim
-import importlib
 
-from recommender.prepare_model_data.prepare_model_data_torch import PrepareModelDataTorch
-from recommender.loss.criterion import Criterion
-from recommender.libs.validate.config import validate_config
+from recommender.libs.constant.inference.recommend import TOP_K_VALUES
+from recommender.libs.constant.loss.name import LossName
+from recommender.libs.constant.model.module_path import MODEL_PATH
+from recommender.libs.constant.save.save import FileName
+from recommender.libs.constant.torch.device import DEVICE
+from recommender.libs.plot.plot import plot_metric_at_k
 from recommender.libs.sampling.negative_sampling import NegativeSampling
 from recommender.libs.utils.logger import setup_logger
 from recommender.libs.utils.parse_args import parse_args
-from recommender.libs.plot.plot import plot_metric_at_k
-from recommender.libs.constant.model.module_path import MODEL_PATH
-from recommender.libs.constant.torch.device import DEVICE
-from recommender.libs.constant.inference.recommend import TOP_K_VALUES
-from recommender.libs.constant.save.save import FileName
-from recommender.libs.constant.loss.name import LossName
+from recommender.libs.validate.config import validate_config
+from recommender.prepare_model_data.prepare_model_data_torch import (
+    PrepareModelDataTorch,
+)
+
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 
 def main(args: ArgumentParser.parse_args):
@@ -44,11 +47,15 @@ def main(args: ArgumentParser.parse_args):
         is_triplet = True if args.loss == LossName.BPR.value else False
 
         # load raw data
-        load_data_module = importlib.import_module(f"recommender.load_data.load_data_{args.dataset}").LoadData
+        load_data_module = importlib.import_module(
+            f"recommender.load_data.load_data_{args.dataset}"
+        ).LoadData
         data = load_data_module().load(test=args.test)
 
         # preprocess data
-        preprocess_module = importlib.import_module(f"recommender.preprocess.preprocess_{args.dataset}").Preprocessor
+        preprocess_module = importlib.import_module(
+            f"recommender.preprocess.preprocess_{args.dataset}"
+        ).Preprocessor
         preprocessed_data = preprocess_module().preprocess(data)
         NUM_USERS = preprocessed_data.get("num_users")
         NUM_ITEMS = preprocessed_data.get("num_items")
@@ -66,7 +73,9 @@ def main(args: ArgumentParser.parse_args):
             user_meta=preprocessed_data.get("users"),
             item_meta=preprocessed_data.get("items"),
         )
-        train_dataloader, validation_dataloader = prepare_model_data.get_train_validation_data(data=preprocessed_data)
+        train_dataloader, validation_dataloader = (
+            prepare_model_data.get_train_validation_data(data=preprocessed_data)
+        )
 
         # set up model
         model_path = MODEL_PATH.get(args.model)
@@ -74,14 +83,18 @@ def main(args: ArgumentParser.parse_args):
             raise
         model_module = importlib.import_module(model_path).Model
         model = model_module(
-            user_ids=torch.tensor(list(preprocessed_data.get("user_id2idx").values())), # common model parameter
-            item_ids=torch.tensor(list(preprocessed_data.get("item_id2idx").values())), # common model parameter
-            num_users=NUM_USERS, # common model parameter
-            num_items=NUM_ITEMS, # common model parameter
-            num_factors=args.num_factors, # common model parameter
-            mu=prepare_model_data.mu, # for svd_bias model
-            user_meta=prepare_model_data.user_meta, # for two_tower model
-            item_meta=prepare_model_data.item_meta, # for two_tower model
+            user_ids=torch.tensor(
+                list(preprocessed_data.get("user_id2idx").values())
+            ),  # common model parameter
+            item_ids=torch.tensor(
+                list(preprocessed_data.get("item_id2idx").values())
+            ),  # common model parameter
+            num_users=NUM_USERS,  # common model parameter
+            num_items=NUM_ITEMS,  # common model parameter
+            num_factors=args.num_factors,  # common model parameter
+            mu=prepare_model_data.mu,  # for svd_bias model
+            user_meta=prepare_model_data.user_meta,  # for two_tower model
+            item_meta=prepare_model_data.item_meta,  # for two_tower model
             loss_name=args.loss,
         ).to(DEVICE)
 
@@ -196,13 +209,22 @@ def main(args: ArgumentParser.parse_args):
                 best_loss = val_loss
                 best_model_weights = copy.deepcopy(model.state_dict())
                 patience = args.patience
-                torch.save(model.state_dict(), os.path.join(args.result_path, FileName.WEIGHT_PT.value))
-                logging.info(f"Best validation: {best_loss}, Previous validation loss: {prev_best_loss}")
+                torch.save(
+                    model.state_dict(),
+                    os.path.join(args.result_path, FileName.WEIGHT_PT.value),
+                )
+                logging.info(
+                    f"Best validation: {best_loss}, Previous validation loss: {prev_best_loss}"
+                )
             else:
                 patience -= 1
-                logging.info(f"Validation loss did not decrease. Patience {patience} left.")
+                logging.info(
+                    f"Validation loss did not decrease. Patience {patience} left."
+                )
                 if patience == 0:
-                    logging.info(f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss")
+                    logging.info(
+                        f"Patience over. Early stopping at epoch {epoch} with {best_loss} validation loss"
+                    )
                     early_stopping = True
 
             # calculate metrics for all users
@@ -210,7 +232,7 @@ def main(args: ArgumentParser.parse_args):
                 X_train=prepare_model_data.X_y.get("X_train"),
                 X_val=prepare_model_data.X_y.get("X_val"),
                 top_k_values=TOP_K_VALUES,
-                filter_already_liked=True
+                filter_already_liked=True,
             )
 
             # logging calculated metrics for current epoch
@@ -222,17 +244,17 @@ def main(args: ArgumentParser.parse_args):
         # save metrics at every epoch
         pickle.dump(
             model.metric_at_k_total_epochs,
-            open(os.path.join(args.result_path, FileName.METRIC.value), "wb")
+            open(os.path.join(args.result_path, FileName.METRIC.value), "wb"),
         )
 
         # save loss
         pickle.dump(
             model.tr_loss,
-            open(os.path.join(args.result_path, FileName.TRAINING_LOSS.value), "wb")
+            open(os.path.join(args.result_path, FileName.TRAINING_LOSS.value), "wb"),
         )
         pickle.dump(
             model.val_loss,
-            open(os.path.join(args.result_path, FileName.VALIDATION_LOSS.value), "wb")
+            open(os.path.join(args.result_path, FileName.VALIDATION_LOSS.value), "wb"),
         )
 
         # plot metrics
@@ -247,7 +269,9 @@ def main(args: ArgumentParser.parse_args):
         model.load_state_dict(best_model_weights)
         logging.info("Load weight with best validation loss")
 
-        torch.save(model.state_dict(), os.path.join(args.result_path, FileName.WEIGHT_PT.value))
+        torch.save(
+            model.state_dict(), os.path.join(args.result_path, FileName.WEIGHT_PT.value)
+        )
         logging.info("Save final model")
     except Exception:
         logging.error(traceback.format_exc())

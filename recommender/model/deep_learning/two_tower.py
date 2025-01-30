@@ -1,20 +1,19 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from recommender.model.torch_model_base import TorchModelBase
 
 
 class Model(TorchModelBase):
     def __init__(
-            self,
-            user_ids: torch.Tensor,
-            item_ids: torch.Tensor,
-            num_users: int,
-            num_items: int,
-            num_factors: int,
-            **kwargs,
-        ):
+        self,
+        user_ids: torch.Tensor,
+        item_ids: torch.Tensor,
+        num_users: int,
+        num_items: int,
+        num_factors: int,
+        **kwargs,
+    ):
         """
         Two-tower neural network passing user/item embedding on separate layers, finally concatenates them.
 
@@ -31,7 +30,7 @@ class Model(TorchModelBase):
             num_users=num_users,
             num_items=num_items,
             num_factors=num_factors,
-            **kwargs
+            **kwargs,
         )
 
         self.embed_user = nn.Embedding(num_users, num_factors)
@@ -49,11 +48,11 @@ class Model(TorchModelBase):
         self.item_layers = self.create_sequential_layer(item_input_dim)
 
     def forward(
-            self,
-            user_idx: torch.Tensor,
-            item_idx: torch.Tensor,
-            **kwargs,
-        ) -> torch.Tensor:
+        self,
+        user_idx: torch.Tensor,
+        item_idx: torch.Tensor,
+        **kwargs,
+    ) -> torch.Tensor:
         """
         Calculates associated probability between user_idx and item_idx using two-tower architecture.
 
@@ -74,21 +73,22 @@ class Model(TorchModelBase):
         Returns (torch.Tensor):
             Probability between user_idx and item_idx.
         """
-        user = torch.concat((self.embed_user(user_idx), self.user_meta[user_idx]), axis=1)
+        user = torch.concat(
+            (self.embed_user(user_idx), self.user_meta[user_idx]), axis=1
+        )
         user = self.user_layers(user)
 
-        item = torch.concat((self.embed_item(item_idx), self.item_meta[item_idx]), axis=1)
+        item = torch.concat(
+            (self.embed_item(item_idx), self.item_meta[item_idx]), axis=1
+        )
         item = self.item_layers(item)
 
         x = (user * item).sum(dim=1)
         return x
 
     def create_sequential_layer(
-            self,
-            input_dim,
-            num_layers=3,
-            last_dim=16
-        ) -> nn.Sequential:
+        self, input_dim, num_layers=3, last_dim=16
+    ) -> nn.Sequential:
         """
         Creates sequential layers for each of user and item layers.
 
@@ -102,7 +102,7 @@ class Model(TorchModelBase):
         """
         layers = []
         for i in range(num_layers):
-            if i == num_layers-1:
+            if i == num_layers - 1:
                 output_dim = last_dim
             else:
                 output_dim = input_dim // 2

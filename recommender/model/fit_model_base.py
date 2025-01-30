@@ -9,15 +9,15 @@ from recommender.model.recommender_base import RecommenderBase
 
 class FitModelBase(RecommenderBase):
     def __init__(
-            self,
-            user_ids: torch.Tensor,
-            item_ids: torch.Tensor,
-            num_users: int,
-            num_items: int,
-            num_factors: int,
-            loss_name: str,
-            **kwargs
-        ):
+        self,
+        user_ids: torch.Tensor,
+        item_ids: torch.Tensor,
+        num_users: int,
+        num_items: int,
+        num_factors: int,
+        loss_name: str,
+        **kwargs,
+    ):
         """
         Abstract base class for fit based model such as als, user-based model.
         """
@@ -28,15 +28,11 @@ class FitModelBase(RecommenderBase):
             num_items=num_items,
             num_factors=num_factors,
             loss_name=loss_name,
-            **kwargs
+            **kwargs,
         )
 
     @abstractmethod
-    def fit(
-            self,
-            user_items: csr_matrix,
-            val_user_items: Optional[csr_matrix]
-        ) -> None:
+    def fit(self, user_items: csr_matrix, val_user_items: Optional[csr_matrix]) -> None:
         """
         Factorizes the user_items matrix.
 

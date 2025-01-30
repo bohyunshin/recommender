@@ -1,6 +1,5 @@
-import os
 import argparse
-from typing import List
+import os
 
 import pytest
 
@@ -23,7 +22,9 @@ def setup_config(request):
     args.train_ratio = 0.8
     args.random_state = 42
     args.patience = 5
-    args.result_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"../result/{model}")
+    args.result_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), f"../result/{model}"
+    )
     args.num_sim_user_top_N = 45
     args.test = True
     return args
