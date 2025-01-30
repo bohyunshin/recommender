@@ -34,14 +34,21 @@ def main(args: ArgumentParser.parse_args):
     try:
         logging.info(f"selected dataset: {args.dataset}")
         logging.info(f"selected model: {args.model}")
+        logging.info(f"selected loss: {args.loss}")
+        if args.num_neg is not None:
+            logging.info(f"implicit dataset: {args.implicit}")
+            logging.info(f"negative sampling strategy: {args.neg_sample_strategy}")
+            logging.info(f"number of negative samples: {args.num_neg * len(args.neg_sample_strategy)}")
         logging.info(f"batch size: {args.batch_size}")
         logging.info(f"learning rate: {args.lr}")
         logging.info(f"regularization: {args.regularization}")
         logging.info(f"epochs: {args.epochs}")
         logging.info(f"number of factors for user / item embedding: {args.num_factors}")
         logging.info(f"train ratio: {args.train_ratio}")
-        logging.info(f"number of negative samples: {args.num_neg}")
+        logging.info(f"random state: {args.random_state}")
         logging.info(f"patience for watching validation loss: {args.patience}")
+        logging.info(f"result path: {args.result_path}")
+        logging.info(f"test mode: {args.is_test}")
         logging.info(f"device info: {DEVICE}")
 
         is_triplet = True if args.loss == LossName.BPR.value else False
