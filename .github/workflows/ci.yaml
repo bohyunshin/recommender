@@ -5,6 +5,20 @@ on:
     branches: [ master ]
 
 jobs:
+  lint:
+    name: Run Ruff linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Ruff
+        uses: chartboost/ruff-action@v1
+        with:
+          version: "0.9.3"
+          args: |
+            check
+            format --check
+
   test:
     name: Run tests and collect coverage
     runs-on: ubuntu-latest
