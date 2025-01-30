@@ -41,7 +41,7 @@ class LoadData(LoadDataBase):
         )
 
         # for quick pytest
-        if kwargs["test"]:
+        if kwargs["is_test"]:
             idxs = np.random.choice(range(ratings.shape[0]), size=5000, replace=False)
             ratings = ratings.iloc[idxs, :]
 
