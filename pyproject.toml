@@ -20,8 +20,6 @@ matplotlib = "3.9.2"
 seaborn = ">=0.13.2"
 
 [tool.poetry.group.dev.dependencies]
-pylint = "^3.0.3"
-mypy = "^1.8.0"
 ruff = "^0.9.3"
 
 [build-system]
