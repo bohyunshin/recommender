@@ -125,11 +125,7 @@ class NegativeSampling(object):
             for neg_item_id in neg_item_id_candidate:
                 self.ng_samples.append((user_id, pos_item_id, neg_item_id))
             return
-        # set uniform prob
-        unif = torch.ones(neg_item_id_candidate.shape[0])
-        # sample num_ng neg_item_ids
-        idx = torch.multinomial(unif, num_samples=self.num_ng)
-        # get neg_item_id item index
+        idx = torch.randperm(len(neg_item_id_candidate))[:self.num_ng]
         neg_item_ids = neg_item_id_candidate[idx]
         for neg_item_id in neg_item_ids:
             self.ng_samples.append((user_id, pos_item_id, neg_item_id))
