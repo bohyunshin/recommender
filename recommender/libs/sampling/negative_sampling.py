@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 import torch
+import numpy as np
 
 
 class NegativeSampling(object):
@@ -93,7 +94,7 @@ class NegativeSampling(object):
         When sampling, exclude item_id if user_id already liked using `user_item_summ` variable.
         """
         for user_id, pos_item_id in zip(self.batch_user_id, self.batch_item_id):
-            neg_item_id_candidate = torch.tensor(
+            neg_item_id_candidate = np.array(
                 [
                     t
                     for t in range(self.num_item)
@@ -125,12 +126,13 @@ class NegativeSampling(object):
             for neg_item_id in neg_item_id_candidate:
                 self.ng_samples.append((user_id, pos_item_id, neg_item_id))
             return
-        # set uniform prob
-        unif = torch.ones(neg_item_id_candidate.shape[0])
-        # sample num_ng neg_item_ids
-        idx = torch.multinomial(unif, num_samples=self.num_ng)
-        # get neg_item_id item index
-        neg_item_ids = neg_item_id_candidate[idx]
+        # # set uniform prob
+        # unif = torch.ones(neg_item_id_candidate.shape[0])
+        # # sample num_ng neg_item_ids
+        # idx = torch.multinomial(unif, num_samples=self.num_ng)
+        # # get neg_item_id item index
+        # neg_item_ids = neg_item_id_candidate[idx]
+        neg_item_ids = np.random.choice(neg_item_id_candidate, replace=False, size=self.num_ng)
         for neg_item_id in neg_item_ids:
             self.ng_samples.append((user_id, pos_item_id, neg_item_id))
 

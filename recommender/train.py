@@ -119,6 +119,7 @@ def main(args: ArgumentParser.parse_args):
             # training
             model.train()
             tr_loss = 0.0
+            i = 0
             for user_id, pos_item_id, y_train in train_dataloader:
                 inputs = {
                     "user_idx": user_id,
@@ -160,6 +161,9 @@ def main(args: ArgumentParser.parse_args):
                 optimizer.step()
 
                 tr_loss += loss.item()
+
+                logging.info(f"training batch index: {i}")
+                i += 1
 
             tr_loss = round(tr_loss / len(train_dataloader), 6)
             model.tr_loss.append(tr_loss)
