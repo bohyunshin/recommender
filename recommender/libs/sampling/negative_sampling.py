@@ -127,7 +127,7 @@ class NegativeSampling(object):
             for neg_item_id in neg_item_id_candidate:
                 self.ng_samples.append((user_id, pos_item_id, neg_item_id))
             return
-        idx = torch.randperm(len(neg_item_id_candidate))[:self.num_ng]
+        idx = torch.randperm(len(neg_item_id_candidate))[: self.num_ng]
         neg_item_ids = neg_item_id_candidate[idx]
         for neg_item_id in neg_item_ids:
             self.ng_samples.append((user_id, pos_item_id, neg_item_id))
@@ -167,7 +167,9 @@ class NegativeSampling(object):
                 "user_idx": torch.tensor(user_ids).to(self.device),
                 "pos_item_idx": torch.tensor(pos_item_ids).to(self.device),
                 "neg_item_idx": torch.tensor(neg_item_ids).to(self.device),
-                "y": torch.zeros(size=(len(user_ids),)).to(self.device),  # dummy y value
+                "y": torch.zeros(size=(len(user_ids),)).to(
+                    self.device
+                ),  # dummy y value
             }
         else:
             user_ids = []

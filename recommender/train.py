@@ -52,7 +52,9 @@ def main(args: ArgumentParser.parse_args):
         logging.info(f"test mode: {args.is_test}")
         if args.device == "cuda":
             if not torch.cuda.is_available():
-                logging.warning(f"device {args.device} is not available, setting device as cpu")
+                logging.warning(
+                    f"device {args.device} is not available, setting device as cpu"
+                )
                 args.device = "cpu"
 
         is_triplet = True if args.loss == LossName.BPR.value else False
