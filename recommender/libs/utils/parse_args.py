@@ -18,6 +18,7 @@ def parse_args():
     parser.add_argument("--num_neg", type=int, default=None)
     parser.add_argument("--neg_sample_strategy", nargs="+", default=None)
 
+    parser.add_argument("--device", type=str, choices=["cpu", "cuda"])
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--lr", type=float, default=1e-2)
     parser.add_argument("--regularization", type=float, default=1e-4)

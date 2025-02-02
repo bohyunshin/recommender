@@ -14,7 +14,6 @@ from recommender.libs.constant.inference.recommend import TOP_K_VALUES
 from recommender.libs.constant.loss.name import LossName
 from recommender.libs.constant.model.module_path import MODEL_PATH
 from recommender.libs.constant.save.save import FileName
-from recommender.libs.constant.torch.device import DEVICE
 from recommender.libs.plot.plot import plot_metric_at_k
 from recommender.libs.sampling.negative_sampling import NegativeSampling
 from recommender.libs.utils.logger import setup_logger
@@ -51,7 +50,10 @@ def main(args: ArgumentParser.parse_args):
         logging.info(f"patience for watching validation loss: {args.patience}")
         logging.info(f"result path: {args.result_path}")
         logging.info(f"test mode: {args.is_test}")
-        logging.info(f"device info: {DEVICE}")
+        if args.device == "cuda":
+            if not torch.cuda.is_available():
+                logging.warning(f"device {args.device} is not available, setting device as cpu")
+                args.device = "cpu"
 
         is_triplet = True if args.loss == LossName.BPR.value else False
 
@@ -81,6 +83,7 @@ def main(args: ArgumentParser.parse_args):
             batch_size=args.batch_size,
             user_meta=preprocessed_data.get("users"),
             item_meta=preprocessed_data.get("items"),
+            device=args.device,
         )
         train_dataloader, validation_dataloader = (
             prepare_model_data.get_train_validation_data(data=preprocessed_data)
@@ -105,9 +108,8 @@ def main(args: ArgumentParser.parse_args):
             user_meta=prepare_model_data.user_meta,  # for two_tower model
             item_meta=prepare_model_data.item_meta,  # for two_tower model
             loss_name=args.loss,
-        ).to(DEVICE)
+        ).to(args.device)
 
-        # criterion = Criterion(args.model)
         optimizer = optim.SGD(model.parameters(), lr=args.lr)
 
         # train model
@@ -133,6 +135,7 @@ def main(args: ArgumentParser.parse_args):
                         is_triplet=is_triplet,
                         num_item=NUM_ITEMS,
                         strategy=args.neg_sample_strategy,
+                        device=args.device,
                     )
                     ng_sample.ng()
                     ng_res = ng_sample.format_dataset()
@@ -148,7 +151,7 @@ def main(args: ArgumentParser.parse_args):
                     y_pred = model(**inputs)
                 loss = model.calculate_loss(
                     y_pred=y_pred,
-                    y=y_train.to(DEVICE),
+                    y=y_train.to(args.device),
                     params=[param for param in model.parameters()],
                     regularization=args.regularization,
                     user_idx=user_id,  # used in svd, svd_bias
@@ -182,6 +185,7 @@ def main(args: ArgumentParser.parse_args):
                             is_triplet=is_triplet,
                             num_item=NUM_ITEMS,
                             strategy=args.neg_sample_strategy,
+                            device=args.device,
                         )
                         ng_sample.ng()
                         ng_res = ng_sample.format_dataset()
@@ -197,7 +201,7 @@ def main(args: ArgumentParser.parse_args):
                         y_pred = model(**inputs)
                     loss = model.calculate_loss(
                         y_pred=y_pred,
-                        y=y_val.to(DEVICE),
+                        y=y_val.to(args.device),
                         params=[param for param in model.parameters()],
                         regularization=args.regularization,
                         user_idx=user_id,  # used in svd, svd_bias

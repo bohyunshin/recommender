@@ -13,6 +13,7 @@ class NegativeSampling(object):
         is_triplet: bool,
         num_item: int,
         strategy: List[str],
+        device: str,
     ):
         """
         Run negative sampling in every batch.
@@ -41,6 +42,7 @@ class NegativeSampling(object):
         self.is_triplet = is_triplet
         self.num_item = num_item
         self.strategy = strategy
+        self.device = device
         self.ng_samples = []
 
     def in_batch_ng(self) -> None:
@@ -162,10 +164,10 @@ class NegativeSampling(object):
                 pos_item_ids.append(pos_item_id)
                 neg_item_ids.append(neg_item_id)
             return {
-                "user_idx": torch.tensor(user_ids),
-                "pos_item_idx": torch.tensor(pos_item_ids),
-                "neg_item_idx": torch.tensor(neg_item_ids),
-                "y": torch.zeros(size=(len(user_ids),)),  # dummy y value
+                "user_idx": torch.tensor(user_ids).to(self.device),
+                "pos_item_idx": torch.tensor(pos_item_ids).to(self.device),
+                "neg_item_idx": torch.tensor(neg_item_ids).to(self.device),
+                "y": torch.zeros(size=(len(user_ids),)).to(self.device),  # dummy y value
             }
         else:
             user_ids = []
@@ -181,7 +183,7 @@ class NegativeSampling(object):
                 item_ids.append(neg_item_id)
                 y.append(0.0)
             return {
-                "user_idx": torch.tensor(user_ids),
-                "item_idx": torch.tensor(item_ids),
-                "y": torch.tensor(y),
+                "user_idx": torch.tensor(user_ids).to(self.device),
+                "item_idx": torch.tensor(item_ids).to(self.device),
+                "y": torch.tensor(y).to(self.device),
             }
