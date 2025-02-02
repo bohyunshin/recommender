@@ -1,4 +1,6 @@
 from typing import Dict, List
+from line_profiler import profile
+import numpy as np
 
 import torch
 
@@ -123,16 +125,24 @@ class NegativeSampling(object):
         """
         if len(neg_item_id_candidate) <= self.num_ng:
             for neg_item_id in neg_item_id_candidate:
-                self.ng_samples.append((user_id, pos_item_id, neg_item_id))
+                self.ng_samples.extend([(user_id, pos_item_id, neg_item_id)])
             return
-        # set uniform prob
-        unif = torch.ones(neg_item_id_candidate.shape[0])
-        # sample num_ng neg_item_ids
-        idx = torch.multinomial(unif, num_samples=self.num_ng)
-        # get neg_item_id item index
+        # # set uniform prob
+        # unif = torch.ones(neg_item_id_candidate.shape[0])
+        # # sample num_ng neg_item_ids
+        # idx = torch.multinomial(unif, num_samples=self.num_ng)
+        # # get neg_item_id item index
+        # idx = []
+        # while len(idx) != self.num_ng:
+        #     sampled_idx = np.random.randint(len(neg_item_id_candidate), size=1)
+        #     if sampled_idx not in idx:
+        #         idx.append(sampled_idx)
+        idx = torch.randperm(len(neg_item_id_candidate))[:self.num_ng]
         neg_item_ids = neg_item_id_candidate[idx]
-        for neg_item_id in neg_item_ids:
-            self.ng_samples.append((user_id, pos_item_id, neg_item_id))
+
+        self.ng_samples.extend([(user_id, pos_item_id, neg_item_id) for neg_item_id in neg_item_ids])
+        # for neg_item_id in neg_item_ids:
+        #     self.ng_samples.append((user_id, pos_item_id, neg_item_id))
 
     def ng(self) -> None:
         """

@@ -23,10 +23,12 @@ from recommender.libs.validate.config import validate_config
 from recommender.prepare_model_data.prepare_model_data_torch import (
     PrepareModelDataTorch,
 )
+from line_profiler import profile
 
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 
+@profile
 def main(args: ArgumentParser.parse_args):
     validate_config(args)
     os.makedirs(args.result_path, exist_ok=True)
@@ -119,6 +121,7 @@ def main(args: ArgumentParser.parse_args):
             # training
             model.train()
             tr_loss = 0.0
+            i = 0
             for user_id, pos_item_id, y_train in train_dataloader:
                 inputs = {
                     "user_idx": user_id,
@@ -161,6 +164,10 @@ def main(args: ArgumentParser.parse_args):
 
                 tr_loss += loss.item()
 
+                i += 1
+
+                logging.info(f"training batch index: {i}")
+
             tr_loss = round(tr_loss / len(train_dataloader), 6)
             model.tr_loss.append(tr_loss)
 
@@ -168,6 +175,7 @@ def main(args: ArgumentParser.parse_args):
             model.eval()
             with torch.no_grad():
                 val_loss = 0.0
+                i = 0
                 for user_id, pos_item_id, y_val in validation_dataloader:
                     inputs = {
                         "user_idx": user_id,
@@ -207,6 +215,10 @@ def main(args: ArgumentParser.parse_args):
                     )
 
                     val_loss += loss.item()
+
+                    i += 1
+
+                    logging.info(f"test batch index: {i}")
                 val_loss = round(val_loss / len(validation_dataloader), 6)
                 model.val_loss.append(val_loss)
 
@@ -250,6 +262,8 @@ def main(args: ArgumentParser.parse_args):
             if early_stopping is True:
                 break
 
+            break
+
         # save metrics at every epoch
         pickle.dump(
             model.metric_at_k_total_epochs,
@@ -266,13 +280,13 @@ def main(args: ArgumentParser.parse_args):
             open(os.path.join(args.result_path, FileName.VALIDATION_LOSS.value), "wb"),
         )
 
-        # plot metrics
-        plot_metric_at_k(
-            metric=model.metric_at_k_total_epochs,
-            tr_loss=model.tr_loss,
-            val_loss=model.val_loss,
-            parent_save_path=args.result_path,
-        )
+        # # plot metrics
+        # plot_metric_at_k(
+        #     metric=model.metric_at_k_total_epochs,
+        #     tr_loss=model.tr_loss,
+        #     val_loss=model.val_loss,
+        #     parent_save_path=args.result_path,
+        # )
 
         # Load the best model weights
         model.load_state_dict(best_model_weights)
