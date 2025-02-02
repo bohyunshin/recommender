@@ -63,7 +63,7 @@ $ python3 recommender/train.py \
   --num_factors 16 \
   --train_ratio 0.8 \
   --random_state 42 \
-  --result_path "./result/std"
+  --result_path "./result/svd"
 ```
 
 ### Check experiment result
