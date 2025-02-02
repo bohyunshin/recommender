@@ -135,6 +135,7 @@ You can check below parameters in [this code](https://github.com/bohyunshin/reco
 | `implicit`            | whether implicit dataset type or not                                      | False    |
 | `num_neg`             | number of negative samples                                                | None     |
 | `neg_sample_strategy` | negative sampling strategy                                                | None     |
+| `device`              | device information, either cpu or cuda                                    | cuda     |
 | `batch_size`          | number of data in one batch                                               | 128      |
 | `lr`                  | learning rate controlling speed of gradient descent                       | 1e-2     |
 | `regularization`      | hyper parameter controlling balance between original loss and penalty     | 1e-4     |
@@ -203,3 +204,5 @@ Although any kinds of PRs are warmly welcomed, please refer to following rules.
   * Example command to reproduce model training result.
   * Full logs when executing model training python script.
 
+## Note
+* Although you can select which device (cpu or cuda) to use when training model, please note that code is not optimized with the cuda case, so be careful when using training with cuda.

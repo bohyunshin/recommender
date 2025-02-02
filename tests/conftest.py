@@ -11,6 +11,7 @@ def setup_config(request):
     args.dataset = dataset
     args.model = model
     args.loss = loss
+    args.device = "cpu"
     args.implicit = implicit
     args.num_neg = num_neg
     args.neg_sample_strategy = neg_sample_strategy

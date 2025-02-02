@@ -7,16 +7,10 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 
 from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS
-from recommender.libs.constant.torch.device import DEVICE
 from recommender.libs.torch_dataset.dataset import Data
 from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary
 from recommender.libs.utils.utils import mapping_dict
 from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
-
-# in case cuda, following error occurs.
-# RuntimeError: Expected a 'cpu' device type for generator but found 'cuda'
-# it seems that when setting `_base_seed`, device setting in `torch.empty()` does not work.
-torch.set_default_device(DEVICE)
 
 
 class PrepareModelDataTorch(PrepareModelDataBase):
@@ -32,6 +26,7 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         batch_size: int,
         user_meta: pd.DataFrame,
         item_meta: pd.DataFrame,
+        device: str,
         **kwargs,
     ):
         """
@@ -50,6 +45,7 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         self.batch_size = batch_size
         self.user_meta = self.get_user_meta(users=user_meta)
         self.item_meta = self.get_item_meta(items=item_meta)
+        self.device = device
 
     def get_train_validation_data(
         self, data: Dict[str, Union[pd.DataFrame, Dict[int, int]]]
@@ -204,8 +200,8 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         Returns (Tuple[DataLoader, DataLoader]):
             Train / validation torch data_loader in order.
         """
-        seed = torch.Generator(device=DEVICE)
-        logging.info(f"Torch dataloader device: {DEVICE}")
+        seed = torch.Generator(device=self.device)
+        logging.info(f"Torch dataloader device: {self.device}")
         self.train_dataset = train_dataset
         self.validation_dataset = val_dataset
         train_dataloader = DataLoader(
