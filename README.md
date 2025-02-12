@@ -153,9 +153,10 @@ You can check below parameters in [this code](https://github.com/bohyunshin/reco
 
 For more details about how to download dataset in local, please refer `scripts/download/README.md`.
 
-| Name            | Description                                               | Related link                                        |
-|-----------------|-----------------------------------------------------------|-----------------------------------------------------|
-| `movielens 1m`  | movie rating dataset with user metadata and item metadata | [url](https://grouplens.org/datasets/movielens/1m/) |
+| Name            | Description           | Related link                                         |
+|-----------------|-----------------------|------------------------------------------------------|
+| `movielens 1m`  | movie rating dataset  | [url](https://grouplens.org/datasets/movielens/1m/)  |
+| `movielens 10m` | movie rating dataset  | [url](https://grouplens.org/datasets/movielens/10m/) |
 
 
 ## Supported loss
