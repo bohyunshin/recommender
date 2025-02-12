@@ -83,8 +83,6 @@ def main(args: ArgumentParser.parse_args):
             implicit=args.implicit,
             random_state=args.random_state,
             batch_size=args.batch_size,
-            user_meta=preprocessed_data.get("users"),
-            item_meta=preprocessed_data.get("items"),
             device=args.device,
         )
         train_dataloader, validation_dataloader = (
@@ -107,8 +105,6 @@ def main(args: ArgumentParser.parse_args):
             num_items=NUM_ITEMS,  # common model parameter
             num_factors=args.num_factors,  # common model parameter
             mu=prepare_model_data.mu,  # for svd_bias model
-            user_meta=prepare_model_data.user_meta,  # for two_tower model
-            item_meta=prepare_model_data.item_meta,  # for two_tower model
             loss_name=args.loss,
         ).to(args.device)
 

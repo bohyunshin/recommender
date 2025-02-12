@@ -24,8 +24,6 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         implicit: bool,
         random_state: int,
         batch_size: int,
-        user_meta: pd.DataFrame,
-        item_meta: pd.DataFrame,
         device: str,
         **kwargs,
     ):
@@ -43,8 +41,6 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         )
         self.num_negative_samples = num_negative_samples
         self.batch_size = batch_size
-        self.user_meta = self.get_user_meta(users=user_meta)
-        self.item_meta = self.get_item_meta(items=item_meta)
         self.device = device
 
     def get_train_validation_data(
@@ -105,8 +101,6 @@ class PrepareModelDataTorch(PrepareModelDataBase):
             Input and target tensors.
         """
         ratings = data.get("ratings")
-        users = data.get("users")
-        items = data.get("items")
 
         # filter user_id whose number of reviews is lower than MIN_REVIEWS
         user2item_count = ratings["user_id"].value_counts().to_dict()
@@ -116,10 +110,6 @@ class PrepareModelDataTorch(PrepareModelDataBase):
             if item_count >= MIN_REVIEWS
         ]
         ratings = ratings[lambda x: x["user_id"].isin(user_id_min_reviews)]
-
-        # get one-hot encoded metadata
-        self.user_meta = self.get_user_meta(users)
-        self.item_meta = self.get_item_meta(items)
 
         # split train / validation
         train, val = self.split_train_validation(ratings=ratings)
@@ -219,60 +209,3 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         self.mu = train_dataset.y.mean() if self.model in ["svd", "svd_bias"] else None
 
         return train_dataloader, validation_dataloader
-
-    def get_user_meta(
-        self,
-        users: pd.DataFrame,
-    ) -> torch.Tensor:
-        """
-        Convert user meta dataframe into one-hot encoded tensor.
-
-        Args:
-            users (pd.DataFrame): Input metadata for users
-
-        Returns (torch.Tensor):
-            Converted one-hot encoded tensor.
-        """
-        user_meta_cols = ["gender", "age", "occupation"]
-        user_meta = torch.tensor([])
-        for col in user_meta_cols:
-            vals = users[col].tolist()
-            mapping = mapping_dict(vals)
-            num_classes = len(mapping)
-            vals = [mapping[val] for val in vals]
-            one_hot_vector = F.one_hot(torch.tensor(vals), num_classes=num_classes)
-            user_meta = torch.concat((user_meta, one_hot_vector), dim=1)
-        return user_meta
-
-    def get_item_meta(
-        self,
-        items: pd.DataFrame,
-    ) -> torch.Tensor:
-        """
-        Convert item meta dataframe into one-hot encoded tensor.
-
-        Args:
-            items (pd.DataFrame): Input metadata for items
-
-        Returns (torch.Tensor):
-            Converted one-hot encoded tensor.
-        """
-        genres = items["genres"].map(lambda x: x.split("|")).tolist()
-        unique_genres = set()
-        for genre in genres:  # genre: ["Animation", "Action"]
-            for g in genre:
-                unique_genres.add(g)
-        unique_genres = sorted(list(unique_genres))
-        mapping_genres = mapping_dict(unique_genres)
-        num_classes = len(mapping_genres)
-
-        movie_meta = torch.tensor([])
-        for genre in genres:
-            genre_vector_for_one_movie = torch.tensor([0] * num_classes)
-            for g in genre:
-                g_encoded = mapping_genres[g]
-                genre_vector_for_one_movie = genre_vector_for_one_movie + F.one_hot(
-                    torch.tensor([g_encoded]), num_classes=num_classes
-                )
-            movie_meta = torch.concat((movie_meta, genre_vector_for_one_movie), dim=0)
-        return movie_meta

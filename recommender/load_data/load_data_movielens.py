@@ -45,20 +45,4 @@ class LoadData(LoadDataBase):
             idxs = np.random.choice(range(ratings.shape[0]), size=5000, replace=False)
             ratings = ratings.iloc[idxs, :]
 
-        items = pd.read_csv(
-            MovieLens1mPath.items.value,
-            sep="::",
-            names=ITEMS_COLUMNS,
-            engine="python",
-            encoding="ISO-8859-1",
-        ).sort_values(by="movie_id")
-
-        users = pd.read_csv(
-            MovieLens1mPath.users.value,
-            sep="::",
-            names=USERS_COLUMNS,
-            engine="python",
-            encoding="ISO-8859-1",
-        ).sort_values(by="user_id")
-
-        return {"ratings": ratings, "users": users, "items": items}
+        return {"ratings": ratings}
