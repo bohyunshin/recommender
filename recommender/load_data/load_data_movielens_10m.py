@@ -42,7 +42,7 @@ class LoadData(LoadDataBase):
         # for quick pytest
         if kwargs["is_test"]:
             user_pools = ratings[Field.USER_ID.value].unique()
-            sampled_user_ids = np.random.choice(user_pools, size=100, replace=False)
+            sampled_user_ids = np.random.choice(user_pools, size=30, replace=False)
             ratings = ratings[lambda x: x[Field.USER_ID.value].isin(sampled_user_ids)]
 
         return {Field.INTERACTION.value: ratings}
