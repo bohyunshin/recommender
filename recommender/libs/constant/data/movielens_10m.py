@@ -1,5 +1,7 @@
 from enum import Enum
 
+from recommender.libs.constant.data.name import Field
+
 
 class MovieLens10mPath(Enum):
     """
@@ -11,6 +13,6 @@ class MovieLens10mPath(Enum):
     items = "recommender/.data/movielens/ml-10M100K/movies.dat"
 
 
-RATINGS_COLUMNS = ["user_id", "movie_id", "rating", "timestamp"]
-TAGS_COLUMNS = ["user_id", "movie_id", "tag", "timestamp"]
-ITEMS_COLUMNS = ["movie_id", "movie_name", "genres"]
+RATINGS_COLUMNS = [Field.USER_ID.value, Field.ITEM_ID.value, Field.INTERACTION.value, "timestamp"]
+TAGS_COLUMNS = [Field.USER_ID.value, Field.ITEM_ID.value, "tag", "timestamp"]
+ITEMS_COLUMNS = [Field.ITEM_ID.value, "movie_name", "genres"]
