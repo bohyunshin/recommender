@@ -3,13 +3,12 @@ from typing import Any, Dict, Tuple, Union
 
 import pandas as pd
 import torch
-import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 
 from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS
+from recommender.libs.constant.data.name import Field
 from recommender.libs.torch_dataset.dataset import Data
 from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary
-from recommender.libs.utils.utils import mapping_dict
 from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
 
 
@@ -69,16 +68,16 @@ class PrepareModelDataTorch(PrepareModelDataBase):
 
         # make torch dataset
         torch_dataset = self.get_torch_dataset(
-            X_train=train_val_tensors.get("X_train"),
-            y_train=train_val_tensors.get("y_train"),
-            X_val=train_val_tensors.get("X_val"),
-            y_val=train_val_tensors.get("y_val"),
+            X_train=train_val_tensors.get(Field.X_TRAIN.value),
+            y_train=train_val_tensors.get(Field.Y_TRAIN.value),
+            X_val=train_val_tensors.get(Field.X_VAL.value),
+            y_val=train_val_tensors.get(Field.Y_VAL.value),
         )
 
         # get train / validation data loader
         train_dataloader, validation_dataloader = self.get_torch_data_loader(
-            train_dataset=torch_dataset.get("train"),
-            val_dataset=torch_dataset.get("val"),
+            train_dataset=torch_dataset.get(Field.TRAIN.value),
+            val_dataset=torch_dataset.get(Field.VAL.value),
         )
 
         return train_dataloader, validation_dataloader
@@ -100,25 +99,25 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         Returns (Tuple[torch.Tensor, torch.Tensor]):
             Input and target tensors.
         """
-        ratings = data.get("ratings")
+        ratings = data.get(Field.INTERACTION.value)
 
         # filter user_id whose number of reviews is lower than MIN_REVIEWS
-        user2item_count = ratings["user_id"].value_counts().to_dict()
+        user2item_count = ratings[Field.USER_ID.value].value_counts().to_dict()
         user_id_min_reviews = [
             user_id
             for user_id, item_count in user2item_count.items()
             if item_count >= MIN_REVIEWS
         ]
-        ratings = ratings[lambda x: x["user_id"].isin(user_id_min_reviews)]
+        ratings = ratings[lambda x: x[Field.USER_ID.value].isin(user_id_min_reviews)]
 
         # split train / validation
         train, val = self.split_train_validation(ratings=ratings)
 
-        X_train = torch.tensor(train[["user_id", "movie_id"]].values)
-        y_train = torch.tensor(train["rating"].values, dtype=torch.float32)
+        X_train = torch.tensor(train[[Field.USER_ID.value, Field.ITEM_ID.value]].values)
+        y_train = torch.tensor(train[Field.INTERACTION.value].values, dtype=torch.float32)
 
-        X_val = torch.tensor(val[["user_id", "movie_id"]].values)
-        y_val = torch.tensor(val["rating"].values, dtype=torch.float32)
+        X_val = torch.tensor(val[[Field.USER_ID.value, Field.ITEM_ID.value]].values)
+        y_val = torch.tensor(val[Field.INTERACTION.value].values, dtype=torch.float32)
 
         self.user_item_summ_tr = convert_tensor_to_user_item_summary(
             ts=X_train,
@@ -130,10 +129,10 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         )
 
         self.X_y = {
-            "X_train": X_train,
-            "y_train": y_train,
-            "X_val": X_val,
-            "y_val": y_val,
+            Field.X_TRAIN.value: X_train,
+            Field.Y_TRAIN.value: y_train,
+            Field.X_VAL.value: X_val,
+            Field.Y_VAL.value: y_val,
         }
 
         return self.X_y
@@ -161,8 +160,8 @@ class PrepareModelDataTorch(PrepareModelDataBase):
             Torch dataset.
         """
         tensors = {
-            "train": (X_train, y_train),
-            "val": (X_val, y_val),
+            Field.TRAIN.value: (X_train, y_train),
+            Field.VAL.value: (X_val, y_val),
         }
         torch_dataset = {}
 

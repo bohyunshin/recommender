@@ -3,6 +3,8 @@ from typing import Dict, Union
 
 import pandas as pd
 
+from recommender.libs.constant.data.name import Field
+
 
 class PreoprocessorBase(ABC):
     def __init__(self, **kwargs):
@@ -42,10 +44,10 @@ class PreoprocessorBase(ABC):
         Returns (Dict[str, Union[pd.DataFrame, Dict[int, int]]]):
             Preprocessed pandas dataframe and its mapping information.
         """
-        ratings = data.get("ratings")
+        ratings = data.get(Field.INTERACTION.value)
 
-        user_ids = sorted(ratings["user_id"].unique())
-        item_ids = sorted(ratings["movie_id"].unique())
+        user_ids = sorted(ratings[Field.USER_ID.value].unique())
+        item_ids = sorted(ratings[Field.ITEM_ID.value].unique())
 
         # mapping dictionary user_id, movie_id to ascending id
         user_id2idx = {
@@ -56,13 +58,13 @@ class PreoprocessorBase(ABC):
         }
 
         # mapping ids
-        ratings["user_id"] = ratings["user_id"].map(user_id2idx)
-        ratings["movie_id"] = ratings["movie_id"].map(item_id2idx)
+        ratings[Field.USER_ID.value] = ratings[Field.USER_ID.value].map(user_id2idx)
+        ratings[Field.ITEM_ID.value] = ratings[Field.ITEM_ID.value].map(item_id2idx)
 
         return {
-            "ratings": ratings,
-            "num_users": len(user_id2idx),
-            "num_items": len(item_id2idx),
-            "user_id2idx": user_id2idx,
-            "item_id2idx": item_id2idx,
+            Field.INTERACTION.value: ratings,
+            Field.NUM_USERS.value: len(user_id2idx),
+            Field.NUM_ITEMS.value: len(item_id2idx),
+            Field.USER_ID2IDX.value: user_id2idx,
+            Field.ITEM_ID2IDX.value: item_id2idx,
         }

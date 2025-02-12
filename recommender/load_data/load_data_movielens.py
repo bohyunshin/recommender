@@ -4,11 +4,10 @@ import numpy as np
 import pandas as pd
 
 from recommender.libs.constant.data.movielens import (
-    ITEMS_COLUMNS,
     RATINGS_COLUMNS,
-    USERS_COLUMNS,
     MovieLens1mPath,
 )
+from recommender.libs.constant.data.name import Field
 from recommender.load_data.load_data_base import LoadDataBase
 
 
@@ -45,4 +44,4 @@ class LoadData(LoadDataBase):
             idxs = np.random.choice(range(ratings.shape[0]), size=5000, replace=False)
             ratings = ratings.iloc[idxs, :]
 
-        return {"ratings": ratings}
+        return {Field.INTERACTION.value: ratings}

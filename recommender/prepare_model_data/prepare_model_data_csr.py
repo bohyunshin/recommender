@@ -4,6 +4,7 @@ import pandas as pd
 import torch
 
 from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS
+from recommender.libs.constant.data.name import Field
 from recommender.libs.utils.csr import dataframe_to_csr
 from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
 
@@ -41,32 +42,32 @@ class PrepareModelDataCsr(PrepareModelDataBase):
             Tuple of train / validation dataset in csr_matrix.
         """
         shape = (self.num_users, self.num_items)
-        ratings = data.get("ratings")
+        ratings = data.get(Field.INTERACTION.value)
 
         # filter user_id whose number of reviews is lower than MIN_REVIEWS
-        user2item_count = ratings["user_id"].value_counts().to_dict()
+        user2item_count = ratings[Field.USER_ID.value].value_counts().to_dict()
         user_id_min_reviews = [
             user_id
             for user_id, item_count in user2item_count.items()
             if item_count >= MIN_REVIEWS
         ]
-        ratings = ratings[lambda x: x["user_id"].isin(user_id_min_reviews)]
+        ratings = ratings[lambda x: x[Field.USER_ID.value].isin(user_id_min_reviews)]
 
         # split train / validation
         train, val = self.split_train_validation(ratings=ratings)
 
         # for inference
-        X_train = torch.tensor(train[["user_id", "movie_id"]].values)
-        y_train = torch.tensor(train["rating"].values, dtype=torch.float32)
+        X_train = torch.tensor(train[[Field.USER_ID.value, Field.ITEM_ID.value]].values)
+        y_train = torch.tensor(train[Field.INTERACTION.value].values, dtype=torch.float32)
 
-        X_val = torch.tensor(val[["user_id", "movie_id"]].values)
-        y_val = torch.tensor(val["rating"].values, dtype=torch.float32)
+        X_val = torch.tensor(val[[Field.USER_ID.value, Field.ITEM_ID.value]].values)
+        y_val = torch.tensor(val[Field.INTERACTION.value].values, dtype=torch.float32)
 
         self.X_y = {
-            "X_train": X_train,
-            "y_train": y_train,
-            "X_val": X_val,
-            "y_val": y_val,
+            Field.X_TRAIN.value: X_train,
+            Field.Y_TRAIN.value: y_train,
+            Field.X_VAL.value: X_val,
+            Field.Y_VAL.value: y_val,
         }
 
         csr_train = dataframe_to_csr(

@@ -2,6 +2,8 @@ from typing import Dict, List
 
 import torch
 
+from recommender.libs.constant.model.name import ModelForwardArgument
+
 
 class NegativeSampling(object):
     def __init__(
@@ -164,10 +166,10 @@ class NegativeSampling(object):
                 pos_item_ids.append(pos_item_id)
                 neg_item_ids.append(neg_item_id)
             return {
-                "user_idx": torch.tensor(user_ids).to(self.device),
-                "pos_item_idx": torch.tensor(pos_item_ids).to(self.device),
-                "neg_item_idx": torch.tensor(neg_item_ids).to(self.device),
-                "y": torch.zeros(size=(len(user_ids),)).to(
+                ModelForwardArgument.USER_IDX.value: torch.tensor(user_ids).to(self.device),
+                ModelForwardArgument.POS_ITEM_IDX.value: torch.tensor(pos_item_ids).to(self.device),
+                ModelForwardArgument.NEG_ITEM_IDX.value: torch.tensor(neg_item_ids).to(self.device),
+                ModelForwardArgument.Y.value: torch.zeros(size=(len(user_ids),)).to(
                     self.device
                 ),  # dummy y value
             }
@@ -185,7 +187,7 @@ class NegativeSampling(object):
                 item_ids.append(neg_item_id)
                 y.append(0.0)
             return {
-                "user_idx": torch.tensor(user_ids).to(self.device),
-                "item_idx": torch.tensor(item_ids).to(self.device),
-                "y": torch.tensor(y).to(self.device),
+                ModelForwardArgument.USER_IDX.value: torch.tensor(user_ids).to(self.device),
+                ModelForwardArgument.ITEM_IDX.value: torch.tensor(item_ids).to(self.device),
+                ModelForwardArgument.Y.value: torch.tensor(y).to(self.device),
             }

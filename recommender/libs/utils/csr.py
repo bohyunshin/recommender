@@ -5,6 +5,8 @@ import pandas as pd
 from numpy.typing import NDArray
 from scipy.sparse import csr_matrix
 
+from recommender.libs.constant.data.name import Field
+
 
 def dataframe_to_csr(
     df: pd.DataFrame, shape: Tuple[int, int], implicit: bool
@@ -25,15 +27,15 @@ def dataframe_to_csr(
     Returns (csr_matrix):
         Converted csr matrix.
     """
-    assert "user_id" in df.columns
-    assert "movie_id" in df.columns
-    assert "rating" in df.columns
+    assert Field.USER_ID.value in df.columns
+    assert Field.ITEM_ID.value in df.columns
+    assert Field.INTERACTION.value in df.columns
 
     user2item2value = defaultdict(dict)
 
     user_ids = range(shape[0])
 
-    for user, item, interaction in zip(df["user_id"], df["movie_id"], df["rating"]):
+    for user, item, interaction in zip(df[Field.USER_ID.value], df[Field.ITEM_ID.value], df[Field.INTERACTION.value]):
         if user2item2value[user].get(item, 0) == 0:
             user2item2value[user][item] = interaction
         else:
