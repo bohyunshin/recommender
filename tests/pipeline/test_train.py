@@ -11,9 +11,22 @@ from recommender.train import main
         ("movielens", "svd", "bce", True, 2, ["in_batch", "random_from_total_pool"]),
         ("movielens", "svd", "bpr", True, 2, ["in_batch", "random_from_total_pool"]),
         ("movielens_10m", "svd", "mse", False, None, []),
-        ("movielens_10m", "svd", "bce", True, 2, ["in_batch", "random_from_total_pool"]),
-        ("movielens_10m", "svd", "bpr", True, 2, ["in_batch", "random_from_total_pool"]),
-
+        (
+            "movielens_10m",
+            "svd",
+            "bce",
+            True,
+            2,
+            ["in_batch", "random_from_total_pool"],
+        ),
+        (
+            "movielens_10m",
+            "svd",
+            "bpr",
+            True,
+            2,
+            ["in_batch", "random_from_total_pool"],
+        ),
         # svd_bias
         ("movielens", "svd_bias", "mse", False, None, []),
         (
@@ -49,19 +62,44 @@ from recommender.train import main
             2,
             ["in_batch", "random_from_total_pool"],
         ),
-
         # gmf
         ("movielens", "gmf", "bce", True, 2, ["in_batch", "random_from_total_pool"]),
         ("movielens", "gmf", "bpr", True, 2, ["in_batch", "random_from_total_pool"]),
-        ("movielens_10m", "gmf", "bce", True, 2, ["in_batch", "random_from_total_pool"]),
-        ("movielens_10m", "gmf", "bpr", True, 2, ["in_batch", "random_from_total_pool"]),
-
+        (
+            "movielens_10m",
+            "gmf",
+            "bce",
+            True,
+            2,
+            ["in_batch", "random_from_total_pool"],
+        ),
+        (
+            "movielens_10m",
+            "gmf",
+            "bpr",
+            True,
+            2,
+            ["in_batch", "random_from_total_pool"],
+        ),
         # mlp
         ("movielens", "mlp", "bce", True, 2, ["in_batch", "random_from_total_pool"]),
         ("movielens", "mlp", "bpr", True, 2, ["in_batch", "random_from_total_pool"]),
-        ("movielens_10m", "mlp", "bce", True, 2, ["in_batch", "random_from_total_pool"]),
-        ("movielens_10m", "mlp", "bpr", True, 2, ["in_batch", "random_from_total_pool"]),
-
+        (
+            "movielens_10m",
+            "mlp",
+            "bce",
+            True,
+            2,
+            ["in_batch", "random_from_total_pool"],
+        ),
+        (
+            "movielens_10m",
+            "mlp",
+            "bpr",
+            True,
+            2,
+            ["in_batch", "random_from_total_pool"],
+        ),
         # two_tower
         (
             "movielens",

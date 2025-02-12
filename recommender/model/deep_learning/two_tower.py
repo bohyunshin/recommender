@@ -72,9 +72,7 @@ class Model(TorchModelBase):
         x = (user * item).sum(dim=1)
         return x
 
-    def create_sequential_layer(
-        self, input_dim, last_dim=4
-    ) -> nn.Sequential:
+    def create_sequential_layer(self, input_dim, last_dim=4) -> nn.Sequential:
         """
         Creates sequential layers for each of user and item layers.
 
@@ -86,7 +84,9 @@ class Model(TorchModelBase):
             Sequential neural network layers used in two-tower architecture.
         """
         if input_dim <= last_dim:
-            raise ValueError(f"input dimension {input_dim} should be larger than last layer dimension {last_dim}")
+            raise ValueError(
+                f"input dimension {input_dim} should be larger than last layer dimension {last_dim}"
+            )
         layers = []
         while True:
             if input_dim // 2 < last_dim:

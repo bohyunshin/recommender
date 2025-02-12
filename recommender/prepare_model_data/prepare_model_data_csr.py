@@ -58,7 +58,9 @@ class PrepareModelDataCsr(PrepareModelDataBase):
 
         # for inference
         X_train = torch.tensor(train[[Field.USER_ID.value, Field.ITEM_ID.value]].values)
-        y_train = torch.tensor(train[Field.INTERACTION.value].values, dtype=torch.float32)
+        y_train = torch.tensor(
+            train[Field.INTERACTION.value].values, dtype=torch.float32
+        )
 
         X_val = torch.tensor(val[[Field.USER_ID.value, Field.ITEM_ID.value]].values)
         y_val = torch.tensor(val[Field.INTERACTION.value].values, dtype=torch.float32)

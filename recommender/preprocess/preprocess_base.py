@@ -50,12 +50,8 @@ class PreoprocessorBase(ABC):
         item_ids = sorted(ratings[Field.ITEM_ID.value].unique())
 
         # mapping dictionary user_id, movie_id to ascending id
-        user_id2idx = {
-            id_: idx for (idx, id_) in enumerate(user_ids)
-        }
-        item_id2idx = {
-            id_: idx for (idx, id_) in enumerate(item_ids)
-        }
+        user_id2idx = {id_: idx for (idx, id_) in enumerate(user_ids)}
+        item_id2idx = {id_: idx for (idx, id_) in enumerate(item_ids)}
 
         # mapping ids
         ratings[Field.USER_ID.value] = ratings[Field.USER_ID.value].map(user_id2idx)

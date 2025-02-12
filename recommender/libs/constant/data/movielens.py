@@ -14,6 +14,11 @@ class MovieLens1mPath(Enum):
 
 
 # field commonly used across dataset is renamed with enum
-RATINGS_COLUMNS = [Field.USER_ID.value, Field.ITEM_ID.value, Field.INTERACTION.value, "timestamp"]
+RATINGS_COLUMNS = [
+    Field.USER_ID.value,
+    Field.ITEM_ID.value,
+    Field.INTERACTION.value,
+    "timestamp",
+]
 USERS_COLUMNS = [Field.USER_ID.value, "gender", "age", "occupation", "zip_code"]
 ITEMS_COLUMNS = [Field.ITEM_ID.value, "movie_name", "genres"]

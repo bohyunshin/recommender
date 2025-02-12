@@ -35,7 +35,9 @@ def dataframe_to_csr(
 
     user_ids = range(shape[0])
 
-    for user, item, interaction in zip(df[Field.USER_ID.value], df[Field.ITEM_ID.value], df[Field.INTERACTION.value]):
+    for user, item, interaction in zip(
+        df[Field.USER_ID.value], df[Field.ITEM_ID.value], df[Field.INTERACTION.value]
+    ):
         if user2item2value[user].get(item, 0) == 0:
             user2item2value[user][item] = interaction
         else:

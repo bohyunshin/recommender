@@ -166,9 +166,15 @@ class NegativeSampling(object):
                 pos_item_ids.append(pos_item_id)
                 neg_item_ids.append(neg_item_id)
             return {
-                ModelForwardArgument.USER_IDX.value: torch.tensor(user_ids).to(self.device),
-                ModelForwardArgument.POS_ITEM_IDX.value: torch.tensor(pos_item_ids).to(self.device),
-                ModelForwardArgument.NEG_ITEM_IDX.value: torch.tensor(neg_item_ids).to(self.device),
+                ModelForwardArgument.USER_IDX.value: torch.tensor(user_ids).to(
+                    self.device
+                ),
+                ModelForwardArgument.POS_ITEM_IDX.value: torch.tensor(pos_item_ids).to(
+                    self.device
+                ),
+                ModelForwardArgument.NEG_ITEM_IDX.value: torch.tensor(neg_item_ids).to(
+                    self.device
+                ),
                 ModelForwardArgument.Y.value: torch.zeros(size=(len(user_ids),)).to(
                     self.device
                 ),  # dummy y value
@@ -187,7 +193,11 @@ class NegativeSampling(object):
                 item_ids.append(neg_item_id)
                 y.append(0.0)
             return {
-                ModelForwardArgument.USER_IDX.value: torch.tensor(user_ids).to(self.device),
-                ModelForwardArgument.ITEM_IDX.value: torch.tensor(item_ids).to(self.device),
+                ModelForwardArgument.USER_IDX.value: torch.tensor(user_ids).to(
+                    self.device
+                ),
+                ModelForwardArgument.ITEM_IDX.value: torch.tensor(item_ids).to(
+                    self.device
+                ),
                 ModelForwardArgument.Y.value: torch.tensor(y).to(self.device),
             }

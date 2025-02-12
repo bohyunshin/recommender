@@ -13,6 +13,11 @@ class MovieLens10mPath(Enum):
     items = "recommender/.data/movielens/ml-10M100K/movies.dat"
 
 
-RATINGS_COLUMNS = [Field.USER_ID.value, Field.ITEM_ID.value, Field.INTERACTION.value, "timestamp"]
+RATINGS_COLUMNS = [
+    Field.USER_ID.value,
+    Field.ITEM_ID.value,
+    Field.INTERACTION.value,
+    "timestamp",
+]
 TAGS_COLUMNS = [Field.USER_ID.value, Field.ITEM_ID.value, "tag", "timestamp"]
 ITEMS_COLUMNS = [Field.ITEM_ID.value, "movie_name", "genres"]
