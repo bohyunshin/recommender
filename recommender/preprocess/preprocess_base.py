@@ -3,6 +3,8 @@ from typing import Dict, Union
 
 import pandas as pd
 
+from recommender.libs.constant.data.name import Field
+
 
 class PreoprocessorBase(ABC):
     def __init__(self, **kwargs):
@@ -42,47 +44,23 @@ class PreoprocessorBase(ABC):
         Returns (Dict[str, Union[pd.DataFrame, Dict[int, int]]]):
             Preprocessed pandas dataframe and its mapping information.
         """
-        ratings = data.get("ratings")
-        users = data.get("users")
-        items = data.get("items")
+        ratings = data.get(Field.INTERACTION.value)
 
-        user_ids = list(
-            set(ratings["user_id"].tolist()) & set(users["user_id"].tolist())
-        )
-        item_ids = list(
-            set(ratings["movie_id"].tolist()) & set(items["movie_id"].tolist())
-        )
-
-        ratings = ratings[
-            lambda x: (x["user_id"].isin(user_ids)) & (x["movie_id"].isin(item_ids))
-        ]
-        users = users[lambda x: x["user_id"].isin(user_ids)]
-        items = items[lambda x: x["movie_id"].isin(item_ids)]
+        user_ids = sorted(ratings[Field.USER_ID.value].unique())
+        item_ids = sorted(ratings[Field.ITEM_ID.value].unique())
 
         # mapping dictionary user_id, movie_id to ascending id
-        user_id2idx = {
-            id_: idx for (idx, id_) in enumerate(sorted(users["user_id"].unique()))
-        }
-        item_id2idx = {
-            id_: idx for (idx, id_) in enumerate(sorted(items["movie_id"].unique()))
-        }
-
-        # id in users and movies should be same ascending order with mapping dictionary
-        assert users["user_id"].tolist() == sorted(list(user_id2idx.keys()))
-        assert items["movie_id"].tolist() == sorted(list(item_id2idx.keys()))
+        user_id2idx = {id_: idx for (idx, id_) in enumerate(user_ids)}
+        item_id2idx = {id_: idx for (idx, id_) in enumerate(item_ids)}
 
         # mapping ids
-        ratings["user_id"] = ratings["user_id"].map(user_id2idx)
-        ratings["movie_id"] = ratings["movie_id"].map(item_id2idx)
-        users["user_id"] = users["user_id"].map(user_id2idx)
-        items["movie_id"] = items["movie_id"].map(item_id2idx)
+        ratings[Field.USER_ID.value] = ratings[Field.USER_ID.value].map(user_id2idx)
+        ratings[Field.ITEM_ID.value] = ratings[Field.ITEM_ID.value].map(item_id2idx)
 
         return {
-            "ratings": ratings,
-            "users": users,
-            "items": items,
-            "num_users": len(user_id2idx),
-            "num_items": len(item_id2idx),
-            "user_id2idx": user_id2idx,
-            "item_id2idx": item_id2idx,
+            Field.INTERACTION.value: ratings,
+            Field.NUM_USERS.value: len(user_id2idx),
+            Field.NUM_ITEMS.value: len(item_id2idx),
+            Field.USER_ID2IDX.value: user_id2idx,
+            Field.ITEM_ID2IDX.value: item_id2idx,
         }
