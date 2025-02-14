@@ -21,7 +21,7 @@ from recommender.libs.sampling.negative_sampling import NegativeSampling
 from recommender.libs.utils.logger import setup_logger
 from recommender.libs.utils.parse_args import parse_args
 from recommender.libs.validate.config import validate_config
-from recommender.prepare_model_data.prepare_model_data_torch import (
+from recommender.prepare_model_data.torch import (
     PrepareModelDataTorch,
 )
 
@@ -63,13 +63,13 @@ def main(args: ArgumentParser.parse_args):
 
         # load raw data
         load_data_module = importlib.import_module(
-            f"recommender.load_data.load_data_{args.dataset}"
+            f"recommender.load_data.{args.dataset}"
         ).LoadData
         data = load_data_module().load(is_test=args.is_test)
 
         # preprocess data
         preprocess_module = importlib.import_module(
-            f"recommender.preprocess.preprocess_{args.dataset}"
+            f"recommender.preprocess.{args.dataset}"
         ).Preprocessor
         preprocessed_data = preprocess_module().preprocess(data)
         NUM_USERS = preprocessed_data.get(Field.NUM_USERS.value)

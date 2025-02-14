@@ -3,12 +3,12 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 
-from recommender.libs.constant.data.movielens_10m import (
+from recommender.libs.constant.data.movielens_1m import (
     RATINGS_COLUMNS,
-    MovieLens10mPath,
+    MovieLens1mPath,
 )
 from recommender.libs.constant.data.name import Field
-from recommender.load_data.load_data_base import LoadDataBase
+from recommender.load_data.base import LoadDataBase
 
 
 class LoadData(LoadDataBase):
@@ -32,7 +32,7 @@ class LoadData(LoadDataBase):
         """
         # load rating and meta data
         ratings = pd.read_csv(
-            MovieLens10mPath.ratings.value,
+            MovieLens1mPath.ratings.value,
             sep="::",
             names=RATINGS_COLUMNS,
             engine="python",

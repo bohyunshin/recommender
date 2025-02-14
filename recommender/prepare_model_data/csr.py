@@ -6,7 +6,7 @@ import torch
 from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_REVIEWS
 from recommender.libs.constant.data.name import Field
 from recommender.libs.utils.csr import dataframe_to_csr
-from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
+from recommender.prepare_model_data.base import PrepareModelDataBase
 
 
 class PrepareModelDataCsr(PrepareModelDataBase):

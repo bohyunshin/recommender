@@ -2,7 +2,7 @@ from typing import Dict, Union
 
 import pandas as pd
 
-from recommender.preprocess.preprocess_base import PreoprocessorBase
+from recommender.preprocess.base import PreoprocessorBase
 
 
 class Preprocessor(PreoprocessorBase):
