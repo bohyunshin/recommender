@@ -6,7 +6,7 @@ import pandas as pd
 from recommender.libs.constant.data.name import Field
 
 
-class PreoprocessorBase(ABC):
+class PreprocessorBase(ABC):
     def __init__(self, **kwargs):
         """
         Abstract base class for all preprocessors.

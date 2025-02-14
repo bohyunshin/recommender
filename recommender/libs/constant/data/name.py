@@ -4,6 +4,7 @@ from enum import Enum
 class DatasetName(Enum):
     MOVIELENS_1M = "movielens_1m"
     MOVIELENS_10M = "movielens_10m"
+    PINTEREST = "pinterest"
 
 
 class Field(Enum):
@@ -25,4 +26,5 @@ class Field(Enum):
 INTEGRATED_DATASET = [
     DatasetName.MOVIELENS_1M.value,
     DatasetName.MOVIELENS_10M.value,
+    DatasetName.PINTEREST.value,
 ]

@@ -2,10 +2,10 @@ from typing import Dict, Union
 
 import pandas as pd
 
-from recommender.preprocess.base import PreoprocessorBase
+from recommender.preprocess.base import PreprocessorBase
 
 
-class Preprocessor(PreoprocessorBase):
+class Preprocessor(PreprocessorBase):
     def __init__(self):
         super().__init__()
 

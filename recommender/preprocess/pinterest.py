@@ -13,7 +13,7 @@ class Preprocessor(PreprocessorBase):
         self, data: Dict[str, pd.DataFrame]
     ) -> Dict[str, Union[pd.DataFrame, Dict[int, int]]]:
         """
-        When preprocessing movielens dataset, only mapping logic is included.
+        When preprocessing pinterest dataset, only mapping logic is included.
 
         Args:
             data (Dict[str, pd.DataFrame]): Return value from
