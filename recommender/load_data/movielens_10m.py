@@ -40,7 +40,7 @@ class LoadData(LoadDataBase):
         )
 
         # for quick pytest
-        if kwargs["is_test"]:
+        if kwargs.get("is_test") is True:
             user_pools = ratings[Field.USER_ID.value].unique()
             sampled_user_ids = np.random.choice(user_pools, size=30, replace=False)
             ratings = ratings[lambda x: x[Field.USER_ID.value].isin(sampled_user_ids)]

@@ -41,7 +41,7 @@ class LoadData(LoadDataBase):
         interactions.columns = INTERACTIONS_COLUMNS
 
         # for quick pytest
-        if kwargs["is_test"]:
+        if kwargs.get("is_test") is True:
             user_pools = interactions[Field.USER_ID.value].unique()
             sampled_user_ids = np.random.choice(user_pools, size=30, replace=False)
             interactions = interactions[lambda x: x[Field.USER_ID.value].isin(sampled_user_ids)]
