@@ -8,8 +8,9 @@ URL = f"https://drive.google.com/uc?id={GOOGLE_FILE_ID}"
 OUTPUT_FILE_NAME = "pinterest.zip"
 
 OUTPUT_DIR = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "../../recommender/.data/pinterest"
+    os.path.dirname(os.path.abspath(__file__)), "../../recommender/.data/pinterest"
 )
+
 
 def download():
     gdown.download(URL, output=OUTPUT_FILE_NAME, quiet=False)

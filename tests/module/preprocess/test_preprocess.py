@@ -11,7 +11,7 @@ from recommender.libs.constant.data.name import Field
         "movielens_1m",
         "movielens_10m",
         "pinterest",
-    ]
+    ],
 )
 def test_preprocess(dataset):
     df = pd.DataFrame(

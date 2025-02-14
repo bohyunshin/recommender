@@ -8,7 +8,8 @@ from recommender.libs.constant.data.name import Field
 
 os.chdir(
     os.path.join(
-        os.path.dirname(__file__), "../../.." # set to repository root path
+        os.path.dirname(__file__),
+        "../../..",  # set to repository root path
     )
 )
 
@@ -20,7 +21,7 @@ os.chdir(
         "movielens_10m",
         "pinterest",
     ],
-    indirect=False
+    indirect=False,
 )
 def test_load(dataset):
     load_data_module = importlib.import_module(

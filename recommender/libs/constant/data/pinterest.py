@@ -4,7 +4,9 @@ from recommender.libs.constant.data.name import Field
 
 
 class PinterestPath(Enum):
-    INTERACTIONS = "recommender/.data/pinterest/pinterest_iccv/subset_iccv_board_pins.bson"
+    INTERACTIONS = (
+        "recommender/.data/pinterest/pinterest_iccv/subset_iccv_board_pins.bson"
+    )
     BOARDS = "recommender/.data/pinterest/pinterest_iccv/subset_iccv_board_cate.bson"
     PINS = "recommender/.data/pinterest/pinterest_iccv/subset_iccv_pin_im.bson"
 
