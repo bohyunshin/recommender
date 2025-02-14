@@ -18,12 +18,25 @@ class LoadData(LoadDataBase):
         super().__init__()
 
     def load(self, **kwargs):
+        """
+        Loads pinterest data.
+        After downloading pinterest data using script in scripts/download/pinterest.py,
+        convert data into pandas dataframe.
+        Original data format is `bson`, which is binary json format. We convert this dataset into
+        pandas dataframe for better compatability with current pipeline.
+
+        Returns (Dict[str, pd.DataFrame]):
+            Basically, abstractmethod `load` is designed to return one type of dataframes.
+            Interaction dataset is target dataset to be loaded.
+            When rating values exist in float type, interaction will be explicit dataset.
+            When rating values does not exist, interaction will be implicit dataset.
+        """
         board_pin_info = read_bson_file(PinterestPath.INTERACTIONS.value)
         interactions = []
         for board in board_pin_info:
             board_id = board.get(PinterestField.BOARD_ID.value)
             for pin_id in board.get(PinterestField.PINS.value):
-                interactions.append((board_id, pin_id, 1.0))
+                interactions.append((board_id, pin_id, 1.0)) # pinterest is implicit data
         interactions = pd.DataFrame(interactions)
         interactions.columns = INTERACTIONS_COLUMNS
 
