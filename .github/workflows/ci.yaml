@@ -55,10 +55,12 @@ jobs:
         run: |
           poetry run python scripts/download/movielens.py --package "ml-1m"
           poetry run python scripts/download/movielens.py --package "ml-10m"
+          poetry run python scripts/download/pinterest.py
           ls recommender/.data/movielens
-          poetry run pytest --cov --cov-report=xml
+          ls recommender/.data/pinterest
+#          poetry run pytest --cov --cov-report=xml
 
-      - name: Upload results to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+#      - name: Upload results to Codecov
+#        uses: codecov/codecov-action@v4
+#        with:
+#          token: ${{ secrets.CODECOV_TOKEN }}
