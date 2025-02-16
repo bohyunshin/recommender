@@ -51,11 +51,13 @@ jobs:
       - name: Install the project dependencies
         run: poetry install
 
-      - name: Download ml-1m dataset and run tests
+      - name: Download integrated dataset and run tests
         run: |
           poetry run python scripts/download/movielens.py --package "ml-1m"
           poetry run python scripts/download/movielens.py --package "ml-10m"
+          poetry run python scripts/download/pinterest.py
           ls recommender/.data/movielens
+          ls recommender/.data/pinterest
           poetry run pytest --cov --cov-report=xml
 
       - name: Upload results to Codecov

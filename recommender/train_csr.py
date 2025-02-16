@@ -15,7 +15,7 @@ from recommender.libs.constant.data.name import Field
 from recommender.libs.plot.plot import plot_metric_at_k
 from recommender.libs.utils.logger import setup_logger
 from recommender.libs.utils.parse_args import parse_args
-from recommender.prepare_model_data.prepare_model_data_csr import PrepareModelDataCsr
+from recommender.prepare_model_data.csr import PrepareModelDataCsr
 
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
@@ -49,13 +49,13 @@ def main(args: ArgumentParser.parse_args):
 
         # load raw data
         load_data_module = importlib.import_module(
-            f"recommender.load_data.load_data_{args.dataset}"
+            f"recommender.load_data.{args.dataset}"
         ).LoadData
         data = load_data_module().load(is_test=args.is_test)
 
         # preprocess data
         preprocess_module = importlib.import_module(
-            f"recommender.preprocess.preprocess_{args.dataset}"
+            f"recommender.preprocess.{args.dataset}"
         ).Preprocessor
         preprocessed_data = preprocess_module().preprocess(data)
         NUM_USERS = preprocessed_data.get(Field.NUM_USERS.value)

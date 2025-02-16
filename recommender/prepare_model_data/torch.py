@@ -9,7 +9,7 @@ from recommender.libs.constant.prepare_model_data.prepare_model_data import MIN_
 from recommender.libs.constant.data.name import Field
 from recommender.libs.torch_dataset.dataset import Data
 from recommender.libs.utils.user_item_count import convert_tensor_to_user_item_summary
-from recommender.prepare_model_data.prepare_model_data_base import PrepareModelDataBase
+from recommender.prepare_model_data.base import PrepareModelDataBase
 
 
 class PrepareModelDataTorch(PrepareModelDataBase):

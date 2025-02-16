@@ -2,10 +2,10 @@ from typing import Dict, Union
 
 import pandas as pd
 
-from recommender.preprocess.preprocess_base import PreoprocessorBase
+from recommender.preprocess.base import PreprocessorBase
 
 
-class Preprocessor(PreoprocessorBase):
+class Preprocessor(PreprocessorBase):
     def __init__(self):
         super().__init__()
 
@@ -13,7 +13,7 @@ class Preprocessor(PreoprocessorBase):
         self, data: Dict[str, pd.DataFrame]
     ) -> Dict[str, Union[pd.DataFrame, Dict[int, int]]]:
         """
-        When preprocessing movielens dataset, only mapping logic is included.
+        When preprocessing pinterest dataset, only mapping logic is included.
 
         Args:
             data (Dict[str, pd.DataFrame]): Return value from

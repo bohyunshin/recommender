@@ -12,7 +12,7 @@ def validate_config(args: ArgumentParser.parse_args):
     if args.loss == LossName.MSE.value:
         # rating data only exists in movielens
         assert args.dataset in [
-            DatasetName.MOVIELENS.value,
+            DatasetName.MOVIELENS_1M.value,
             DatasetName.MOVIELENS_10M.value,
         ]
         # mse loss function is possible in only svd based models
