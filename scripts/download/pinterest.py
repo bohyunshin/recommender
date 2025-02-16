@@ -1,22 +1,34 @@
+import requests
 import os
-
-import gdown
 from zipfile import ZipFile
 
-GOOGLE_FILE_ID = "0B0l8Lmmrs5A_REZXanM3dTN4Y28"
-URL = f"https://drive.google.com/uc?id={GOOGLE_FILE_ID}"
-OUTPUT_FILE_NAME = "pinterest.zip"
 
+OUTPUT_PATH = "pinterest.zip"
 OUTPUT_DIR = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "../../recommender/.data/pinterest"
 )
+URL = "https://github.com/bohyunshin/recommender-dataset/raw/refs/heads/main/pinterest/pinterest_iccv.zip"
 
 
 def download():
-    gdown.download(URL, output=OUTPUT_FILE_NAME, quiet=False)
-    with ZipFile(OUTPUT_FILE_NAME, "r") as zipf:
+    """
+    Download a Git LFS file directly from its URL
+    """
+    response = requests.get(URL, stream=True)
+    response.raise_for_status()
+
+    with open(OUTPUT_PATH, "wb") as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            f.write(chunk)
+
+    print(f"File downloaded successfully to: {OUTPUT_PATH}")
+
+    with ZipFile(OUTPUT_PATH, "r") as zipf:
         zipf.extractall(OUTPUT_DIR)
-    os.remove(OUTPUT_FILE_NAME)
+
+    print(f"File unzipped successfully to: {OUTPUT_DIR}")
+
+    os.remove(OUTPUT_PATH)
 
 
 if __name__ == "__main__":
