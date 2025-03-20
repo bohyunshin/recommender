@@ -35,5 +35,5 @@ repos:
       description: Checks for common misspellings in text files.
       language: python
       types: [text]
-      exclude: "poetry.lock"
+      exclude: "(poetry.lock|README.md)"
       args: ['--ignore-words-list=nin']
