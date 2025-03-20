@@ -5,30 +5,54 @@ This repository aims for implementing various machine learning algorithms in rec
 
 ## Setting up environment
 
-Ensure that latest `poetry` version is installed.
+We use [poetry](https://github.com/python-poetry/poetry) to manage dependencies of repository.
+
+Use poetry with version `2.1.1`.
 
 ```shell
 $ poetry --version
-Poetry (version 1.8.5)
+Poetry (version 2.1.1)
 ```
 
-Python version higher than 3.11 is required.
+Python version should be `3.11.x`.
 
 ```shell
-$ python3 --version
+$ python --version
 Python 3.11.11
 ```
 
-Make virtual environment using poetry.
+If python version is lower than `3.11`, try installing required version using `pyenv`.
+
+Create virtual environment.
 
 ```shell
-$ poetry shell
+$ poetry env activate
 ```
 
-Install required packages from `poetry.lock`.
+If your global python version is not 3.11, run following command.
+
+```shell
+$ poetry env use python3.11
+```
+
+You can check virtual environment path info and its executable python path using following command.
+
+```shell
+$ poetry env info
+```
+
+After setting up python version, just run following command which will install all the required packages from `poetry.lock`.
 
 ```shell
 $ poetry install
+```
+
+## Setting up git hook
+
+Set up automatic linting using the following commands:
+```shell
+# This command will ensure linting runs automatically every time you commit code.
+pre-commit install
 ```
 
 ## Quick start
@@ -123,7 +147,7 @@ flowchart LR
 | `TWO-TOWER`      | `pytorch dataset` | `recommender/model/deep_learning/two_tower.py` | `MSE`, `BCE`, `BPR`     |
 
 Refer to following parameter description when running `recommender/train.py` or `recommender/train_csr.py`.
-You can check below parameters in [this code](https://github.com/bohyunshin/recommender/blob/master/recommender/libs/utils/parse_args.py). 
+You can check below parameters in [this code](https://github.com/bohyunshin/recommender/blob/master/recommender/libs/utils/parse_args.py).
 
 <details><summary>Parameter explanations</summary>
 
