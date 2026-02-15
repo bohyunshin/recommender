@@ -1,5 +1,6 @@
 import pytest
 
+from recommender.pipeline.base import BaseTrainPipeline
 from recommender.train_csr import main
 
 
@@ -15,5 +16,7 @@ from recommender.train_csr import main
     ],
     indirect=["setup_config"],
 )
-def test_train_csr(setup_config):
+def test_train_csr(setup_config, mock_data_factory, monkeypatch):
+    mock_data = mock_data_factory(implicit=setup_config.implicit)
+    monkeypatch.setattr(BaseTrainPipeline, "_load_data", lambda self, args: mock_data)
     main(setup_config)
