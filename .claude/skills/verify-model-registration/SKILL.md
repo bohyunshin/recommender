@@ -14,7 +14,7 @@ Ensures new models are fully integrated into the training pipeline:
 1. **ModelName enum** — Model must be added to `ModelName` enum in `recommender/libs/constant/model/name.py`
 2. **IMPLEMENTED_MODELS list** — Model must be included in `IMPLEMENTED_MODELS` list
 3. **MODEL_PATH mapping** — Model must have an entry in `MODEL_PATH` dict in `recommender/libs/constant/model/module_path.py`
-4. **Train script routing** — Torch-based models must work via `recommender/train.py`, CSR-based models via `recommender/train_csr.py`
+4. **Pipeline routing** — Torch-based models must work via `recommender/pipeline/torch.py`, CSR-based models via `recommender/pipeline/csr.py`
 5. **Abstract method implementation** — Model class must implement the `predict` abstract method from `RecommenderBase`
 
 ## When to Run
@@ -34,8 +34,11 @@ Ensures new models are fully integrated into the training pipeline:
 | `recommender/model/recommender_base.py` | `RecommenderBase` ABC with abstract method `predict` |
 | `recommender/model/torch_model_base.py` | Base class for torch-based models |
 | `recommender/model/fit_model_base.py` | Base class for CSR/fit-based models |
-| `recommender/train.py` | Entry point for torch-based model training |
-| `recommender/train_csr.py` | Entry point for CSR-based model training (ALS, user_based) |
+| `recommender/train.py` | Entry point for torch-based model training (thin wrapper) |
+| `recommender/train_csr.py` | Entry point for CSR-based model training (thin wrapper) |
+| `recommender/pipeline/base.py` | Base pipeline class — shared data loading, preprocessing, artifact saving |
+| `recommender/pipeline/torch.py` | Torch pipeline — dynamic model import and instantiation for torch models |
+| `recommender/pipeline/csr.py` | CSR pipeline — dynamic model import and instantiation for CSR models |
 | `recommender/model/mf/svd.py` | SVD model implementation |
 | `recommender/model/mf/svd_bias.py` | SVD with bias model implementation |
 | `recommender/model/mf/als.py` | ALS model implementation |
@@ -136,7 +139,7 @@ grep -n "def predict" recommender/model/neighborhood/user_based.py
 
 **Tool:** Grep
 
-Each model module must export a class named `Model` (used by `train.py` and `train_csr.py` via `importlib`):
+Each model module must export a class named `Model` (used by `pipeline/torch.py` and `pipeline/csr.py` via `importlib`):
 
 ```bash
 grep -n "^class Model" recommender/model/mf/svd.py
@@ -169,5 +172,5 @@ grep -n "^class Model" recommender/model/neighborhood/user_based.py
 ## Exceptions
 
 1. **Intermediate base classes** — `recommender_base.py`, `torch_model_base.py`, `fit_model_base.py` are abstract and do not need to be in `ModelName` or `MODEL_PATH`
-2. **CSR-based models** — ALS and user_based use `train_csr.py` instead of `train.py`; they still need `MODEL_PATH` entries but follow a different training flow
+2. **CSR-based models** — ALS and user_based use `CsrTrainPipeline` instead of `TorchTrainPipeline`; they still need `MODEL_PATH` entries but follow a different training flow
 3. **Shared model patterns** — Multiple model variants may share a base class but each variant must have its own `ModelName` entry if it can be selected independently

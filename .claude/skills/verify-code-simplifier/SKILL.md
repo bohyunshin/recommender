@@ -31,8 +31,11 @@ Detects code patterns that could be simplified for readability and maintainabili
 
 | File | Purpose |
 |------|---------|
-| `recommender/train.py` | Training entry point — contains redundant boolean comparisons and ternary verbosity |
-| `recommender/train_csr.py` | CSR training entry point — contains redundant boolean comparisons |
+| `recommender/train.py` | Torch training entry point (thin wrapper) |
+| `recommender/train_csr.py` | CSR training entry point (thin wrapper) |
+| `recommender/pipeline/base.py` | Base pipeline class — shared training logic |
+| `recommender/pipeline/torch.py` | Torch pipeline — training loop, negative sampling, model setup |
+| `recommender/pipeline/csr.py` | CSR pipeline — ALS/user_based training loop, model setup |
 | `recommender/model/recommender_base.py` | Base model class — contains if-else chains and manual loop accumulations |
 | `recommender/model/neighborhood/user_based.py` | User-based CF — contains verbose dict patterns, manual loops, redundant length checks |
 | `recommender/libs/sampling/negative_sampling.py` | Negative sampling — contains if-else chains and manual loop accumulations |
