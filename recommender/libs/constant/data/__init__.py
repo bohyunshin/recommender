@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class DatasetName(Enum):
+class DatasetName(StrEnum):
     """
     Enum for dataset name
     """
