@@ -1,30 +1,32 @@
-[tool.poetry]
+[project]
 name = "recommender"
 version = "0.1.0"
 description = ""
-authors = ["bohyun-shin <shinbo0613@gmail.com>"]
 readme = "README.md"
+authors = [{ name = "bohyun-shin", email = "shinbo0613@gmail.com" }]
+requires-python = ">=3.11"
+dependencies = [
+    "scikit-learn==1.6.0",
+    "torch==2.5.1",
+    "numpy==2.1.3",
+    "pandas==2.2.3",
+    "tqdm>=4.65.0,<4.66.0",
+    "implicit>=0.7.2,<0.8.0",
+    "requests>=2.32.3",
+    "matplotlib==3.9.2",
+    "seaborn>=0.13.2",
+    "gdown==5.2.0",
+    "pymongo==4.11.1",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-scikit-learn = "1.6.0"
-torch = "2.5.1"
-numpy = "2.1.3"
-pandas = "2.2.3"
-tqdm = ">=4.65.0,<4.66.0"
-implicit = ">=0.7.2,<0.8.0"
-requests = "^2.32.3"
-matplotlib = "3.9.2"
-seaborn = ">=0.13.2"
-gdown = "5.2.0"
-pymongo = "4.11.1"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "8.3.3"
-pytest-cov = "6.0.0"
-ruff = "0.9.9"
-pre-commit = "4.0.*"
+[dependency-groups]
+dev = [
+    "pytest==8.3.3",
+    "pytest-cov==6.0.0",
+    "ruff==0.9.9",
+    "pre-commit>=4.0,<4.1",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
