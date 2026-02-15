@@ -53,6 +53,7 @@ def setup_config(request):
         os.path.dirname(os.path.abspath(__file__)), f"../result/{model}"
     )
     args.num_sim_user_top_N = 45
+    args.is_test = False
     return args
 
 

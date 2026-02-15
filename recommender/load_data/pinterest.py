@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from bson import decode_all
 
 from recommender.load_data.base import LoadDataBase
@@ -44,5 +45,13 @@ class LoadData(LoadDataBase):
                 )  # pinterest is implicit data
         interactions = pd.DataFrame(interactions)
         interactions.columns = INTERACTIONS_COLUMNS
+
+        # for quick pytest
+        if kwargs.get("is_test") is True:
+            user_pools = interactions[Field.USER_ID].unique()
+            sampled_user_ids = np.random.choice(user_pools, size=30, replace=False)
+            interactions = interactions[
+                lambda x: x[Field.USER_ID].isin(sampled_user_ids)
+            ]
 
         return {Field.INTERACTION: interactions}

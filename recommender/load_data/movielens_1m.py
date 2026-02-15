@@ -1,5 +1,6 @@
 from typing import Dict
 
+import numpy as np
 import pandas as pd
 
 from recommender.libs.constant.data.movielens_1m import (
@@ -37,5 +38,11 @@ class LoadData(LoadDataBase):
             engine="python",
             encoding="ISO-8859-1",
         )
+
+        # for quick pytest
+        if kwargs.get("is_test") is True:
+            user_pools = ratings[Field.USER_ID].unique()
+            sampled_user_ids = np.random.choice(user_pools, size=30, replace=False)
+            ratings = ratings[lambda x: x[Field.USER_ID].isin(sampled_user_ids)]
 
         return {Field.INTERACTION: ratings}

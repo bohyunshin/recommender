@@ -29,4 +29,5 @@ def parse_args():
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--result_path", type=str, required=True)
     parser.add_argument("--num_sim_user_top_N", type=int, default=45)
+    parser.add_argument("--is_test", action="store_true")
     return parser.parse_args()
