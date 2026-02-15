@@ -27,6 +27,11 @@ dev = [
     "pre-commit>=4.0,<4.1",
 ]
 
+[tool.pytest.ini_options]
+markers = [
+    "requires_data: marks tests that require real dataset files (skipped by default)",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

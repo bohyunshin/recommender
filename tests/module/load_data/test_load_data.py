@@ -14,6 +14,7 @@ os.chdir(
 )
 
 
+@pytest.mark.requires_data
 @pytest.mark.parametrize(
     "dataset",
     [
