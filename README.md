@@ -5,13 +5,12 @@ This repository aims for implementing various machine learning algorithms in rec
 
 ## Setting up environment
 
-We use [poetry](https://github.com/python-poetry/poetry) to manage dependencies of repository.
+We use [uv](https://github.com/astral-sh/uv) to manage dependencies of repository.
 
-Use poetry with version `2.1.1`.
+Install uv by following the [official instructions](https://docs.astral.sh/uv/getting-started/installation/).
 
 ```shell
-$ poetry --version
-Poetry (version 2.1.1)
+$ uv --version
 ```
 
 Python version should be `3.11.x`.
@@ -21,30 +20,12 @@ $ python --version
 Python 3.11.11
 ```
 
-If python version is lower than `3.11`, try installing required version using `pyenv`.
+If python version is lower than `3.11`, try installing required version using `uv python install 3.11`.
 
-Create virtual environment.
-
-```shell
-$ poetry env activate
-```
-
-If your global python version is not 3.11, run following command.
+Install all the required packages from `uv.lock`.
 
 ```shell
-$ poetry env use python3.11
-```
-
-You can check virtual environment path info and its executable python path using following command.
-
-```shell
-$ poetry env info
-```
-
-After setting up python version, just run following command which will install all the required packages from `poetry.lock`.
-
-```shell
-$ poetry install
+$ uv sync
 ```
 
 ## Setting up git hook

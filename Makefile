@@ -1,6 +1,6 @@
 lint:
-	poetry run ruff format .
-	poetry run ruff check .
+	uv run ruff format .
+	uv run ruff check .
 
 test:
-	poetry run pytest
+	uv run pytest

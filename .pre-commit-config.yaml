@@ -21,11 +21,10 @@ repos:
     - id: ruff
       args: ["--fix"]
 
-- repo: https://github.com/python-poetry/poetry
-  rev: "2.1.1"
+- repo: https://github.com/astral-sh/uv-pre-commit
+  rev: 0.6.3
   hooks:
-    - id: poetry-check
-    - id: poetry-lock
+    - id: uv-lock
 
 - repo: https://github.com/codespell-project/codespell
   rev: v2.4.1
@@ -35,5 +34,5 @@ repos:
       description: Checks for common misspellings in text files.
       language: python
       types: [text]
-      exclude: "(poetry.lock|README.md)"
+      exclude: "(uv.lock|README.md)"
       args: ['--ignore-words-list=nin']
