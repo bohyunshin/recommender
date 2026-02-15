@@ -1,9 +1,9 @@
-from enum import Enum
+from enum import StrEnum
 
 from recommender.libs.constant.data.name import Field
 
 
-class MovieLens1mPath(Enum):
+class MovieLens1mPath(StrEnum):
     """
     Enum for movielens 1m dataset path
     """
@@ -15,10 +15,10 @@ class MovieLens1mPath(Enum):
 
 # field commonly used across dataset is renamed with enum
 RATINGS_COLUMNS = [
-    Field.USER_ID.value,
-    Field.ITEM_ID.value,
-    Field.INTERACTION.value,
+    Field.USER_ID,
+    Field.ITEM_ID,
+    Field.INTERACTION,
     "timestamp",
 ]
-USERS_COLUMNS = [Field.USER_ID.value, "gender", "age", "occupation", "zip_code"]
-ITEMS_COLUMNS = [Field.ITEM_ID.value, "movie_name", "genres"]
+USERS_COLUMNS = [Field.USER_ID, "gender", "age", "occupation", "zip_code"]
+ITEMS_COLUMNS = [Field.ITEM_ID, "movie_name", "genres"]

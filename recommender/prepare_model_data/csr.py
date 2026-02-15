@@ -42,34 +42,32 @@ class PrepareModelDataCsr(PrepareModelDataBase):
             Tuple of train / validation dataset in csr_matrix.
         """
         shape = (self.num_users, self.num_items)
-        ratings = data.get(Field.INTERACTION.value)
+        ratings = data.get(Field.INTERACTION)
 
         # filter user_id whose number of reviews is lower than MIN_REVIEWS
-        user2item_count = ratings[Field.USER_ID.value].value_counts().to_dict()
+        user2item_count = ratings[Field.USER_ID].value_counts().to_dict()
         user_id_min_reviews = [
             user_id
             for user_id, item_count in user2item_count.items()
             if item_count >= MIN_REVIEWS
         ]
-        ratings = ratings[lambda x: x[Field.USER_ID.value].isin(user_id_min_reviews)]
+        ratings = ratings[lambda x: x[Field.USER_ID].isin(user_id_min_reviews)]
 
         # split train / validation
         train, val = self.split_train_validation(ratings=ratings)
 
         # for inference
-        X_train = torch.tensor(train[[Field.USER_ID.value, Field.ITEM_ID.value]].values)
-        y_train = torch.tensor(
-            train[Field.INTERACTION.value].values, dtype=torch.float32
-        )
+        X_train = torch.tensor(train[[Field.USER_ID, Field.ITEM_ID]].values)
+        y_train = torch.tensor(train[Field.INTERACTION].values, dtype=torch.float32)
 
-        X_val = torch.tensor(val[[Field.USER_ID.value, Field.ITEM_ID.value]].values)
-        y_val = torch.tensor(val[Field.INTERACTION.value].values, dtype=torch.float32)
+        X_val = torch.tensor(val[[Field.USER_ID, Field.ITEM_ID]].values)
+        y_val = torch.tensor(val[Field.INTERACTION].values, dtype=torch.float32)
 
         self.X_y = {
-            Field.X_TRAIN.value: X_train,
-            Field.Y_TRAIN.value: y_train,
-            Field.X_VAL.value: X_val,
-            Field.Y_VAL.value: y_val,
+            Field.X_TRAIN: X_train,
+            Field.Y_TRAIN: y_train,
+            Field.X_VAL: X_val,
+            Field.Y_VAL: y_val,
         }
 
         csr_train = dataframe_to_csr(

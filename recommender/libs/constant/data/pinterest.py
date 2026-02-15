@@ -1,9 +1,9 @@
-from enum import Enum
+from enum import StrEnum
 
 from recommender.libs.constant.data.name import Field
 
 
-class PinterestPath(Enum):
+class PinterestPath(StrEnum):
     INTERACTIONS = (
         "recommender/.data/pinterest/pinterest_iccv/subset_iccv_board_pins.bson"
     )
@@ -11,13 +11,13 @@ class PinterestPath(Enum):
     PINS = "recommender/.data/pinterest/pinterest_iccv/subset_iccv_pin_im.bson"
 
 
-class PinterestField(Enum):
+class PinterestField(StrEnum):
     BOARD_ID = "board_id"
     PINS = "pins"
 
 
 INTERACTIONS_COLUMNS = [
-    Field.USER_ID.value,
-    Field.ITEM_ID.value,
-    Field.INTERACTION.value,
+    Field.USER_ID,
+    Field.ITEM_ID,
+    Field.INTERACTION,
 ]

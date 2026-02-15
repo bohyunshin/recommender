@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class FileName(Enum):
+class FileName(StrEnum):
     LOG = "log.log"
     WEIGHT_PT = "weight.pt"
     MODEL_PKL = "model.pkl"

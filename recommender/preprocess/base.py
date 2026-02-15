@@ -44,23 +44,23 @@ class PreprocessorBase(ABC):
         Returns (Dict[str, Union[pd.DataFrame, Dict[int, int]]]):
             Preprocessed pandas dataframe and its mapping information.
         """
-        ratings = data.get(Field.INTERACTION.value)
+        ratings = data.get(Field.INTERACTION)
 
-        user_ids = sorted(ratings[Field.USER_ID.value].unique())
-        item_ids = sorted(ratings[Field.ITEM_ID.value].unique())
+        user_ids = sorted(ratings[Field.USER_ID].unique())
+        item_ids = sorted(ratings[Field.ITEM_ID].unique())
 
         # mapping dictionary user_id, movie_id to ascending id
         user_id2idx = {id_: idx for (idx, id_) in enumerate(user_ids)}
         item_id2idx = {id_: idx for (idx, id_) in enumerate(item_ids)}
 
         # mapping ids
-        ratings[Field.USER_ID.value] = ratings[Field.USER_ID.value].map(user_id2idx)
-        ratings[Field.ITEM_ID.value] = ratings[Field.ITEM_ID.value].map(item_id2idx)
+        ratings[Field.USER_ID] = ratings[Field.USER_ID].map(user_id2idx)
+        ratings[Field.ITEM_ID] = ratings[Field.ITEM_ID].map(item_id2idx)
 
         return {
-            Field.INTERACTION.value: ratings,
-            Field.NUM_USERS.value: len(user_id2idx),
-            Field.NUM_ITEMS.value: len(item_id2idx),
-            Field.USER_ID2IDX.value: user_id2idx,
-            Field.ITEM_ID2IDX.value: item_id2idx,
+            Field.INTERACTION: ratings,
+            Field.NUM_USERS: len(user_id2idx),
+            Field.NUM_ITEMS: len(item_id2idx),
+            Field.USER_ID2IDX: user_id2idx,
+            Field.ITEM_ID2IDX: item_id2idx,
         }

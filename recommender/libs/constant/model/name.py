@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class ModelName(Enum):
+class ModelName(StrEnum):
     ALS = "als"
     USER_BASED = "user_based"
     SVD = "svd"
@@ -11,7 +11,7 @@ class ModelName(Enum):
     TWO_TOWER = "two_tower"
 
 
-class ModelForwardArgument(Enum):
+class ModelForwardArgument(StrEnum):
     USER_IDX = "user_idx"
     ITEM_IDX = "item_idx"
     POS_ITEM_IDX = "pos_item_idx"
@@ -20,11 +20,11 @@ class ModelForwardArgument(Enum):
 
 
 IMPLEMENTED_MODELS = [
-    ModelName.ALS.value,
-    ModelName.USER_BASED.value,
-    ModelName.SVD.value,
-    ModelName.SVD_BIAS.value,
-    ModelName.GMF.value,
-    ModelName.MLP.value,
-    ModelName.TWO_TOWER.value,
+    ModelName.ALS,
+    ModelName.USER_BASED,
+    ModelName.SVD,
+    ModelName.SVD_BIAS,
+    ModelName.GMF,
+    ModelName.MLP,
+    ModelName.TWO_TOWER,
 ]

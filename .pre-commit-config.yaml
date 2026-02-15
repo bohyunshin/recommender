@@ -35,4 +35,4 @@ repos:
       language: python
       types: [text]
       exclude: "(uv.lock|README.md)"
-      args: ['--ignore-words-list=nin']
+      args: ['--ignore-words-list=nin,als']

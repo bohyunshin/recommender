@@ -27,16 +27,16 @@ def dataframe_to_csr(
     Returns (csr_matrix):
         Converted csr matrix.
     """
-    assert Field.USER_ID.value in df.columns
-    assert Field.ITEM_ID.value in df.columns
-    assert Field.INTERACTION.value in df.columns
+    assert Field.USER_ID in df.columns
+    assert Field.ITEM_ID in df.columns
+    assert Field.INTERACTION in df.columns
 
     user2item2value = defaultdict(dict)
 
     user_ids = range(shape[0])
 
     for user, item, interaction in zip(
-        df[Field.USER_ID.value], df[Field.ITEM_ID.value], df[Field.INTERACTION.value]
+        df[Field.USER_ID], df[Field.ITEM_ID], df[Field.INTERACTION]
     ):
         if user2item2value[user].get(item, 0) == 0:
             user2item2value[user][item] = interaction

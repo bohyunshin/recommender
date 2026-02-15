@@ -23,10 +23,10 @@ def ranking_metrics_at_k(
 
     AP = \dfrac{1}{m} \sum_{i=1}^{K} P(i) r(i)
     where m is number of items user liked and K is number of recommended items,
-    P(i) is precision at i and r(i) is indicator variable 1 if ith item is hitted else 0.
-    Here, precision@i = # of hitted items until ith ranked item / K
+    P(i) is precision at i and r(i) is indicator variable 1 if ith item is hit else 0.
+    Here, precision@i = # of hit items until ith ranked item / K
 
-    Note that for some variations of AP, \dfrac{1}{ min(m, K) } is used instead of \dfrac{1}{m} to prevent deviding
+    Note that for some variations of AP, \dfrac{1}{ min(m, K) } is used instead of \dfrac{1}{m} to prevent dividing
     large value when K < m for some special case. If defined denominator as min(m, K), map may not increase as K is
     getting larger.
 
@@ -35,12 +35,12 @@ def ranking_metrics_at_k(
     NDCG = \dfrac{DCG}{IDCG}
     where DCG = \sum_{i=1}^{K} \dfrac{1}{\log2{i+1}} * r(i) and
     IDCG = \sum_{i=1}^{M} \dfrac{1}{\log2{i+1}}.
-    Here, r(i) is indicator variable 1 if ith item is hitted else 0,
+    Here, r(i) is indicator variable 1 if ith item is hit else 0,
     K is number of recommended items, and M is number of items that users liked.
 
     Maximum value of NDCG is IDCG by their definitions, therefore, 0 <= NDCG <= 1.
 
-    Note that NDCG does NOT gurantee increasing value as K is getting larger.
+    Note that NDCG does NOT guarantee increasing value as K is getting larger.
 
     Args:
         liked_items (NDArray): Item ids selected by one user in test dataset.
@@ -68,4 +68,4 @@ def ranking_metrics_at_k(
     # Calculate recall
     recall = safe_divide(hit, len(liked_items))
 
-    return {Metric.AP.value: ap, Metric.NDCG.value: ndcg, Metric.RECALL.value: recall}
+    return {Metric.AP: ap, Metric.NDCG: ndcg, Metric.RECALL: recall}

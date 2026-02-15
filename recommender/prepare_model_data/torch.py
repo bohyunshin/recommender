@@ -68,16 +68,16 @@ class PrepareModelDataTorch(PrepareModelDataBase):
 
         # make torch dataset
         torch_dataset = self.get_torch_dataset(
-            X_train=train_val_tensors.get(Field.X_TRAIN.value),
-            y_train=train_val_tensors.get(Field.Y_TRAIN.value),
-            X_val=train_val_tensors.get(Field.X_VAL.value),
-            y_val=train_val_tensors.get(Field.Y_VAL.value),
+            X_train=train_val_tensors.get(Field.X_TRAIN),
+            y_train=train_val_tensors.get(Field.Y_TRAIN),
+            X_val=train_val_tensors.get(Field.X_VAL),
+            y_val=train_val_tensors.get(Field.Y_VAL),
         )
 
         # get train / validation data loader
         train_dataloader, validation_dataloader = self.get_torch_data_loader(
-            train_dataset=torch_dataset.get(Field.TRAIN.value),
-            val_dataset=torch_dataset.get(Field.VAL.value),
+            train_dataset=torch_dataset.get(Field.TRAIN),
+            val_dataset=torch_dataset.get(Field.VAL),
         )
 
         return train_dataloader, validation_dataloader
@@ -99,27 +99,25 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         Returns (Tuple[torch.Tensor, torch.Tensor]):
             Input and target tensors.
         """
-        ratings = data.get(Field.INTERACTION.value)
+        ratings = data.get(Field.INTERACTION)
 
         # filter user_id whose number of reviews is lower than MIN_REVIEWS
-        user2item_count = ratings[Field.USER_ID.value].value_counts().to_dict()
+        user2item_count = ratings[Field.USER_ID].value_counts().to_dict()
         user_id_min_reviews = [
             user_id
             for user_id, item_count in user2item_count.items()
             if item_count >= MIN_REVIEWS
         ]
-        ratings = ratings[lambda x: x[Field.USER_ID.value].isin(user_id_min_reviews)]
+        ratings = ratings[lambda x: x[Field.USER_ID].isin(user_id_min_reviews)]
 
         # split train / validation
         train, val = self.split_train_validation(ratings=ratings)
 
-        X_train = torch.tensor(train[[Field.USER_ID.value, Field.ITEM_ID.value]].values)
-        y_train = torch.tensor(
-            train[Field.INTERACTION.value].values, dtype=torch.float32
-        )
+        X_train = torch.tensor(train[[Field.USER_ID, Field.ITEM_ID]].values)
+        y_train = torch.tensor(train[Field.INTERACTION].values, dtype=torch.float32)
 
-        X_val = torch.tensor(val[[Field.USER_ID.value, Field.ITEM_ID.value]].values)
-        y_val = torch.tensor(val[Field.INTERACTION.value].values, dtype=torch.float32)
+        X_val = torch.tensor(val[[Field.USER_ID, Field.ITEM_ID]].values)
+        y_val = torch.tensor(val[Field.INTERACTION].values, dtype=torch.float32)
 
         self.user_item_summ_tr = convert_tensor_to_user_item_summary(
             ts=X_train,
@@ -131,10 +129,10 @@ class PrepareModelDataTorch(PrepareModelDataBase):
         )
 
         self.X_y = {
-            Field.X_TRAIN.value: X_train,
-            Field.Y_TRAIN.value: y_train,
-            Field.X_VAL.value: X_val,
-            Field.Y_VAL.value: y_val,
+            Field.X_TRAIN: X_train,
+            Field.Y_TRAIN: y_train,
+            Field.X_VAL: X_val,
+            Field.Y_VAL: y_val,
         }
 
         return self.X_y
@@ -162,8 +160,8 @@ class PrepareModelDataTorch(PrepareModelDataBase):
             Torch dataset.
         """
         tensors = {
-            Field.TRAIN.value: (X_train, y_train),
-            Field.VAL.value: (X_val, y_val),
+            Field.TRAIN: (X_train, y_train),
+            Field.VAL: (X_val, y_val),
         }
         torch_dataset = {}
 

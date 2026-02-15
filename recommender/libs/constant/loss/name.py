@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class LossName(Enum):
+class LossName(StrEnum):
     BPR = "bpr"
     BCE = "bce"
     MSE = "mse"
@@ -9,4 +9,4 @@ class LossName(Enum):
     NOT_DEFINED = "not_defined"
 
 
-IMPLEMENTED_LOSS = [e.value for e in LossName]
+IMPLEMENTED_LOSS = list(LossName)

@@ -11,13 +11,13 @@ from recommender.libs.plot.plot import compare_metrics_between_models_at_k
 
 def test_compare_metrics_between_models_at_k():
     models = [
-        ModelName.SVD.value,
-        ModelName.MLP.value,
+        ModelName.SVD,
+        ModelName.MLP,
     ]
     pred_metrics = [
-        Metric.MAP.value,
-        Metric.NDCG.value,
-        Metric.RECALL.value,
+        Metric.MAP,
+        Metric.NDCG,
+        Metric.RECALL,
     ]
     diff = 0
     num_epochs = 5
@@ -30,7 +30,7 @@ def test_compare_metrics_between_models_at_k():
                 metrics_at_k[k][metric] = [i + diff for i in range(num_epochs)]
         pickle.dump(
             metrics_at_k,
-            open(os.path.join(dir_name, model, FileName.METRIC.value), "wb"),
+            open(os.path.join(dir_name, model, FileName.METRIC), "wb"),
         )
         diff += 1
         num_epochs += 5

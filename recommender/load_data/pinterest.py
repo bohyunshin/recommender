@@ -27,7 +27,7 @@ class LoadData(LoadDataBase):
         After downloading pinterest data using script in scripts/download/pinterest.py,
         convert data into pandas dataframe.
         Original data format is `bson`, which is binary json format. We convert this dataset into
-        pandas dataframe for better compatability with current pipeline.
+        pandas dataframe for better compatibility with current pipeline.
 
         Returns (Dict[str, pd.DataFrame]):
             Basically, abstractmethod `load` is designed to return one type of dataframes.
@@ -35,11 +35,11 @@ class LoadData(LoadDataBase):
             When rating values exist in float type, interaction will be explicit dataset.
             When rating values does not exist, interaction will be implicit dataset.
         """
-        board_pin_info = read_bson_file(PinterestPath.INTERACTIONS.value)
+        board_pin_info = read_bson_file(PinterestPath.INTERACTIONS)
         interactions = []
         for board in board_pin_info:
-            board_id = board.get(PinterestField.BOARD_ID.value)
-            for pin_id in board.get(PinterestField.PINS.value):
+            board_id = board.get(PinterestField.BOARD_ID)
+            for pin_id in board.get(PinterestField.PINS):
                 interactions.append(
                     (board_id, pin_id, 1.0)
                 )  # pinterest is implicit data
@@ -48,10 +48,10 @@ class LoadData(LoadDataBase):
 
         # for quick pytest
         if kwargs.get("is_test") is True:
-            user_pools = interactions[Field.USER_ID.value].unique()
+            user_pools = interactions[Field.USER_ID].unique()
             sampled_user_ids = np.random.choice(user_pools, size=30, replace=False)
             interactions = interactions[
-                lambda x: x[Field.USER_ID.value].isin(sampled_user_ids)
+                lambda x: x[Field.USER_ID].isin(sampled_user_ids)
             ]
 
-        return {Field.INTERACTION.value: interactions}
+        return {Field.INTERACTION: interactions}

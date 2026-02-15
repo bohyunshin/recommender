@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class Metric(Enum):
+class Metric(StrEnum):
     """
     Enum for metric when there are no candidates
     """
