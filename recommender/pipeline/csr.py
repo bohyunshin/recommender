@@ -1,17 +1,16 @@
+import importlib
 import logging
 import os
 import pickle
 from argparse import ArgumentParser
 
-import importlib
-
 import torch
 
+from recommender.libs.constant.data.name import Field
 from recommender.libs.constant.inference.recommend import TOP_K_VALUES
 from recommender.libs.constant.model.module_path import MODEL_PATH
 from recommender.libs.constant.model.name import ModelName
 from recommender.libs.constant.save.save import FileName
-from recommender.libs.constant.data.name import Field
 from recommender.pipeline.base import BaseTrainPipeline
 from recommender.prepare_model_data.csr import PrepareModelDataCsr
 

@@ -1,20 +1,19 @@
 import copy
+import importlib
 import logging
 import os
 import traceback
 from argparse import ArgumentParser
 
-import importlib
-
 import torch
 from torch import optim
 
+from recommender.libs.constant.data.name import Field
 from recommender.libs.constant.inference.recommend import TOP_K_VALUES
 from recommender.libs.constant.loss.name import LossName
 from recommender.libs.constant.model.module_path import MODEL_PATH
 from recommender.libs.constant.model.name import ModelForwardArgument
 from recommender.libs.constant.save.save import FileName
-from recommender.libs.constant.data.name import Field
 from recommender.libs.sampling.negative_sampling import NegativeSampling
 from recommender.libs.validate.config import validate_config
 from recommender.pipeline.base import BaseTrainPipeline
