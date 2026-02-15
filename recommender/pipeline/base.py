@@ -37,7 +37,7 @@ class BaseTrainPipeline(ABC):
         load_data_module = importlib.import_module(
             f"recommender.load_data.{args.dataset}"
         ).LoadData
-        return load_data_module().load(is_test=args.is_test)
+        return load_data_module().load()
 
     def _preprocess(self, args: ArgumentParser.parse_args, data: dict) -> dict:
         preprocess_module = importlib.import_module(

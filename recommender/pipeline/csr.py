@@ -38,7 +38,6 @@ class CsrTrainPipeline(BaseTrainPipeline):
             )
             logging.info(f"num_sim_user_top_N: {args.num_sim_user_top_N}")
         logging.info(f"result path: {args.result_path}")
-        logging.info(f"test mode: {args.is_test}")
 
     def _prepare_model_data(
         self, args: ArgumentParser.parse_args, preprocessed_data: dict

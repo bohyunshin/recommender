@@ -59,7 +59,6 @@ class TorchTrainPipeline(BaseTrainPipeline):
         logging.info(f"random state: {args.random_state}")
         logging.info(f"patience for watching validation loss: {args.patience}")
         logging.info(f"result path: {args.result_path}")
-        logging.info(f"test mode: {args.is_test}")
 
     def _validate_device(self, args: ArgumentParser.parse_args):
         if args.device == "cuda":
