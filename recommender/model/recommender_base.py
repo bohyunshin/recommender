@@ -56,10 +56,10 @@ class RecommenderBase(ABC):
         # store metric value at each epoch
         self.metric_at_k_total_epochs = {
             k: {
-                Metric.MAP.value: [],
-                Metric.NDCG.value: [],
-                Metric.RECALL.value: [],
-                Metric.COUNT.value: 0,
+                Metric.MAP: [],
+                Metric.NDCG: [],
+                Metric.RECALL: [],
+                Metric.COUNT: 0,
             }
             for k in TOP_K_VALUES
         }
@@ -71,15 +71,15 @@ class RecommenderBase(ABC):
 
     def set_loss_func(self):
         # TODO: fix `if-else` statement to better program.
-        if self.loss_name == LossName.MSE.value:
+        if self.loss_name == LossName.MSE:
             self.loss = svd_loss
-        elif self.loss_name == LossName.BPR.value:
+        elif self.loss_name == LossName.BPR:
             self.loss = bpr_loss
-        elif self.loss_name == LossName.BCE.value:
+        elif self.loss_name == LossName.BCE:
             self.loss = nn.BCEWithLogitsLoss()
-        elif self.loss_name == LossName.ALS.value:
+        elif self.loss_name == LossName.ALS:
             self.loss = als_loss
-        elif self.loss_name == LossName.NOT_DEFINED.value:
+        elif self.loss_name == LossName.NOT_DEFINED:
             pass
         else:
             raise
@@ -116,7 +116,7 @@ class RecommenderBase(ABC):
             Calculated loss.
         """
         # TODO: fix `if-else` statement to better program.
-        if self.loss_name == LossName.MSE.value:
+        if self.loss_name == LossName.MSE:
             return self.loss(
                 pred=y_pred.squeeze(),
                 true=y.squeeze(),
@@ -127,25 +127,25 @@ class RecommenderBase(ABC):
                 num_users=num_users,
                 num_items=num_items,
             )
-        elif self.loss_name == LossName.BCE.value:
+        elif self.loss_name == LossName.BCE:
             return self.loss(
                 input=y_pred.squeeze(),
                 target=y.squeeze(),
             )
-        elif self.loss_name == LossName.BPR.value:
+        elif self.loss_name == LossName.BPR:
             return self.loss(
                 pred=y_pred,
                 params=params,
                 regularization=regularization,
             )
-        elif self.loss_name == LossName.ALS.value:
+        elif self.loss_name == LossName.ALS:
             return self.loss(
                 user_items=user_items,
                 user_factors=user_factors,
                 item_factors=item_factors,
                 regularization=regularization,
             )
-        elif self.loss_name == LossName.NOT_DEFINED.value:
+        elif self.loss_name == LossName.NOT_DEFINED:
             return torch.tensor(0.0)
         else:
             raise
@@ -175,10 +175,10 @@ class RecommenderBase(ABC):
         # refresh at every epoch
         self.metric_at_k = {
             k: {
-                Metric.MAP.value: 0,
-                Metric.NDCG.value: 0,
-                Metric.RECALL.value: 0,
-                Metric.COUNT.value: 0,
+                Metric.MAP: 0,
+                Metric.NDCG: 0,
+                Metric.RECALL: 0,
+                Metric.COUNT: 0,
             }
             for k in top_k_values
         }
@@ -218,30 +218,30 @@ class RecommenderBase(ABC):
 
         for k in top_k_values:
             # save map
-            self.metric_at_k[k][Metric.MAP.value] = safe_divide(
-                numerator=self.metric_at_k[k][Metric.MAP.value],
-                denominator=self.metric_at_k[k][Metric.COUNT.value],
+            self.metric_at_k[k][Metric.MAP] = safe_divide(
+                numerator=self.metric_at_k[k][Metric.MAP],
+                denominator=self.metric_at_k[k][Metric.COUNT],
             )
-            self.metric_at_k_total_epochs[k][Metric.MAP.value].append(
-                self.metric_at_k[k][Metric.MAP.value]
+            self.metric_at_k_total_epochs[k][Metric.MAP].append(
+                self.metric_at_k[k][Metric.MAP]
             )
 
             # save ndcg
-            self.metric_at_k[k][Metric.NDCG.value] = safe_divide(
-                numerator=self.metric_at_k[k][Metric.NDCG.value],
-                denominator=self.metric_at_k[k][Metric.COUNT.value],
+            self.metric_at_k[k][Metric.NDCG] = safe_divide(
+                numerator=self.metric_at_k[k][Metric.NDCG],
+                denominator=self.metric_at_k[k][Metric.COUNT],
             )
-            self.metric_at_k_total_epochs[k][Metric.NDCG.value].append(
-                self.metric_at_k[k][Metric.NDCG.value]
+            self.metric_at_k_total_epochs[k][Metric.NDCG].append(
+                self.metric_at_k[k][Metric.NDCG]
             )
 
             # save recall
-            self.metric_at_k[k][Metric.RECALL.value] = safe_divide(
-                numerator=self.metric_at_k[k][Metric.RECALL.value],
-                denominator=self.metric_at_k[k][Metric.COUNT.value],
+            self.metric_at_k[k][Metric.RECALL] = safe_divide(
+                numerator=self.metric_at_k[k][Metric.RECALL],
+                denominator=self.metric_at_k[k][Metric.COUNT],
             )
-            self.metric_at_k_total_epochs[k][Metric.RECALL.value].append(
-                self.metric_at_k[k][Metric.RECALL.value]
+            self.metric_at_k_total_epochs[k][Metric.RECALL].append(
+                self.metric_at_k[k][Metric.RECALL]
             )
 
     def calculate_metric(
@@ -271,10 +271,10 @@ class RecommenderBase(ABC):
             for k in top_k_values:
                 pred_liked_item_id = top_k_id[i][:k].detach().cpu().numpy()
                 metric = ranking_metrics_at_k(val_liked_item_id, pred_liked_item_id)
-                self.metric_at_k[k][Metric.MAP.value] += metric[Metric.AP.value]
-                self.metric_at_k[k][Metric.NDCG.value] += metric[Metric.NDCG.value]
-                self.metric_at_k[k][Metric.RECALL.value] += metric[Metric.RECALL.value]
-                self.metric_at_k[k][Metric.COUNT.value] += 1
+                self.metric_at_k[k][Metric.MAP] += metric[Metric.AP]
+                self.metric_at_k[k][Metric.NDCG] += metric[Metric.NDCG]
+                self.metric_at_k[k][Metric.RECALL] += metric[Metric.RECALL]
+                self.metric_at_k[k][Metric.COUNT] += 1
 
     def collect_metrics(self):
         maps = []
@@ -283,10 +283,10 @@ class RecommenderBase(ABC):
 
         for k in TOP_K_VALUES:
             # no candidate metric
-            map = round(self.metric_at_k[k][Metric.MAP.value], 5)
-            ndcg = round(self.metric_at_k[k][Metric.NDCG.value], 5)
-            recall = round(self.metric_at_k[k][Metric.RECALL.value], 5)
-            count = self.metric_at_k[k][Metric.COUNT.value]
+            map = round(self.metric_at_k[k][Metric.MAP], 5)
+            ndcg = round(self.metric_at_k[k][Metric.NDCG], 5)
+            recall = round(self.metric_at_k[k][Metric.RECALL], 5)
+            count = self.metric_at_k[k][Metric.COUNT]
 
             logging.info(
                 f"maP@{k}: {map} with {count} users out of all {self.num_users} users"

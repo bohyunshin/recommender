@@ -28,4 +28,4 @@ def test_load(dataset):
         f"recommender.load_data.{dataset}"
     ).LoadData
     data = load_data_module().load()
-    assert isinstance(data.get(Field.INTERACTION.value), pd.DataFrame)
+    assert isinstance(data.get(Field.INTERACTION), pd.DataFrame)

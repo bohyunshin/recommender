@@ -33,9 +33,9 @@ def plot_metric_at_k(
         parent_save_path (str): parent save path which will be joined with metric name.
     """
     pred_metrics = [
-        Metric.MAP.value,
-        Metric.NDCG.value,
-        Metric.RECALL.value,
+        Metric.MAP,
+        Metric.NDCG,
+        Metric.RECALL,
     ]
     epochs = [i for i in range(len(tr_loss))]
 
@@ -116,15 +116,15 @@ def compare_metrics_between_models_at_k(
         num_epochs (int): Selected number of epochs while training.
     """
     pred_metrics = [
-        Metric.MAP.value,
-        Metric.NDCG.value,
-        Metric.RECALL.value,
+        Metric.MAP,
+        Metric.NDCG,
+        Metric.RECALL,
     ]
     metrics_at_k = {}
     dir_name = os.path.join(result_path, "aggregate")
     os.makedirs(dir_name, exist_ok=True)
     for model in models:
-        metrics_result_path = os.path.join(result_path, model, FileName.METRIC.value)
+        metrics_result_path = os.path.join(result_path, model, FileName.METRIC)
         metrics_at_k[model] = pickle.load(open(metrics_result_path, "rb"))
 
     for k in TOP_K_VALUES:

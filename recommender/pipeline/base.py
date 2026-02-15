@@ -19,8 +19,8 @@ class BaseTrainPipeline(ABC):
             self._log_params(args)
             data = self._load_data(args)
             preprocessed_data = self._preprocess(args, data)
-            self.num_users = preprocessed_data.get(Field.NUM_USERS.value)
-            self.num_items = preprocessed_data.get(Field.NUM_ITEMS.value)
+            self.num_users = preprocessed_data.get(Field.NUM_USERS)
+            self.num_items = preprocessed_data.get(Field.NUM_ITEMS)
             self._prepare_model_data(args, preprocessed_data)
             self._setup_model(args, preprocessed_data)
             self._train(args)
@@ -31,7 +31,7 @@ class BaseTrainPipeline(ABC):
 
     def _setup(self, args: ArgumentParser.parse_args):
         os.makedirs(args.result_path, exist_ok=True)
-        setup_logger(os.path.join(args.result_path, FileName.LOG.value))
+        setup_logger(os.path.join(args.result_path, FileName.LOG))
 
     def _load_data(self, args: ArgumentParser.parse_args) -> dict:
         load_data_module = importlib.import_module(
@@ -48,15 +48,15 @@ class BaseTrainPipeline(ABC):
     def _save_metrics_and_losses(self, model, result_path: str):
         pickle.dump(
             model.metric_at_k_total_epochs,
-            open(os.path.join(result_path, FileName.METRIC.value), "wb"),
+            open(os.path.join(result_path, FileName.METRIC), "wb"),
         )
         pickle.dump(
             model.tr_loss,
-            open(os.path.join(result_path, FileName.TRAINING_LOSS.value), "wb"),
+            open(os.path.join(result_path, FileName.TRAINING_LOSS), "wb"),
         )
         pickle.dump(
             model.val_loss,
-            open(os.path.join(result_path, FileName.VALIDATION_LOSS.value), "wb"),
+            open(os.path.join(result_path, FileName.VALIDATION_LOSS), "wb"),
         )
         plot_metric_at_k(
             metric=model.metric_at_k_total_epochs,

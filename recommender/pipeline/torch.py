@@ -27,11 +27,11 @@ class TorchTrainPipeline(BaseTrainPipeline):
         try:
             self._log_params(args)
             self._validate_device(args)
-            self.is_triplet = args.loss == LossName.BPR.value
+            self.is_triplet = args.loss == LossName.BPR
             data = self._load_data(args)
             preprocessed_data = self._preprocess(args, data)
-            self.num_users = preprocessed_data.get(Field.NUM_USERS.value)
-            self.num_items = preprocessed_data.get(Field.NUM_ITEMS.value)
+            self.num_users = preprocessed_data.get(Field.NUM_USERS)
+            self.num_items = preprocessed_data.get(Field.NUM_ITEMS)
             self._prepare_model_data(args, preprocessed_data)
             self._setup_model(args, preprocessed_data)
             self._train(args)
@@ -94,10 +94,10 @@ class TorchTrainPipeline(BaseTrainPipeline):
         model_module = importlib.import_module(model_path).Model
         self.model = model_module(
             user_ids=torch.tensor(
-                list(preprocessed_data.get(Field.USER_ID2IDX.value).values())
+                list(preprocessed_data.get(Field.USER_ID2IDX).values())
             ),
             item_ids=torch.tensor(
-                list(preprocessed_data.get(Field.ITEM_ID2IDX.value).values())
+                list(preprocessed_data.get(Field.ITEM_ID2IDX).values())
             ),
             num_users=self.num_users,
             num_items=self.num_items,
@@ -113,8 +113,8 @@ class TorchTrainPipeline(BaseTrainPipeline):
         tr_loss = 0.0
         for user_id, pos_item_id, y_train in self.train_dataloader:
             inputs = {
-                ModelForwardArgument.USER_IDX.value: user_id,
-                ModelForwardArgument.ITEM_IDX.value: pos_item_id,
+                ModelForwardArgument.USER_IDX: user_id,
+                ModelForwardArgument.ITEM_IDX: pos_item_id,
             }
             if args.num_neg is not None:
                 ng_sample = NegativeSampling(
@@ -133,7 +133,7 @@ class TorchTrainPipeline(BaseTrainPipeline):
                     **inputs,
                     **ng_res,
                 }
-                y_train = ng_res.get(ModelForwardArgument.Y.value)
+                y_train = ng_res.get(ModelForwardArgument.Y)
             self.optimizer.zero_grad()
             if self.is_triplet:
                 y_pred = self.model.triplet(**inputs)
@@ -162,8 +162,8 @@ class TorchTrainPipeline(BaseTrainPipeline):
             val_loss = 0.0
             for user_id, pos_item_id, y_val in self.validation_dataloader:
                 inputs = {
-                    ModelForwardArgument.USER_IDX.value: user_id,
-                    ModelForwardArgument.ITEM_IDX.value: pos_item_id,
+                    ModelForwardArgument.USER_IDX: user_id,
+                    ModelForwardArgument.ITEM_IDX: pos_item_id,
                 }
                 if args.num_neg is not None:
                     ng_sample = NegativeSampling(
@@ -182,7 +182,7 @@ class TorchTrainPipeline(BaseTrainPipeline):
                         **inputs,
                         **ng_res,
                     }
-                    y_val = ng_res.get(ModelForwardArgument.Y.value)
+                    y_val = ng_res.get(ModelForwardArgument.Y)
                 self.optimizer.zero_grad()
                 if self.is_triplet:
                     y_pred = self.model.triplet(**inputs)
@@ -224,7 +224,7 @@ class TorchTrainPipeline(BaseTrainPipeline):
                 patience = args.patience
                 torch.save(
                     self.model.state_dict(),
-                    os.path.join(args.result_path, FileName.WEIGHT_PT.value),
+                    os.path.join(args.result_path, FileName.WEIGHT_PT),
                 )
                 logging.info(
                     f"Best validation: {best_loss}, Previous validation loss: {prev_best_loss}"
@@ -242,8 +242,8 @@ class TorchTrainPipeline(BaseTrainPipeline):
 
             # calculate metrics for all users
             self.model.recommend_all(
-                X_train=self.prepare_model_data.X_y.get(Field.X_TRAIN.value),
-                X_val=self.prepare_model_data.X_y.get(Field.X_VAL.value),
+                X_train=self.prepare_model_data.X_y.get(Field.X_TRAIN),
+                X_val=self.prepare_model_data.X_y.get(Field.X_VAL),
                 top_k_values=TOP_K_VALUES,
                 filter_already_liked=True,
             )
@@ -263,6 +263,6 @@ class TorchTrainPipeline(BaseTrainPipeline):
 
         torch.save(
             self.model.state_dict(),
-            os.path.join(args.result_path, FileName.WEIGHT_PT.value),
+            os.path.join(args.result_path, FileName.WEIGHT_PT),
         )
         logging.info("Save final model")

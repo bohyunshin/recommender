@@ -20,7 +20,7 @@ class CsrTrainPipeline(BaseTrainPipeline):
         logging.info(f"selected dataset: {args.dataset}")
         logging.info(f"selected model: {args.model}")
         logging.info(f"selected loss: {args.loss}")
-        if args.model == ModelName.ALS.value:
+        if args.model == ModelName.ALS:
             logging.info(f"batch size: {args.batch_size}")
             logging.info(f"learning rate: {args.lr}")
             logging.info(f"regularization: {args.regularization}")
@@ -32,7 +32,7 @@ class CsrTrainPipeline(BaseTrainPipeline):
             logging.info(f"random state: {args.random_state}")
             logging.info(f"patience for watching validation loss: {args.patience}")
         logging.info(f"train ratio: {args.train_ratio}")
-        if args.model == ModelName.USER_BASED.value:
+        if args.model == ModelName.USER_BASED:
             args.epochs = (
                 1  # for user_based model, iterations no more than 2 is not needed
             )
@@ -64,10 +64,10 @@ class CsrTrainPipeline(BaseTrainPipeline):
         model_module = importlib.import_module(model_path).Model
         self.model = model_module(
             user_ids=torch.tensor(
-                list(preprocessed_data.get(Field.USER_ID2IDX.value).values())
+                list(preprocessed_data.get(Field.USER_ID2IDX).values())
             ),
             item_ids=torch.tensor(
-                list(preprocessed_data.get(Field.ITEM_ID2IDX.value).values())
+                list(preprocessed_data.get(Field.ITEM_ID2IDX).values())
             ),
             num_users=self.num_users,
             num_items=self.num_items,
@@ -86,7 +86,7 @@ class CsrTrainPipeline(BaseTrainPipeline):
             logging.info(f"####### Epoch {epoch} #######")
             self.model.fit(user_items=self.csr_train, val_user_items=self.csr_val)
 
-            if args.model != ModelName.USER_BASED.value:
+            if args.model != ModelName.USER_BASED:
                 # calculate training / validation loss
                 tr_loss = self.model.calculate_loss(
                     user_items=self.csr_train,
@@ -113,7 +113,7 @@ class CsrTrainPipeline(BaseTrainPipeline):
                     pickle.dump(
                         self.model,
                         open(
-                            os.path.join(args.result_path, FileName.MODEL_PKL.value),
+                            os.path.join(args.result_path, FileName.MODEL_PKL),
                             "wb",
                         ),
                     )
@@ -134,16 +134,14 @@ class CsrTrainPipeline(BaseTrainPipeline):
                 # when user_based model, do not have to iterate training
                 pickle.dump(
                     self.model,
-                    open(
-                        os.path.join(args.result_path, FileName.MODEL_PKL.value), "wb"
-                    ),
+                    open(os.path.join(args.result_path, FileName.MODEL_PKL), "wb"),
                 )
                 break
 
             # calculate metrics for all users
             self.model.recommend_all(
-                X_train=self.prepare_model_data.X_y.get(Field.X_TRAIN.value),
-                X_val=self.prepare_model_data.X_y.get(Field.X_VAL.value),
+                X_train=self.prepare_model_data.X_y.get(Field.X_TRAIN),
+                X_val=self.prepare_model_data.X_y.get(Field.X_VAL),
                 top_k_values=TOP_K_VALUES,
                 filter_already_liked=True,
                 user_items=self.csr_train,
@@ -156,5 +154,5 @@ class CsrTrainPipeline(BaseTrainPipeline):
                 break
 
     def _save_artifacts(self, args: ArgumentParser.parse_args):
-        if args.model != ModelName.USER_BASED.value:
+        if args.model != ModelName.USER_BASED:
             self._save_metrics_and_losses(self.model, args.result_path)

@@ -32,7 +32,7 @@ class LoadData(LoadDataBase):
         """
         # load rating and meta data
         ratings = pd.read_csv(
-            MovieLens1mPath.ratings.value,
+            MovieLens1mPath.ratings,
             sep="::",
             names=RATINGS_COLUMNS,
             engine="python",
@@ -41,8 +41,8 @@ class LoadData(LoadDataBase):
 
         # for quick pytest
         if kwargs.get("is_test") is True:
-            user_pools = ratings[Field.USER_ID.value].unique()
+            user_pools = ratings[Field.USER_ID].unique()
             sampled_user_ids = np.random.choice(user_pools, size=30, replace=False)
-            ratings = ratings[lambda x: x[Field.USER_ID.value].isin(sampled_user_ids)]
+            ratings = ratings[lambda x: x[Field.USER_ID].isin(sampled_user_ids)]
 
-        return {Field.INTERACTION.value: ratings}
+        return {Field.INTERACTION: ratings}

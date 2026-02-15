@@ -48,7 +48,7 @@ class PrepareModelDataBase(ABC):
             ratings,
             test_size=1 - self.train_ratio,
             random_state=self.random_state,
-            stratify=ratings[STRATIFY_COLUMN[DatasetName.MOVIELENS.value]],
+            stratify=ratings[STRATIFY_COLUMN[DatasetName.MOVIELENS]],
         )
         return train, validation
 
