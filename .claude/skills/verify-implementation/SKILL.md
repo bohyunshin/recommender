@@ -32,6 +32,7 @@ List of verification skills that this skill executes sequentially. `/manage-skil
 | 1 | `verify-test-coverage` | Verifies new models/pipelines have corresponding unit and integration tests |
 | 2 | `verify-code-convention` | Validates PEP 8 naming, type hints, ruff compliance, and import ordering |
 | 3 | `verify-model-registration` | Ensures new models are registered in constants, have module paths, train.py routing, and implement abstract methods |
+| 4 | `verify-code-simplifier` | Checks if code could be simplified — redundant booleans, manual loops, verbose patterns, dict lookup replacements |
 
 ## Workflow
 

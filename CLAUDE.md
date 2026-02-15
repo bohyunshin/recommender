@@ -60,3 +60,4 @@ uv run python recommender/train_csr.py --dataset movielens --model als --loss al
 | `verify-test-coverage` | Verifies models/pipelines have corresponding unit and integration tests |
 | `verify-code-convention` | Validates PEP 8 naming, type hints, ruff compliance, import ordering |
 | `verify-model-registration` | Ensures new models are registered in constants, have module paths, and implement abstract methods |
+| `verify-code-simplifier` | Checks if code could be simplified — redundant booleans, manual loops, verbose patterns, dict lookup replacements |

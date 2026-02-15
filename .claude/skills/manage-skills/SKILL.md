@@ -33,6 +33,7 @@ List of verification skills registered in the current project. Update this list 
 | `verify-test-coverage` | Verifies new models/pipelines have corresponding unit and integration tests | `tests/**/*.py`, `recommender/libs/constant/model/name.py` |
 | `verify-code-convention` | Validates PEP 8 naming, type hints, ruff compliance, and import ordering | `recommender/**/*.py`, `tests/**/*.py` |
 | `verify-model-registration` | Ensures new models are registered in constants, have module paths, train.py routing, and implement abstract methods | `recommender/libs/constant/model/*.py`, `recommender/train.py`, `recommender/train_csr.py`, `recommender/model/**/*.py` |
+| `verify-code-simplifier` | Checks if code could be simplified — redundant booleans, manual loops, verbose patterns, dict lookup replacements | `recommender/**/*.py`, `tests/**/*.py`, `scripts/**/*.py` |
 
 ## Workflow
 
