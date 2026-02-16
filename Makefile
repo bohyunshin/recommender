@@ -4,3 +4,6 @@ lint:
 
 test:
 	uv run pytest
+
+build-ext:
+	uv run python setup.py build_ext --inplace

@@ -9,17 +9,21 @@ repos:
     - id: check-toml
     - id: check-xml
     - id: check-ast
+      exclude: '\.pyx$'
     - id: check-added-large-files
       args: ["--maxkb=500"]
     - id: debug-statements
+      exclude: '\.pyx$'
     - id: check-merge-conflict
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.9.9
   hooks:
     - id: ruff-format
+      exclude: '\.pyx$'
     - id: ruff
       args: ["--fix"]
+      exclude: '\.pyx$'
 
 - repo: https://github.com/astral-sh/uv-pre-commit
   rev: 0.6.3
@@ -34,5 +38,5 @@ repos:
       description: Checks for common misspellings in text files.
       language: python
       types: [text]
-      exclude: "(uv.lock|README.md)"
+      exclude: "(uv.lock|README.md|\\.pyx$)"
       args: ['--ignore-words-list=nin,als']
