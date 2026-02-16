@@ -1,11 +1,23 @@
 from collections import defaultdict
 from typing import Dict, Tuple
 
+import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 from scipy.sparse import csr_matrix
+from tqdm import tqdm
 
 from recommender.libs.constant.data.name import Field
+
+try:
+    from recommender.libs.utils._csr_ops import (
+        calculate_user_sim_row_cy,
+        slice_csr_matrix_cy,
+    )
+
+    _HAS_CYTHON = True
+except ImportError:
+    _HAS_CYTHON = False
 
 
 def dataframe_to_csr(
@@ -101,9 +113,63 @@ def slice_csr_matrix(csr: csr_matrix, row: int, col: int) -> int:
     Returns (int):
         Sliced value.
     """
+    if _HAS_CYTHON:
+        return slice_csr_matrix_cy(
+            np.asarray(csr.data, dtype=np.float64),
+            np.asarray(csr.indices, dtype=np.int32),
+            np.asarray(csr.indptr, dtype=np.int32),
+            row,
+            col,
+        )
     indices = csr.indices[csr.indptr[row] : csr.indptr[row + 1]]
     data = csr.data[csr.indptr[row] : csr.indptr[row + 1]]
     for i, d in zip(indices, data):
         if i == col:
             return d
     return 0
+
+
+def calculate_user_sim(
+    user_ids: NDArray, csr: csr_matrix
+) -> Dict[Tuple[int, int], float]:
+    n = len(user_ids)
+    res = {}
+
+    if _HAS_CYTHON:
+        data_arr = np.asarray(csr.data, dtype=np.float64)
+        indices_arr = np.asarray(csr.indices, dtype=np.int32)
+        indptr_arr = np.asarray(csr.indptr, dtype=np.int32)
+        user_ids_arr = np.asarray(user_ids, dtype=np.int64)
+        for i in tqdm(range(n), desc="User similarity"):
+            row_res = calculate_user_sim_row_cy(
+                data_arr, indices_arr, indptr_arr, user_ids_arr, i
+            )
+            res.update(row_res)
+        return res
+
+    for i in tqdm(range(n), desc="User similarity"):
+        x = int(user_ids[i])
+        items_x = csr.indices[csr.indptr[x] : csr.indptr[x + 1]]
+        data_x = csr.data[csr.indptr[x] : csr.indptr[x + 1]]
+
+        r_x = sum(v**2 for v in data_x) ** 0.5
+        if r_x == 0.0:
+            for j in range(i + 1, n):
+                res[(x, int(user_ids[j]))] = 0.0
+            continue
+
+        for j in range(i + 1, n):
+            y = int(user_ids[j])
+            r_xy = 0.0
+            for k, col_x in enumerate(items_x):
+                r_xy += data_x[k] * slice_csr_matrix(csr, y, col_x)
+
+            if r_xy == 0.0:
+                res[(x, y)] = 0.0
+                continue
+
+            data_y = csr.data[csr.indptr[y] : csr.indptr[y + 1]]
+            r_y = sum(v**2 for v in data_y) ** 0.5
+            res[(x, y)] = r_xy / (r_x * r_y)
+
+    return res
