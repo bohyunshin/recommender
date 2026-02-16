@@ -40,6 +40,12 @@ tests/module/result
 # code cov
 .coverage
 
+# Cython build artifacts
+*.so
+*.pyd
+*.c
+build/
+
 # data
 .data/
 recommender/.data

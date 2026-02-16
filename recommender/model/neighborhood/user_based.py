@@ -5,8 +5,9 @@ import numpy as np
 import torch
 from numpy.typing import NDArray
 from scipy.sparse import csr_matrix
+from tqdm import tqdm
 
-from recommender.libs.utils.csr import slice_csr_matrix
+from recommender.libs.utils.csr import calculate_user_sim as compute_user_sim
 from recommender.model.fit_model_base import FitModelBase
 
 
@@ -79,60 +80,7 @@ class Model(FitModelBase):
         Returns (Dict[Tuple[Any, Any], float]):
             Keys are tuple of user ids and its values are corresponding cosine similarity.
         """
-        res = {}
-        for i in range(len(user_ids)):
-            x = user_ids[i].item()
-            for y in user_ids[i + 1 :]:
-                y = y.item()
-                items_liked_by_x = csr.indices[csr.indptr[x] : csr.indptr[x + 1]]
-                items_liked_by_y = csr.indices[csr.indptr[y] : csr.indptr[y + 1]]
-                items_liked_by_x_y = list(set(items_liked_by_x) & set(items_liked_by_y))
-
-                if len(items_liked_by_x_y) == 0:
-                    res[(x, y)] = 0
-                else:
-                    res[(x, y)] = self._calculate_user_sim(
-                        x, y, items_liked_by_x_y, csr
-                    )
-        return res
-
-    def _calculate_user_sim(
-        self,
-        x: int,
-        y: int,
-        items_liked_by_x_y: List[int],
-        csr: csr_matrix,
-    ) -> float:
-        """
-        Inner function calculating cosine similarity.
-
-        Args:
-            x (int): User id.
-            y (int): User id.
-            items_liked_by_x_y (List[int]): List of items liked by both users.
-            csr (csr_matrix): Sparse matrix storing likes of each user.
-
-        Returns (float):
-            Calculated cosine similarity between user x and y.
-        """
-        r_x = 0
-        r_y = 0
-        r_xy = 0
-
-        for r in csr.data[csr.indptr[x] : csr.indptr[x + 1]]:
-            r_x += r**2
-        r_x = r_x ** (0.5)
-
-        for r in csr.data[csr.indptr[y] : csr.indptr[y + 1]]:
-            r_y += r**2
-        r_y = r_y ** (0.5)
-
-        for i in items_liked_by_x_y:
-            r_xi = slice_csr_matrix(csr, x, i)
-            r_yi = slice_csr_matrix(csr, y, i)
-            r_xy += r_xi * r_yi
-
-        return r_xy / (r_x * r_y)
+        return compute_user_sim(user_ids.numpy(), csr)
 
     def get_top_N_sim_user(
         self,
@@ -189,40 +137,49 @@ class Model(FitModelBase):
         assert isinstance(item_id, torch.Tensor)
         user_id = user_id.detach().cpu().numpy()
         item_id = item_id.detach().cpu().numpy()
-        res = {}
         mean_r = {}
         csr = kwargs.get("user_items")
         user_item_rating = np.zeros((len(user_id), len(item_id)))
-        for u in user_id:
-            rating_by_u = csr.data[csr.indptr[u] : csr.indptr[u + 1]]
-            mean_r[u] = (
-                0 if len(rating_by_u) == 0 else sum(rating_by_u) / len(rating_by_u)
-            )
 
-        for idx, u in enumerate(user_id):
-            if res.get(u) is None:
-                res[u] = []
+        # Cache CSR rows as {item: rating} dicts for O(1) lookup
+        ratings_cache = {}
+
+        def get_ratings(u):
+            if u not in ratings_cache:
+                start, end = csr.indptr[u], csr.indptr[u + 1]
+                ratings_cache[u] = {
+                    int(csr.indices[j]): csr.data[j] for j in range(start, end)
+                }
+            return ratings_cache[u]
+
+        def get_mean_r(u):
+            if u not in mean_r:
+                ratings = get_ratings(u)
+                mean_r[u] = 0 if not ratings else sum(ratings.values()) / len(ratings)
+            return mean_r[u]
+
+        for u in user_id:
+            get_mean_r(u)
+
+        for idx, u in tqdm(enumerate(user_id), total=len(user_id), desc="Predict"):
+            ratings_u = get_ratings(u)
             r_u = mean_r[u]
 
             # filter items not rated by u
-            reco_item_ids = []
-            for i in item_id:
-                if slice_csr_matrix(csr, u, i) == 0:
-                    reco_item_ids.append(i)
+            reco_item_ids = [i for i in item_id if i not in ratings_u]
 
             for i in reco_item_ids:
                 summation = 0
                 k = 0
                 items_liked_by_neighbor = False
                 for u_, sim in self.top_N_sim_user[u]:
-                    if slice_csr_matrix(csr, u_, i) == 0:
+                    ratings_u_ = get_ratings(u_)
+                    r_u__i = ratings_u_.get(i, 0)
+                    if r_u__i == 0:
                         continue
                     items_liked_by_neighbor = True
                     k += abs(sim)
-                    mean_r_u_ = mean_r[u_]
-                    r_u__i = slice_csr_matrix(csr, u_, i)
-                    summation += (r_u__i - mean_r_u_) * sim
+                    summation += (r_u__i - get_mean_r(u_)) * sim
                 if items_liked_by_neighbor:
-                    user_item_rating[u][i] = r_u + summation / k
-                    res[u].append((i, r_u + summation / k))
+                    user_item_rating[idx][i] = r_u + summation / k
         return torch.tensor(user_item_rating)

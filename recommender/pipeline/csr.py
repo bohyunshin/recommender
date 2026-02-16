@@ -136,7 +136,7 @@ class CsrTrainPipeline(BaseTrainPipeline):
                     self.model,
                     open(os.path.join(args.result_path, FileName.MODEL_PKL), "wb"),
                 )
-                break
+                early_stopping = True
 
             # calculate metrics for all users
             self.model.recommend_all(
@@ -154,5 +154,4 @@ class CsrTrainPipeline(BaseTrainPipeline):
                 break
 
     def _save_artifacts(self, args: ArgumentParser.parse_args):
-        if args.model != ModelName.USER_BASED:
-            self._save_metrics_and_losses(self.model, args.result_path)
+        self._save_metrics_and_losses(self.model, args.result_path)

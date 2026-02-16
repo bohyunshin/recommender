@@ -37,7 +37,10 @@ def plot_metric_at_k(
         Metric.NDCG,
         Metric.RECALL,
     ]
-    epochs = [i for i in range(len(tr_loss))]
+    first_k = TOP_K_VALUES[0]
+    first_metric = pred_metrics[0]
+    num_epochs = len(metric[first_k][first_metric])
+    epochs = list(range(num_epochs))
 
     for metric_name in pred_metrics:
         pred_metrics_df = pd.DataFrame()
@@ -57,19 +60,21 @@ def plot_metric_at_k(
             hue="@k",
         )
 
-    tr_loss_df = pd.DataFrame(
-        {
-            "value": tr_loss + val_loss,
-            "loss_type": ["training"] * len(tr_loss) + ["validation"] * len(val_loss),
-            "epochs": epochs * 2,
-        }
-    )
-    plot_metric(
-        df=tr_loss_df,
-        metric_name="loss",
-        save_path=os.path.join(parent_save_path, "loss.png"),
-        hue="loss_type",
-    )
+    if tr_loss and val_loss:
+        tr_loss_df = pd.DataFrame(
+            {
+                "value": tr_loss + val_loss,
+                "loss_type": ["training"] * len(tr_loss)
+                + ["validation"] * len(val_loss),
+                "epochs": list(range(len(tr_loss))) * 2,
+            }
+        )
+        plot_metric(
+            df=tr_loss_df,
+            metric_name="loss",
+            save_path=os.path.join(parent_save_path, "loss.png"),
+            hue="loss_type",
+        )
 
 
 def plot_metric(

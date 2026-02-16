@@ -23,10 +23,10 @@ uv run pytest tests/pipeline/test_train.py
 uv run python scripts/download/movielens.py --package ml-1m
 
 # Train torch-based model
-uv run python recommender/train.py --dataset movielens --model svd --loss mse --epochs 30 --num_factors 16 --train_ratio 0.8 --random_state 42 --result_path "./result/svd"
+uv run python recommender/train.py --dataset movielens --model svd --loss mse --epochs 30 --num_factors 16 --train_ratio 0.8 --random_state 42
 
 # Train CSR-based model
-uv run python recommender/train_csr.py --dataset movielens --model als --loss als --epochs 30 --num_factors 16 --train_ratio 0.8 --random_state 42 --result_path "./result/als"
+uv run python recommender/train_csr.py --dataset movielens --model als --loss als --epochs 30 --num_factors 16 --train_ratio 0.8 --random_state 42
 ```
 
 ## Architecture
