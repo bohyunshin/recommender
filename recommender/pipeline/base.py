@@ -30,6 +30,11 @@ class BaseTrainPipeline(ABC):
             raise
 
     def _setup(self, args: ArgumentParser.parse_args):
+        from datetime import datetime
+
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        test_dir = "test" if args.is_test else "untest"
+        args.result_path = os.path.join("result", test_dir, args.model, timestamp)
         os.makedirs(args.result_path, exist_ok=True)
         setup_logger(os.path.join(args.result_path, FileName.LOG))
 
